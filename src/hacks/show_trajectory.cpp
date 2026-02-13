@@ -7,7 +7,6 @@
 #include <Geode/modify/GameObject.hpp>
 #include <Geode/modify/EffectGameObject.hpp>
 #include <Geode/modify/HardStreak.hpp>
-#include <Geode/modify/CCKeyboardDispatcher.hpp>
 
 ShowTrajectory& t = ShowTrajectory::get();
 
