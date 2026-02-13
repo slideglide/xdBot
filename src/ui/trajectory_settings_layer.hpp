@@ -124,7 +124,7 @@ private:
         );
     }
 
-    void TrajectorySettingsLayer::openColorPicker(CCObject* obj) {
+    void openColorPicker(CCObject* obj) {
         ColorChannelSprite* color = static_cast<CCNode*>(obj)->getTag() == 1 ? color1 : color2;
 
         ColorPickPopup* popup = ColorPickPopup::create(color->getColor());
