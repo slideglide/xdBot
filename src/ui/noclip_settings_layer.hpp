@@ -5,7 +5,7 @@ class NoclipSettingsLayer : public geode::Popup {
 private:
 	
     bool init() {
-		if (!Popup::init(200, 176)) return false;
+		if (!Popup::init(200, 176, Utils::getTexture().c_str())) return false;
         setTitle("Noclip");
 		
 		cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;

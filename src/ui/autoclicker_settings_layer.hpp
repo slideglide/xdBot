@@ -46,7 +46,7 @@ private:
 	}
 	
     bool init() override {
-		if (!Popup::init(250, 240)) return false;
+		if (!Popup::init(250, 240, Utils::getTexture().c_str())) return false;
         setTitle("Autoclicker");
 		m_title->setScale(0.625f);
 		m_title->setPositionY(224);

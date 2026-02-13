@@ -6,7 +6,7 @@ class MirrorSettingsLayer : public geode::Popup {
 private:
 	
     bool init() {
-		if (!Popup::init(200, 146)) return false;
+		if (!Popup::init(200, 146, Utils::getTexture().c_str())) return false;
         setTitle("Input Mirror");
 		
 		cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;

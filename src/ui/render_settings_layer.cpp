@@ -82,7 +82,7 @@ void RenderSettingsLayer::onDefaults(CCObject*) {
 }
 
 bool RenderSettingsLayer::init() {
-    if (!Popup::init(396, 277)) return false;
+    if (!Popup::init(396, 277, Utils::getTexture().c_str())) return false;
     setTitle("Render Settings");
     bool usingApi = false;
     // #ifndef GEODE_IS_IOS

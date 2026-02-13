@@ -546,7 +546,7 @@ void RecordLayer::updateDots() {
 }
 
 bool RecordLayer::init() {
-    if (!Popup::init(455, 271)) return false;
+    if (!Popup::init(455, 271, Utils::getTexture().c_str())) return false;
     auto& g = Global::get();
     mod = g.mod;
 

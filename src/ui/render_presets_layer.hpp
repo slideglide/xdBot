@@ -10,7 +10,7 @@ public:
 private:
 
     bool init() override {
-        if (!Popup::init(243, 231)) return false;
+        if (!Popup::init(243, 231, Utils::getTexture().c_str())) return false;
         setTitle("Render Presets");
 
         CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });

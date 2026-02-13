@@ -17,7 +17,7 @@ private:
     TextInput* input = nullptr;
 
     bool init() override {
-        if (!Popup::init(250, 180)) return false;
+        if (!Popup::init(250, 180, Utils::getTexture().c_str())) return false;
         setTitle("Show Trajectory");
 
         Utils::setBackgroundColor(m_bgSprite);

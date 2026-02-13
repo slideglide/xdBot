@@ -12,7 +12,7 @@ class SaveMacroLayer : public geode::Popup {
 private:
 
     bool init() override {
-        if (!Popup::init(285, 194)) return false;
+        if (!Popup::init(285, 194, Utils::getTexture().c_str())) return false;
         Utils::setBackgroundColor(m_bgSprite);
 
         setTitle("Save Macro");
