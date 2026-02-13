@@ -99,7 +99,7 @@ class $modify(PauseLayer) {
 };
 
 $execute{
-    geode::listenForSettingChanges("frame_offset", +[](int64_t value) {
+    geode::listenForSettingChanges<int64_t>("frame_offset", +[](int64_t value) {
         auto& g = Global::get();
         g.frameOffset = value;
 
@@ -111,7 +111,7 @@ $execute{
 
   });
 
-    geode::listenForSettingChanges("background_color", +[](cocos2d::ccColor3B value) {
+    geode::listenForSettingChanges<cocos2d::ccColor3B>("background_color", +[](cocos2d::ccColor3B value) {
         auto& g = Global::get();
         if (g.layer) {
             CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
@@ -129,7 +129,7 @@ void RecordLayer::openSaveMacro(CCObject*) {
 }
 
 void RecordLayer::openLoadMacro(CCObject*) {
-    LoadMacroLayer::open(static_cast<geode::Popup<>*>(this), nullptr);
+    LoadMacroLayer::open(static_cast<geode::Popup*>(this), nullptr);
 }
 
 RecordLayer* RecordLayer::openMenu(bool instant) {
@@ -159,7 +159,7 @@ RecordLayer* RecordLayer::openMenu(bool instant) {
     layer->m_noElasticity = instant || Global::get().speedhackEnabled;
     layer->show();
 
-    g.layer = static_cast<geode::Popup<>*>(layer);
+    g.layer = static_cast<geode::Popup*>(layer);
 
     return layer;
 }
@@ -259,19 +259,19 @@ void RecordLayer::togglePlaying(CCObject*) {
     this->updateTPS();
 }
 
-#ifndef GEODE_IS_IOS
-void RecordLayer::toggleRender(CCObject* btn) {
+// #ifndef GEODE_IS_IOS
+/*void RecordLayer::toggleRender(CCObject* btn) {
     if (!Renderer::toggle())
         static_cast<CCMenuItemToggler*>(btn)->toggle(true);
 
     if (Global::get().renderer.recordingAudio)
         static_cast<CCMenuItemToggler*>(btn)->toggle(false);
-}
-#else
+}*/
+// #else
 void RecordLayer::toggleRenderIOS(CCObject* btn) {
-    FLAlertLayer::create("Info", "Rendering on iOS is not supported yet!", "OK")->show();
+    FLAlertLayer::create("Info", "Rendering is not supported yet!", "OK")->show();
 }
-#endif
+// #endif
 
 void RecordLayer::onEditMacro(CCObject*) {
     MacroEditLayer::open();
@@ -522,7 +522,7 @@ void RecordLayer::onAutosaves(CCObject*) {
     std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("autosaves_folder");
 
     if (std::filesystem::exists(path))
-        LoadMacroLayer::open(static_cast<geode::Popup<>*>(this), nullptr, true);
+        LoadMacroLayer::open(static_cast<geode::Popup*>(this), nullptr, true);
     else {
         FLAlertLayer::create("Error", "There was an error getting the folder. ID: 5", "Ok")->show();
     }
@@ -545,7 +545,8 @@ void RecordLayer::updateDots() {
     }
 }
 
-bool RecordLayer::setup() {
+bool RecordLayer::init() {
+    if (!Popup::init(455, 271)) return false;
     auto& g = Global::get();
     mod = g.mod;
 
@@ -933,17 +934,17 @@ bool RecordLayer::setup() {
     spriteOff2->setScale(0.74f);
     #endif
     
-    #ifdef GEODE_IS_IOS
+    //#ifdef GEODE_IS_IOS
     renderToggle = CCMenuItemToggler::create(spriteOn2, spriteOff2, this, menu_selector(RecordLayer::toggleRenderIOS));
     renderToggle->setPosition(ccp(-65.5, -100));
     menu->addChild(renderToggle);
-    #else
-    renderToggle = CCMenuItemToggler::create(spriteOff2, spriteOn2, this, menu_selector(RecordLayer::toggleRender));
-    renderToggle->toggle(g.renderer.recording || g.renderer.recordingAudio);
+    // #else
+    // renderToggle = CCMenuItemToggler::create(spriteOff2, spriteOn2, this, menu_selector(RecordLayer::toggleRender));
+    // renderToggle->toggle(g.renderer.recording || g.renderer.recordingAudio);
 
     renderToggle->setPosition(ccp(-65.5, -100));
     menu->addChild(renderToggle);
-    #endif
+    // #endif
 
     spr = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
     spr->setScale(0.65f);

@@ -72,24 +72,24 @@ class $modify(GJBaseGameLayer) {
         }
 
         auto& g = Global::get();
-        #ifndef GEODE_IS_IOS
-        if (!g.renderer.recording && g.frameStepper) {
-            if (g.stepFrameParticle != 0)
-                g.stepFrameParticle--;
+        // #ifndef GEODE_IS_IOS
+        // if (!g.renderer.recording && g.frameStepper) {
+        //     if (g.stepFrameParticle != 0)
+        //         g.stepFrameParticle--;
 
-            if (Macro::shouldStep()) {
-                g.stepFrame = false;
+        //     if (Macro::shouldStep()) {
+        //         g.stepFrame = false;
 
-                GJBaseGameLayer::update(1.f / Global::getTPS());
+        //         GJBaseGameLayer::update(1.f / Global::getTPS());
 
-                return;
-            }
-            else {
-                g.safeMode = true;
-                return;
-            }
-        }
-        #else
+        //         return;
+        //     }
+        //     else {
+        //         g.safeMode = true;
+        //         return;
+        //     }
+        // }
+        // #else
         if (g.frameStepper) {
             if (g.stepFrameParticle != 0)
                 g.stepFrameParticle--;
@@ -106,7 +106,7 @@ class $modify(GJBaseGameLayer) {
                 return;
             }
         }
-        #endif
+        // #endif
 
         GJBaseGameLayer::update(dt);
     }
@@ -118,15 +118,15 @@ class $modify(CCParticleSystem) {
     virtual void update(float dt) {
         auto& g = Global::get();
         if (!PlayLayer::get()) return CCParticleSystem::update(dt);
-        #ifndef GEODE_IS_IOS
-        if (!g.renderer.recording && g.frameStepper) {
-            if (g.stepFrameParticle != 0) {
-                CCParticleSystem::update(dt);
-            }
-            else
-                return;
-        }
-        #else
+        // #ifndef GEODE_IS_IOS
+        // if (!g.renderer.recording && g.frameStepper) {
+        //     if (g.stepFrameParticle != 0) {
+        //         CCParticleSystem::update(dt);
+        //     }
+        //     else
+        //         return;
+        // }
+        // #else
         if (g.frameStepper) {
             if (g.stepFrameParticle != 0) {
                 CCParticleSystem::update(dt);
@@ -134,7 +134,7 @@ class $modify(CCParticleSystem) {
             else
                 return;
         }
-        #endif
+        // #endif
 
         CCParticleSystem::update(dt);
     }

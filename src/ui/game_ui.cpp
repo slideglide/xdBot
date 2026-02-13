@@ -13,15 +13,15 @@ class $modify(PlayLayer) {
         PlayLayer::postUpdate(dt);
         auto& g = Global::get();
         
-        #ifndef GEODE_IS_IOS
-        if (g.state != state::none && g.frameLabel && !g.renderer.recording) {
-            m_fields->frameLabel->setString(("Frame: " + std::to_string(Global::getCurrentFrame())).c_str());
-        }
-        #else
+        //#ifndef GEODE_IS_IOS
+        // if (g.state != state::none && g.frameLabel && !g.renderer.recording) {
+        //     m_fields->frameLabel->setString(("Frame: " + std::to_string(Global::getCurrentFrame())).c_str());
+        // }
+        // #else
         if (g.state != state::none && g.frameLabel) {
             m_fields->frameLabel->setString(("Frame: " + std::to_string(Global::getCurrentFrame())).c_str());
         }
-        #endif
+        // #endif
     }
     
     bool init(GJGameLevel * level, bool b1, bool b2) {
@@ -134,13 +134,13 @@ void Interface::updateLabels() {
     if (labelText == "Playing" && state == state::playing && g.mod->getSavedValue<bool>("macro_hide_playing_label"))
         labelText = "";
     
-#ifndef GEODE_IS_IOS
-    if (g.renderer.recording && g.mod->getSavedValue<bool>("render_hide_labels")) {
-        labelText = "";
-        if (CCLabelBMFont* lbl = typeinfo_cast<CCLabelBMFont*>(pl->getChildByID("frame-label"_spr)))
-            lbl->setString("");
-    }
-#endif
+// #ifndef GEODE_IS_IOS
+    // if (g.renderer.recording && g.mod->getSavedValue<bool>("render_hide_labels")) {
+        // labelText = "";
+        // if (CCLabelBMFont* lbl = typeinfo_cast<CCLabelBMFont*>(pl->getChildByID("frame-label"_spr)))
+            // lbl->setString("");
+    // }
+// #endif
 
     label->setString(labelText.c_str());
 }

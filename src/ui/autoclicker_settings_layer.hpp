@@ -1,6 +1,6 @@
 #include "../includes.hpp"
 
-class AutoclickerLayer : public geode::Popup<>, public TextInputDelegate {
+class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
 
 private:
 
@@ -23,7 +23,7 @@ private:
 	CCMenuItemToggler* toggleP1 = nullptr;
 	CCMenuItemToggler* toggleP2 = nullptr;
 
-	STATIC_CREATE(AutoclickerLayer, 250, 240)
+	STATIC_CREATE(AutoclickerLayer)
 
 	void textChanged(CCTextInputNode*) override {
 		auto& g = Global::get();
@@ -45,7 +45,8 @@ private:
 		releaseLbl2->setString(fmt::format("{:.3f}s", dt * g.releaseFor2).c_str());
 	}
 	
-    bool setup() override {
+    bool init() override {
+		if (!Popup::init(250, 240)) return false;
         setTitle("Autoclicker");
 		m_title->setScale(0.625f);
 		m_title->setPositionY(224);

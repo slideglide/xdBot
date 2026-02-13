@@ -5,14 +5,15 @@
 #include <locale>
 #include <string>
 #include <ctime>
+#include <optional>
 
 class MacroCell : public CCNode {
 	std::string name;
 	std::filesystem::path path;
 	std::time_t date;
 
-	geode::Popup<>* menuLayer = nullptr;
-	geode::Popup<>* mergeLayer = nullptr;
+	geode::Popup* menuLayer = nullptr;
+	geode::Popup* mergeLayer = nullptr;
 	CCLayer* loadLayer = nullptr;
 
 	bool isMerge = false;
@@ -22,9 +23,9 @@ public:
 	CCMenu* menu = nullptr;
 	CCMenuItemToggler* toggler = nullptr;
 
-	static MacroCell* create(std::filesystem::path path, std::string name, std::time_t date, geode::Popup<>* menuLayer, geode::Popup<>* mergeLayer, CCLayer* loadLayer);
+	static MacroCell* create(std::filesystem::path path, std::string name, std::time_t date, geode::Popup* menuLayer, geode::Popup* mergeLayer, CCLayer* loadLayer);
 
-	bool init(std::filesystem::path path, std::string name, std::time_t date, geode::Popup<>* menuLayer, geode::Popup<>* mergeLayer, CCLayer* loadLayer);
+	bool init(std::filesystem::path path, std::string name, std::time_t date, geode::Popup* menuLayer, geode::Popup* mergeLayer, CCLayer* loadLayer);
 
 	void onLoad(CCObject*);
 
@@ -39,11 +40,11 @@ public:
 	void selectMacro(bool single);
 };
 
-class LoadMacroLayer : public geode::Popup<geode::Popup<>*, geode::Popup<>*, bool>, public TextInputDelegate {
+class LoadMacroLayer : public geode::Popup, TextInputDelegate {
 public:
 
-	geode::Popup<>* menuLayer = nullptr;
-	geode::Popup<>* mergeLayer = nullptr;
+	geode::Popup* menuLayer = nullptr;
+	geode::Popup* mergeLayer = nullptr;
 	CCMenu* menu = nullptr;
 
 	CCMenuItemToggler* selectAllToggle = nullptr;
@@ -66,11 +67,13 @@ public:
 	bool isMerge = false;
 	bool invertSort = false;
 
-	static LoadMacroLayer* create(geode::Popup<>* layer, geode::Popup<>* layer2, bool autosaves);
+	std::optional<arc::Future<void>> m_importFuture;
 
-	bool setup(geode::Popup<>* layer, geode::Popup<>* layer2, bool autosaves) override;
+	static LoadMacroLayer* create(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
 
-	static void open(geode::Popup<>* layer, geode::Popup<>* layer2, bool autosaves = false);
+	bool init(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
+
+	static void open(geode::Popup* layer, geode::Popup* layer2, bool autosaves = false);
 
 	void openFolder(CCObject*) {
 		file::openFolder(Mod::get()->getSettingValue<std::filesystem::path>(isAutosaves ? "autosaves_folder" : "macros_folder"));

@@ -1,6 +1,6 @@
 #include "../includes.hpp"
 
-class AutoSaveLayer : public geode::Popup<>, public TextInputDelegate {
+class AutoSaveLayer : public geode::Popup, public TextInputDelegate {
 
 private:
 
@@ -11,7 +11,7 @@ private:
 	CCLabelBMFont* intervalLbl = nullptr;
 	CCLabelBMFont* intervalLbl2 = nullptr;
 
-	STATIC_CREATE(AutoSaveLayer, 250, 190)
+	STATIC_CREATE(AutoSaveLayer)
 
 	void textChanged(CCTextInputNode*) override {
 		std::string str = intervalInput->getString();
@@ -21,7 +21,8 @@ private:
 		Mod::get()->setSavedValue("autosave_interval", str);
 	}
 	
-    bool setup() override {
+    bool init() override {
+		if (!Popup::init(250, 190)) return false;
         setTitle("AutoSave");
 		m_title->setScale(0.575f);
 		m_title->setPositionY(171);

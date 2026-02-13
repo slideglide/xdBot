@@ -20,15 +20,15 @@ struct MovingButton {
     cocos2d::CCPoint offset = ccp(0, 0);
 };
 
-class ButtonEditLayer : public geode::Popup<> {
+class ButtonEditLayer : public geode::Popup {
 
 private:
     
-    bool setup() override;
+    bool init() override;
 
 public:
 
-    STATIC_CREATE(ButtonEditLayer, 200, 131)
+    STATIC_CREATE(ButtonEditLayer)
     
     Mod* mod = nullptr;
     CCMenu* menu = nullptr;

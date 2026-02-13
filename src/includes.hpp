@@ -32,10 +32,10 @@ const std::string buttonIDs[6] = {
     "robtop.geometry-dash/move-right-p2"
 };
 
-#define STATIC_CREATE(class, width, height) \
+#define STATIC_CREATE(class) \
     static class* create() { \
         class* ret = new class(); \
-        if (ret->initAnchored(width, height, Utils::getTexture().c_str())) { \
+        if (ret->init()) { \
             ret->autorelease(); \
             return ret; \
         } \
@@ -85,11 +85,11 @@ public:
     static PauseLayer* getPauseLayer();
 
     Mod* mod = Mod::get();
-    geode::Popup<>* layer = nullptr;
+    geode::Popup* layer = nullptr;
 
     Macro macro;
     #ifndef GEODE_IS_IOS
-    Renderer renderer;
+    // Renderer renderer;
     #endif
     state state = none;
 

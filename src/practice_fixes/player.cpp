@@ -6,7 +6,7 @@ PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
     #ifdef GEODE_IS_WINDOWS
 
     data.m_rotateObjectsRelated.insert(player->m_rotateObjectsRelated.begin(), player->m_rotateObjectsRelated.end());
-    data.m_maybeRotatedObjectsMap.insert(player->m_maybeRotatedObjectsMap.begin(), player->m_maybeRotatedObjectsMap.end());
+    // data.m_maybeRotatedObjectsMap.insert(player->m_maybeRotatedObjectsMap.begin(), player->m_maybeRotatedObjectsMap.end());
     data.m_touchedRings.insert(player->m_touchedRings.begin(), player->m_touchedRings.end());
     data.m_ringRelatedSet.insert(player->m_ringRelatedSet.begin(), player->m_ringRelatedSet.end());
     data.m_jumpPadRelated.insert(player->m_jumpPadRelated.begin(), player->m_jumpPadRelated.end());
@@ -17,8 +17,8 @@ PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
 
     #else
 
-    // data.m_jumpPadRelated = player->m_jumpPadRelated;
-    // data.m_holdingButtons = player->m_holdingButtons;
+    data.m_jumpPadRelated = player->m_jumpPadRelated;
+    data.m_holdingButtons = player->m_holdingButtons;
 
     #endif
 
@@ -68,7 +68,7 @@ PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
     data.m_isCollidingWithSlope = player->m_isCollidingWithSlope;
     data.m_isBallRotating = player->m_isBallRotating;
     data.m_unk669 = player->m_unk669;
-    data.m_currentSlope3 = player->m_currentSlope3;
+    // data.m_currentSlope3 = player->m_currentSlope3;
     data.m_currentSlope = player->m_currentSlope;
     data.unk_584 = player->unk_584;
     data.m_collidingWithSlopeId = player->m_collidingWithSlopeId;
@@ -101,8 +101,8 @@ PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
     data.m_lastJumpTime = player->m_lastJumpTime;
     data.m_lastFlipTime = player->m_lastFlipTime;
     data.m_flashTime = player->m_flashTime;
-    data.m_flashRelated = player->m_flashRelated;
-    data.m_flashRelated1 = player->m_flashRelated1;
+    // data.m_flashRelated = player->m_flashRelated;
+    // data.m_flashRelated1 = player->m_flashRelated1;
     data.m_lastSpiderFlipTime = player->m_lastSpiderFlipTime;
     data.m_unkBool5 = player->m_unkBool5;
     data.m_maybeIsVehicleGlowing = player->m_maybeIsVehicleGlowing;
@@ -194,7 +194,6 @@ PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
     data.m_unkA99 = player->m_unkA99;
     data.m_totalTime = player->m_totalTime;
     data.m_isBeingSpawnedByDualPortal = player->m_isBeingSpawnedByDualPortal;
-    data.m_unkAAC = player->m_unkAAC;
     data.m_unkAngle1 = player->m_unkAngle1;
     data.m_yVelocityRelated3 = player->m_yVelocityRelated3;
     data.m_defaultMiniIcon = player->m_defaultMiniIcon;
@@ -273,7 +272,7 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     #ifdef GEODE_IS_WINDOWS
 
     player->m_rotateObjectsRelated.insert(data.m_rotateObjectsRelated.begin(), data.m_rotateObjectsRelated.end());
-    player->m_maybeRotatedObjectsMap.insert(data.m_maybeRotatedObjectsMap.begin(), data.m_maybeRotatedObjectsMap.end());
+    // player->m_maybeRotatedObjectsMap.insert(data.m_maybeRotatedObjectsMap.begin(), data.m_maybeRotatedObjectsMap.end());
     player->m_touchedRings.insert(data.m_touchedRings.begin(), data.m_touchedRings.end());
     player->m_ringRelatedSet.insert(data.m_ringRelatedSet.begin(), data.m_ringRelatedSet.end());
     player->m_jumpPadRelated.insert(data.m_jumpPadRelated.begin(), data.m_jumpPadRelated.end());
@@ -286,8 +285,8 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
 
     #else
 
-    // player->m_jumpPadRelated = data.m_jumpPadRelated;
-    // player->m_holdingButtons = data.m_holdingButtons;
+    player->m_jumpPadRelated = data.m_jumpPadRelated;
+    player->m_holdingButtons = data.m_holdingButtons;
 
     #endif
 
@@ -305,7 +304,7 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     player->m_dashRing = data.m_dashRing;
     player->m_slopeStartTime = data.m_slopeStartTime;
     player->m_justPlacedStreak = data.m_justPlacedStreak;
-    player->m_maybeLastGroundObject = data.m_maybeLastGroundObject;
+    // player->m_maybeLastGroundObject = data.m_maybeLastGroundObject;
     player->m_collisionLogTop = data.m_collisionLogTop;
     player->m_collisionLogBottom = data.m_collisionLogBottom;
     player->m_collisionLogLeft = data.m_collisionLogLeft;
@@ -335,7 +334,7 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     player->m_isCollidingWithSlope = data.m_isCollidingWithSlope;
     player->m_isBallRotating = data.m_isBallRotating;
     player->m_unk669 = data.m_unk669;
-    player->m_currentSlope3 = data.m_currentSlope3;
+    // player->m_currentSlope3 = data.m_currentSlope3;
     player->m_currentSlope = data.m_currentSlope;
     player->unk_584 = data.unk_584;
     player->m_collidingWithSlopeId = data.m_collidingWithSlopeId;
@@ -450,7 +449,8 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     player->m_unkA99 = data.m_unkA99;
     player->m_totalTime = data.m_totalTime;
     player->m_isBeingSpawnedByDualPortal = data.m_isBeingSpawnedByDualPortal;
-    player->m_unkAAC = data.m_unkAAC;
+    // player->m_audioScale = data.m_audioScale;
+    player->m_unkAngle1 = data.m_unkAngle1;
     player->m_unkAngle1 = data.m_unkAngle1;
     player->m_yVelocityRelated3 = data.m_yVelocityRelated3;
     player->m_defaultMiniIcon = data.m_defaultMiniIcon;

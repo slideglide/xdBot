@@ -11,11 +11,11 @@ struct InputText {
     std::string action;
 };
 
-class MacroEditLayer : public geode::Popup<>, public TextInputDelegate {
+class MacroEditLayer : public geode::Popup, public TextInputDelegate {
 
 private:
     
-    bool setup();
+    bool init() override;
 
     void onClose(CCObject*) override;
 
@@ -29,7 +29,7 @@ private:
     
 public:
 
-    STATIC_CREATE(MacroEditLayer, 438, 247)
+    STATIC_CREATE(MacroEditLayer)
     
     TextInput* pageInput = nullptr;
     TextInput* frameInput = nullptr;

@@ -1,10 +1,11 @@
 #include "../includes.hpp"
 
-class NoclipSettingsLayer : public geode::Popup<> {
+class NoclipSettingsLayer : public geode::Popup {
 
 private:
 	
-    bool setup() override {
+    bool init() {
+		if (!Popup::init(200, 176)) return false;
         setTitle("Noclip");
 		
 		cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
@@ -49,7 +50,7 @@ private:
 
 public:
 
-	STATIC_CREATE(NoclipSettingsLayer, 200, 176)
+	STATIC_CREATE(NoclipSettingsLayer)
 	
 	void open(CCObject*) {
 		create()->show();

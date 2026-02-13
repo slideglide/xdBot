@@ -1,15 +1,16 @@
 #include "../includes.hpp"
 #include "record_layer.hpp"
 
-class RenderPresetsLayer : public geode::Popup<> {
+class RenderPresetsLayer : public geode::Popup {
 
 public:
 
-	STATIC_CREATE(RenderPresetsLayer, 243, 231)
+	STATIC_CREATE(RenderPresetsLayer)
 
 private:
 
-    bool setup() override {
+    bool init() override {
+        if (!Popup::init(243, 231)) return false;
         setTitle("Render Presets");
 
         CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });

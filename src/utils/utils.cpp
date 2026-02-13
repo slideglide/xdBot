@@ -185,7 +185,7 @@ std::string Utils::getSimplifiedString(std::string str) {
     return str;
 }
 
-void Utils::setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg) {
+void Utils::setBackgroundColor(geode::NineSlice* bg) {
     cocos2d::ccColor3B color = Mod::get()->getSettingValue<cocos2d::ccColor3B>("background_color");
 
 	if (color == ccc3(51, 68, 153))

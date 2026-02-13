@@ -31,7 +31,7 @@ const float ySettingPositions[6]{
 	76.5f, 47.5f, 18.5f, -11.5f, -40.5f, -69.5f
 };
 
-class RecordLayer : public geode::Popup<>, public TextInputDelegate {
+class RecordLayer : public geode::Popup, public TextInputDelegate {
 public:
 	CCMenuItemToggler* recording = nullptr;
 	CCMenuItemToggler* playing = nullptr;
@@ -73,7 +73,7 @@ public:
 
 protected:
 
-	bool setup() override;
+	bool init() override;
 
 	~RecordLayer() override {
 		DESELECT_INPUT(widthInput)
@@ -93,7 +93,7 @@ public:
 
 	static std::string getTPSString();
 	
-	STATIC_CREATE(RecordLayer, 455, 271)
+	STATIC_CREATE(RecordLayer)
 	
 	virtual void onClose(cocos2d::CCObject*) override;
 

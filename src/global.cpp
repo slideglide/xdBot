@@ -3,9 +3,9 @@
 
 #include <Geode/modify/CCTextInputNode.hpp>
 
-#ifdef GEODE_IS_DESKTOP
-#include <geode.custom-keybinds/include/Keybinds.hpp>
-#endif
+// #ifdef GEODE_IS_DESKTOP
+// #include <geode.custom-keybinds/include/Keybinds.hpp>
+// #endif
 
 #include <random>
 
@@ -185,25 +185,25 @@ int Global::getCurrentFrame(bool editor) {
   return frame;
 }
 
-void Global::updateKeybinds() {
-#ifdef GEODE_IS_DESKTOP
+// void Global::updateKeybinds() {
+// #ifdef GEODE_IS_DESKTOP
 
-  auto& g = Global::get();
-  for (size_t i = 0; i < 6; i++) {
-    auto keys = keybinds::BindManager::get()->getBindsFor(buttonIDs[i]);
-    std::vector<int> keysInts = {};
+//   auto& g = Global::get();
+//   for (size_t i = 0; i < 6; i++) {
+//     auto keys = keybinds::BindManager::get()->getBindsFor(buttonIDs[i]);
+//     std::vector<int> keysInts = {};
 
-    for (size_t j = 0; j < keys.size(); j++) {
-      keysInts.push_back(keys[j]->getHash());
-      g.allKeybinds.insert(keys[j]->getHash());
-    }
+//     for (size_t j = 0; j < keys.size(); j++) {
+//       keysInts.push_back(keys[j]->getHash());
+//       g.allKeybinds.insert(keys[j]->getHash());
+//     }
 
-    g.keybinds[i].clear();
-    for (int k = 0; k < keysInts.size(); k++)
-      g.keybinds[i].push_back(keysInts[k]);
-  }
-#endif
-}
+//     g.keybinds[i].clear();
+//     for (int k = 0; k < keysInts.size(); k++)
+//       g.keybinds[i].push_back(keysInts[k]);
+//   }
+// #endif
+// }
 
 void Global::updateSeed(bool isRestart) {
 
@@ -333,16 +333,17 @@ void Global::frameStepperOff() {
   Interface::updateButtons();
 }
 
-PauseLayer* Global::getPauseLayer() {
-  CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-  CCObject* child;
-  CCARRAY_FOREACH(children, child) {
-    if (PauseLayer* pauseLayer = typeinfo_cast<PauseLayer*>(child))
-      return pauseLayer;
-  }
+    PauseLayer* Global::getPauseLayer() {
+    auto children = CCDirector::sharedDirector()
+        ->getRunningScene()
+        ->getChildren();
 
-  return nullptr;
-}
+    for (auto child : CCArrayExt<CCNode*>(children)) {
+        if (auto pauseLayer = typeinfo_cast<PauseLayer*>(child))
+            return pauseLayer;
+    }
+    return nullptr;
+    }
 
 $execute{
   auto & g = Global::get();

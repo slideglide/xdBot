@@ -2,7 +2,7 @@
 
 #include "../includes.hpp"
 
-class RenderSettingsLayer : public geode::Popup<>, public TextInputDelegate {
+class RenderSettingsLayer : public geode::Popup, public TextInputDelegate {
 	
 public:
 
@@ -24,7 +24,7 @@ public:
 
 private:
 
-	bool setup() override;
+	bool init() override;
 
 public:
 
@@ -35,7 +35,8 @@ public:
 		DESELECT_INPUT(videoArgsInput)
 	}
 
-	STATIC_CREATE(RenderSettingsLayer, 396, 277)
+	// STATIC_CREATE(RenderSettingsLayer, 396, 277)
+	STATIC_CREATE(RenderSettingsLayer)
 	
 	void open(CCObject*) {
 		create()->show();
