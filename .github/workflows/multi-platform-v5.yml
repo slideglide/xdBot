@@ -45,7 +45,7 @@ jobs:
           export-pdb: true
           bindings-ref: main
           combine: true
-          sdk: nighlty
+          sdk: nightly
           cli: nightly
           target: ${{ matrix.config.target }}
 
