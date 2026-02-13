@@ -202,7 +202,7 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 			
 			pathString += ".gdr.json";
 			
-			std::ofstream f2(Utils::widen(pathString), std::ios::binary);
+			std::ofstream f2(std::filesystem::path(pathString), std::ios::binary);
 			auto data = tempMacro.exportData(true);
 			
 			f2.write(reinterpret_cast<const char*>(data.data()), data.size());
