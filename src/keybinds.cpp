@@ -1,18 +1,12 @@
 #ifdef GEODE_IS_DESKTOP
 #include "includes.hpp"
 #include "ui/record_layer.hpp"
-#include "ui/game_ui.hpp"
-#include "ui/clickbot_layer.hpp"
-#include "ui/macro_editor.hpp"
-#include "ui/render_settings_layer.hpp"
-#include "hacks/layout_mode.hpp"
 #include "hacks/show_trajectory.hpp"
 
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/GameEvent.hpp>
-#include <Geode/ui/GeodeUI.hpp>
 
 class $modify(CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double time) {
