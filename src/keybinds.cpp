@@ -45,11 +45,6 @@ class $modify(CCKeyboardDispatcher) {
     }
 };
 
-class KeybindEditPopup : public geode::Popup {};
-class ModSettingsPopup : public geode::Popup {};
-class KeybindListPopup : public geode::Popup {};
-
-
 void handleKeybind(std::string const& id, bool down) {
     auto& g = Global::get();
     
