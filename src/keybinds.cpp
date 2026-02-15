@@ -45,10 +45,8 @@ void handleKeybind(std::string const& id, bool down) {
     if (!down || (LevelEditorLayer::get() && !g.mod->getSettingValue<bool>("editor_keybinds")) || g.mod->getSettingValue<bool>("disable_keybinds")) return;
     
     if (auto scene = CCScene::get()) {
-        if (g.layer && scene->getChildByIndex(-1) != g.layer) return;
+        if (id == "open_menu_keybind" && g.layer && scene->getChildByIndex(-1) != g.layer) return;
     }
-    
-    if (g.layer && id != "open_menu_keybind") return;
     
     if (g.state != state::recording && g.mod->getSettingValue<bool>("recording_only_keybinds")) return;
     
