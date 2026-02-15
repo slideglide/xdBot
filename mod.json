@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-alpha.2",
+	"geode": "5.0.0-beta.1",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -73,6 +73,69 @@
 				"ios": "{mod_save_dir}/renders"
 			}
 		},
+		"open_menu_keybind": {
+			"name": "Open Menu Keybind",
+			"description": "The keybind to open the xdBot menu.",
+			"type": "keybind",
+			"default": "Alt+F",
+			"platforms": ["win", "mac"]
+		},
+		"toggle_recording_keybind": {
+			"name": "Recording Keybind",
+			"description": "The keybind to start and stop recording a macro.",
+			"type": "keybind",
+			"default": "Alt+G",	
+			"platforms": ["win", "mac"]
+		},
+		"toggle_playing_keybind": {
+			"name": "Playing Keybind",
+			"description": "The keybind to start and stop playing a macro.",
+			"type": "keybind",
+			"default": "Alt+H",
+			"platforms": ["win", "mac"]	
+		},
+		"toggle_speedhack_keybind": {
+			"name": "Speedhack Keybind",
+			"description": "The keybind to toggle speedhack.",
+			"type": "keybind",
+			"default": "Alt+S",	
+			"platforms": ["win", "mac"]
+		},
+		"toggle_noclip_keybind": {
+			"name": "Noclip Keybind",
+			"description": "The keybind to toggle noclip.",
+			"type": "keybind",
+			"default": "Alt+N",	
+			"platforms": ["win", "mac"]
+		},
+		"toggle_frame_stepper_keybind": {
+			"name": "Frame Stepper Keybind",
+			"description": "The keybind to toggle the frame stepper.",
+			"type": "keybind",
+			"default": "Alt+C",	
+			"platforms": ["win", "mac"]
+		},
+		"step_frame_keybind": {
+			"name": "Step Frame Keybind",
+			"description": "The keybind to step a frame when the frame stepper is enabled.",
+			"type": "keybind",
+			"default": "V",	
+			"platforms": ["win", "mac"]
+		},
+		"show_trajectory_keybind": {
+			"name": "Show Trajectory Keybind",
+			"description": "The keybind to toggle the trajectory while recording a macro.",
+			"type": "keybind",
+			"default": "Alt+T",
+			"platforms": ["win", "mac"]
+		},
+		"toggle_render_keybind": {
+			"name": "Render Keybind",
+			"description": "The keybind to start and stop the renderer.",
+			"type": "keybind",
+			"default": "Alt+P",
+			"platforms": ["win", "mac"]
+		},
 		"background_color": {
             "name": "Menu background color",
             "type": "color",
@@ -83,21 +146,21 @@
 			"description": "Enables keybinds while on the level editor.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": ["win", "mac"]
 		},
 		"disable_keybinds": {
 			"name": "Disable keybinds",
 			"description": "Disables all keybinds.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": ["win", "mac"]
 		},
 		"recording_only_keybinds": {
 			"name": "Keybinds only while recording",
 			"description": "Keybinds only work while recording a macro.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": ["win", "mac"]
 		},
 		"level_settings_button": {
 			"name": "Show Button At Settings",
