@@ -306,7 +306,7 @@ void Macro::resetState(bool cp) {
 }
 
 void Macro::togglePlaying() {
-    if (Global::hasIncompatibleMods()) return;
+    if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings()) return;
 
     auto& g = Global::get();
     
@@ -321,7 +321,7 @@ void Macro::togglePlaying() {
 }
 
 void Macro::toggleRecording() {
-    if (Global::hasIncompatibleMods()) return;
+    if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings()) return;
     
     auto& g = Global::get();
     

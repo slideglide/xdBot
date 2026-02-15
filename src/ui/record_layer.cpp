@@ -201,7 +201,7 @@ class $modify(PauseLayer) {
     void RecordLayer::toggleRecording(CCObject*) {
         auto& g = Global::get();
         
-        if (Global::hasIncompatibleMods())
+        if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings())
         return recording->toggle(true);
         
         if (g.state == state::playing) playing->toggle(false);
@@ -230,7 +230,7 @@ class $modify(PauseLayer) {
     void RecordLayer::togglePlaying(CCObject*) {
         auto& g = Global::get();
         
-        if (Global::hasIncompatibleMods())
+        if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings())
         return playing->toggle(true);
         
         if (g.state == state::recording)

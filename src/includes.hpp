@@ -61,6 +61,8 @@ public:
     }
 
     static bool hasIncompatibleMods();
+    
+    static bool enabledIncompatibleGDSettings();
 
     static float getTPS();
 

@@ -55,7 +55,7 @@ bool Global::hasIncompatibleMods() {
 
     }
   }
-
+  
   #ifdef GEODE_IS_WINDOWS
 
   if (Mod* mod = Loader::get()->getLoadedMod("tobyadd.gdh")) {
@@ -137,11 +137,40 @@ bool Global::hasIncompatibleMods() {
     for (const std::string name : settingsToDisable)
       incompatString += fmt::format("<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
 
-    FLAlertLayer::create("Warning", "The following mod settings are incompatible: \n" + incompatString, "Ok")->show();
+    FLAlertLayer::create("Warning", "The following mod settings are incompatible: \n" + incompatString, "OK")->show();
     
   }
 
   bool ret = !modsToDisable.empty() || !settingsToDisable.empty();
+
+  if (ret) {
+    Global::get().state = state::none;
+    Interface::updateLabels();
+    Interface::updateButtons();
+  }
+
+  return ret;
+}
+
+bool Global::enabledIncompatibleGDSettings() {
+  std::vector<std::string> settingsToDisable;
+
+  if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps))
+    settingsToDisable.push_back("Click Between Steps");
+
+  if (GameManager::sharedState()->getGameVariable(GameVar::ClickOnSteps))
+    settingsToDisable.push_back("Click On Steps");
+
+  if (!settingsToDisable.empty()) {
+    std::string incompatString = "";
+
+    for (const std::string name : settingsToDisable)
+      incompatString += fmt::format("<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
+
+    FLAlertLayer::create("Warning", "The following GD settings are incompatible: \n" + incompatString, "OK")->show();
+  }
+
+  bool ret = !settingsToDisable.empty();
 
   if (ret) {
     Global::get().state = state::none;
