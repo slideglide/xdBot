@@ -56,7 +56,7 @@ void handleKeybind(std::string const& id, bool down) {
             return;
         }
         
-        RecordLayer::openMenu();
+        RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
     }
     
     else if (id == "toggle_recording_keybind")

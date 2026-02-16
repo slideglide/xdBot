@@ -12,7 +12,6 @@
 
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/utils/web.hpp>
-#include <Geode/ui/GeodeUI.hpp>
 
 const std::vector<std::vector<RecordSetting>> settings {
     {

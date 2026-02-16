@@ -104,7 +104,7 @@ public:
 	static RecordLayer* openMenu(bool instant = false);
 
 	void openMenu2(CCObject*) {
-		RecordLayer::openMenu();
+		RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
 	}
 
 	void moreSettings(CCObject*) {

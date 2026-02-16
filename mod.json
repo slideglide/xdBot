@@ -36,6 +36,12 @@
 			"type": "bool",
 			"default": false 
 		},
+		"open_menu_instant": {
+			"name": "Open Menu Instantly",
+			"description": "Opens the menu without the opening animation.",
+			"type": "bool",
+			"default": false
+		},
 		"ffmpeg_path": {
 			"name": "ffmpeg.exe Path",
 			"description": "The path for ffmpeg.exe, needed to use render.",

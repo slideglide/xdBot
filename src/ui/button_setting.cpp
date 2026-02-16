@@ -62,7 +62,7 @@ protected:
         if (FLAlertLayer* layer = typeinfo_cast<FLAlertLayer*>(children->lastObject()))
             layer->keyBackClicked();
 
-        RecordLayer::openMenu();
+        RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
     }
 
     void onCommit() override {}
