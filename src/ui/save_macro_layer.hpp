@@ -75,13 +75,13 @@ public:
     
     static void open() {
         if (Global::get().macro.inputs.empty())
-            return FLAlertLayer::create("Save Macro", "You can't save an <cl>empty</c> macro.", "Ok")->show();
+            return FLAlertLayer::create("Save Macro", "You can't save an <cl>empty</c> macro.", "OK")->show();
 
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder");
 
         if (!std::filesystem::exists(path)) {
             if (!utils::file::createDirectoryAll(path).isOk())
-                return FLAlertLayer::create("Error", ("There was an error getting the folder \"" + geode::utils::string::pathToString(path) + "\". ID: 10").c_str(), "Ok")->show();
+                return FLAlertLayer::create("Error", ("There was an error getting the folder \"" + geode::utils::string::pathToString(path) + "\". ID: 10").c_str(), "OK")->show();
         }
 
         SaveMacroLayer* layerReal = create();
@@ -92,7 +92,7 @@ public:
     void onSave(CCObject*) {
         std::string macroName = nameInput->getString();
         if (macroName == "")
-            return FLAlertLayer::create("Save Macro", "Give a <cl>name</c> to the macro.", "Ok")->show();
+            return FLAlertLayer::create("Save Macro", "Give a <cl>name</c> to the macro.", "OK")->show();
 
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder") / macroName;
         std::string author = authorInput->getString();
@@ -101,7 +101,7 @@ public:
         int result = Macro::save(author, desc, geode::utils::string::pathToString(path), jsonToggle->isToggled());
 
         if (result != 0)
-            return FLAlertLayer::create("Error", "There was an error saving the macro. ID: " + std::to_string(result), "Ok")->show();
+            return FLAlertLayer::create("Error", "There was an error saving the macro. ID: " + std::to_string(result), "OK")->show();
 
         this->keyBackClicked();
         Notification::create("Macro Saved", NotificationIcon::Success)->show();

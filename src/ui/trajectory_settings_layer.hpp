@@ -84,7 +84,7 @@ private:
         colorButton->setPosition({m_size.width - 68, 109});
         m_buttonMenu->addChild(colorButton);
 
-        ButtonSprite* btnSpr = ButtonSprite::create("Ok");
+        ButtonSprite* btnSpr = ButtonSprite::create("OK");
         btnSpr->setScale(0.73f);
         CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(TrajectorySettingsLayer::onClose));
         btn->setPosition({m_size.width / 2, 23});

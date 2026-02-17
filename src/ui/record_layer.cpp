@@ -481,7 +481,7 @@ class $modify(PauseLayer) {
             FLAlertLayer::create(
                 "Warning",
                 "Scroll down to find xdBot's keybinds",
-                "Ok"
+                "OK"
             )->show();
         });
     }
@@ -509,12 +509,12 @@ class $modify(PauseLayer) {
         if (std::filesystem::exists(path))
         LoadMacroLayer::open(static_cast<geode::Popup*>(this), nullptr, true);
         else {
-            FLAlertLayer::create("Error", "There was an error getting the folder. ID: 5", "Ok")->show();
+            FLAlertLayer::create("Error", "There was an error getting the folder. ID: 5", "OK")->show();
         }
     }
     
     void RecordLayer::showCodecPopup(CCObject*) {
-        FLAlertLayer::create("Codec", "<cr>AMD:</c> h264_amf\n<cg>NVIDIA:</c> h264_nvenc\n<cl>INTEL:</c> h264_qsv\nI don't know: libx264", "Ok")->show();
+        FLAlertLayer::create("Codec", "<cr>AMD:</c> h264_amf\n<cg>NVIDIA:</c> h264_nvenc\n<cl>INTEL:</c> h264_qsv\nI don't know: libx264", "OK")->show();
     }
     
     void RecordLayer::updateDots() {

@@ -188,7 +188,7 @@
 //                 "Cancel", "Yes",
 //                 [](auto, bool btn2) {
 //                     if (btn2) {
-//                         FLAlertLayer::create("Info", "Unzip the downloaded file and look for <cl>ffmpeg.exe</c> in the 'bin' folder.", "Ok")->show();
+//                         FLAlertLayer::create("Info", "Unzip the downloaded file and look for <cl>ffmpeg.exe</c> in the 'bin' folder.", "OK")->show();
 //                         utils::web::openLinkInBrowser("https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-essentials.7z");
 //                     }
 //                 }
@@ -199,13 +199,13 @@
 //         g.renderer.ffmpegPath = geode::utils::string::pathToString(ffmpegPath);
 // #else
 //         if (!foundApi) {
-//             FLAlertLayer::create("Error", "<cl>FFmpeg API</c> not found. Download it to render a level.", "Ok")->show();
+//             FLAlertLayer::create("Error", "<cl>FFmpeg API</c> not found. Download it to render a level.", "OK")->show();
 //             return false;
 //         }
 // #endif
 
 //         if (!PlayLayer::get()) {
-//             FLAlertLayer::create("Warning", "<cl>Open a level</c> to start rendering it.", "Ok")->show();
+//             FLAlertLayer::create("Warning", "<cl>Open a level</c> to start rendering it.", "OK")->show();
 //             return false;
 //         }
 
@@ -217,7 +217,7 @@
 //             if (utils::file::createDirectoryAll(path).isOk())
 //                 g.renderer.start();
 //             else {
-//                 FLAlertLayer::create("Error", "There was an error getting the renders folder. ID: 11", "Ok")->show();
+//                 FLAlertLayer::create("Error", "There was an error getting the renders folder. ID: 11", "OK")->show();
 //                 return false;
 //             }
 //         }
@@ -314,7 +314,7 @@
 //         FLAlertLayer::create(
 //             "Warning",
 //             "If you have a macro for the level, <cl>let it run</c> to allow the level to render.",
-//             "Ok"
+//             "OK"
 //         )->show();
 //     }
 
@@ -343,7 +343,7 @@
 //             if (res.isErr()) {
 //                 Loader::get()->queueInMainThread([] {
 //                     // std::string err = res.unwrapErr();
-//                     FLAlertLayer::create("Error", "FFmpeg API failed to initialize: ", "Ok")->show();
+//                     FLAlertLayer::create("Error", "FFmpeg API failed to initialize: ", "OK")->show();
 //                 });
 
 //                 audioMode = AudioMode::Off;
@@ -382,7 +382,7 @@
 //                     auto res = ffmpeg.writeFrame(frame);
 //                     if (res.isErr()) {
 //                         Loader::get()->queueInMainThread([] {
-//                             FLAlertLayer::create("Error", "FFmpeg API failed: ", "Ok")->show();
+//                             FLAlertLayer::create("Error", "FFmpeg API failed: ", "OK")->show();
 //                         });
 
 //                         audioMode = AudioMode::Off;
@@ -405,7 +405,7 @@
 //             #ifdef GEODE_IS_WINDOWS
 //             if (process.close()) {
 //                 Loader::get()->queueInMainThread([] {
-//                     FLAlertLayer::create("Error", "There was an error saving the render. Wrong render Args.", "Ok")->show();
+//                     FLAlertLayer::create("Error", "There was an error saving the render. Wrong render Args.", "OK")->show();
 //                 });
 //                 return;
 //             }
@@ -420,7 +420,7 @@
 //         if ((SFXVolume == 0.f && musicVolume == 0.f) || audioMode == AudioMode::Off || (audioMode == AudioMode::Song && !std::filesystem::exists(songFile)) || (audioMode == AudioMode::Record && !std::filesystem::exists("fmodoutput.wav"))) {
 //             if (audioMode != AudioMode::Off) {
 //                 Loader::get()->queueInMainThread([] {
-//                     FLAlertLayer::create("Error", "Song File not found.", "Ok")->show();
+//                     FLAlertLayer::create("Error", "Song File not found.", "OK")->show();
 //                 });
 
 //                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -446,7 +446,7 @@
 //             log::debug("XD");
 //             if (res.isErr()) {
 //                 Loader::get()->queueInMainThread([] {
-//                     FLAlertLayer::create("Error", "FFmpeg failed to add audio: ", "Ok")->show();
+//                     FLAlertLayer::create("Error", "FFmpeg failed to add audio: ", "OK")->show();
 //                 });
 //                 return;
 //             }
@@ -483,7 +483,7 @@
 //                 process = subprocess::Popen(command);  // Fix ffmpeg not reading it
 //                 if (process.close()) {
 //                     Loader::get()->queueInMainThread([] {
-//                         FLAlertLayer::create("Error", "There was an error adding the song. ID: 140", "Ok")->show();
+//                         FLAlertLayer::create("Error", "There was an error adding the song. ID: 140", "OK")->show();
 //                     });
 //                     return;
 //                 }
@@ -529,7 +529,7 @@
 //                 auto process = subprocess::Popen(command);
 //                 if (process.close()) {
 //                     Loader::get()->queueInMainThread([] {
-//                         FLAlertLayer::create("Error", "There was an error adding the song. Wrong Audio Args.", "Ok")->show();
+//                         FLAlertLayer::create("Error", "There was an error adding the song. Wrong Audio Args.", "OK")->show();
 //                     });
 //                     return;
 //                 }

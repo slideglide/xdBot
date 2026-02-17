@@ -476,7 +476,7 @@ bool RenderSettingsLayer::init() {
                             musicSlider->setValue(Mod::get()->getSavedValue<double>("render_music_volume"));
                             menu->addChild(musicSlider);
                             
-                            ButtonSprite* spr = ButtonSprite::create("Ok");
+                            ButtonSprite* spr = ButtonSprite::create("OK");
                             spr->setScale(0.875);
                             CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(RenderSettingsLayer::close));
                             btn->setPosition(ccp(67, -100));
@@ -557,7 +557,7 @@ bool RenderSettingsLayer::init() {
                             FLAlertLayer::create(
                                 title.c_str(),
                                 msg.c_str(),
-                                "Ok"
+                                "OK"
                             )->show();
                         }
                         

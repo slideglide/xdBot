@@ -129,7 +129,7 @@ bool Global::hasIncompatibleMods() {
     for (const std::string name : modsToDisable)
       incompatString += fmt::format("<cr>{}</c>{}", name, (name != modsToDisable.back() ? ", " : ""));
 
-    FLAlertLayer::create("Warning", "The following mods are incompatible: \n" + incompatString, "Ok")->show();
+    FLAlertLayer::create("Warning", "The following mods are incompatible: \n" + incompatString, "OK")->show();
 
   } else if (!settingsToDisable.empty()) {
     std::string incompatString = "";

@@ -99,7 +99,7 @@ private:
 		levelEndToggle->toggle(Mod::get()->getSavedValue<bool>("autosave_levelend_enabled"));
 		m_buttonMenu->addChild(levelEndToggle);
 
-		ButtonSprite* btnSpr = ButtonSprite::create("Ok");
+		ButtonSprite* btnSpr = ButtonSprite::create("OK");
 		btnSpr->setScale(0.7f);
 		CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(AutoSaveLayer::onClose));
 		btn->setPosition({m_size.width / 2, 24});

@@ -67,7 +67,7 @@ public:
 	bool isMerge = false;
 	bool invertSort = false;
 
-	std::optional<arc::Future<void>> m_importFuture;
+	arc::TaskHandle<void> m_importFuture;
 
 	static LoadMacroLayer* create(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
 
