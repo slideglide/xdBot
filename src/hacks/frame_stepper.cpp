@@ -106,7 +106,7 @@ class $modify(GJBaseGameLayer) {
                 return;
             }
         }
-        // #endif
+        #endif
         
         GJBaseGameLayer::update(dt);
     }
@@ -118,15 +118,15 @@ class $modify(CCParticleSystem) {
     virtual void update(float dt) {
         auto& g = Global::get();
         if (!PlayLayer::get()) return CCParticleSystem::update(dt);
-        // #ifndef GEODE_IS_IOS
-        // if (!g.renderer.recording && g.frameStepper) {
-        //     if (g.stepFrameParticle != 0) {
-        //         CCParticleSystem::update(dt);
-        //     }
-        //     else
-        //         return;
-        // }
-        // #else
+        #ifdef GEODE_IS_WINDOWS
+        if (!g.renderer.recording && g.frameStepper) {
+            if (g.stepFrameParticle != 0) {
+                CCParticleSystem::update(dt);
+            }
+            else
+                return;
+        }
+        #else
         if (g.frameStepper) {
             if (g.stepFrameParticle != 0) {
                 CCParticleSystem::update(dt);
@@ -134,7 +134,7 @@ class $modify(CCParticleSystem) {
             else
             return;
         }
-        // #endif
+        #endif
         
         CCParticleSystem::update(dt);
     }
