@@ -26,9 +26,9 @@ class $modify(CCEGLView) {
         editLayer->updateHover(getMousePos());
         
     }
-};*/ 
+}; 
 
-#endif
+#endif*/
 
 class $modify(FLAlertLayer) {
     
