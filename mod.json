@@ -55,9 +55,9 @@
 			"default": {
 				"win": "{gd_dir}/macros",
 				"mac": "{gd_dir}/macros",
-				"android": "{gd_dir}/macros",
-				"ios": "{mod_save_dir}/macros"
-			}
+				"android": "{gd_dir}/macros"
+			},
+			"platforms": ["win", "mac", "android"]
 		},
 		"autosaves_folder": {
 			"name": "Auto Saves Location",
@@ -65,9 +65,9 @@
 			"default": {
 				"win": "{gd_dir}/autosaves",
 				"mac": "{gd_dir}/autosaves",
-				"android": "{gd_dir}/autosaves",
-				"ios": "{mod_save_dir}/autosaves"
-			}
+				"android": "{gd_dir}/autosaves"
+			},
+			"platforms": ["win", "mac", "android"]
 		},
 		"render_folder": {
 			"name": "Render Save Location",
@@ -75,9 +75,9 @@
 			"default": {
 				"win": "{gd_dir}/renders",
 				"mac": "{gd_dir}/renders",
-				"android": "{gd_dir}/renders",
-				"ios": "{mod_save_dir}/renders"
-			}
+				"android": "{gd_dir}/renders"
+			},
+			"platforms": ["win", "mac", "android"]
 		},
 		"open_menu_keybind": {
 			"name": "Open Menu Keybind",
