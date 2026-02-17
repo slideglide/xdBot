@@ -85,8 +85,8 @@ bool RenderSettingsLayer::init() {
     if (!Popup::init(396, 277, Utils::getTexture().c_str())) return false;
     setTitle("Render Settings");
     bool usingApi = false;
-    // #ifndef GEODE_IS_IOS
-    // usingApi = Renderer::shouldUseAPI();
+    // #ifndef GEODE_IS_MOBILE
+    usingApi = Renderer::shouldUseAPI();
     // #endif
     
     cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
@@ -117,7 +117,7 @@ bool RenderSettingsLayer::init() {
     bg->setContentSize({ 392, 55 });
     menu->addChild(bg);
     
-    #ifndef GEODE_IS_IOS
+    #ifndef GEODE_IS_MOBILE
     if (usingApi) bg->setOpacity(40);
     #endif
     
@@ -128,7 +128,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
     
-    #ifndef GEODE_IS_IOS
+    #ifndef GEODE_IS_MOBILE
     if (usingApi) lbl->setOpacity(90);
     #endif
     
@@ -157,7 +157,7 @@ bool RenderSettingsLayer::init() {
     bg->setContentSize({ 401, 55 });
     menu->addChild(bg);
     
-    #ifndef GEODE_IS_IOS
+    #ifndef GEODE_IS_MOBILE
     if (usingApi) bg->setOpacity(40);
     #endif
     
@@ -168,7 +168,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
     
-    #ifndef GEODE_IS_IOS
+    #ifndef GEODE_IS_MOBILE
     if (usingApi) lbl->setOpacity(90);
     #endif
     
@@ -266,7 +266,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
     
-    #ifndef GEODE_IS_IOS
+    #ifndef GEODE_IS_MOBILE
     if (usingApi) lbl->setOpacity(90);
     #endif
     
@@ -276,7 +276,7 @@ bool RenderSettingsLayer::init() {
         this, menu_selector(RecordLayer::toggleSetting));
         onlySongToggle->setPosition(ccp(0, -32));
         onlySongToggle->setScale(0.555);
-        #ifndef GEODE_IS_IOS
+        #ifndef GEODE_IS_MOBILE
         if (!usingApi) onlySongToggle->toggle(mod->getSavedValue<bool>("render_only_song"));
         #endif
         onlySongToggle->setID("render_only_song");
@@ -289,7 +289,7 @@ bool RenderSettingsLayer::init() {
         lbl->setScale(0.325);
         menu->addChild(lbl);
         
-        #ifndef GEODE_IS_IOS
+        #ifndef GEODE_IS_MOBILE
         if (usingApi) lbl->setOpacity(90);
         #endif
         
@@ -299,7 +299,7 @@ bool RenderSettingsLayer::init() {
             this, menu_selector(RecordLayer::toggleSetting));
             recordAudioToggle->setPosition(ccp(0, -58));
             recordAudioToggle->setScale(0.555);
-            #ifndef GEODE_IS_IOS
+            #ifndef GEODE_IS_MOBILE
             if (!usingApi) recordAudioToggle->toggle(mod->getSavedValue<bool>("render_record_audio"));
             #endif
             recordAudioToggle->setID("render_record_audio");
@@ -312,7 +312,7 @@ bool RenderSettingsLayer::init() {
             lbl->setScale(0.325);
             menu->addChild(lbl);
             
-            #ifndef GEODE_IS_IOS
+            #ifndef GEODE_IS_MOBILE
             if (usingApi) lbl->setOpacity(90);
             #endif
             
@@ -330,13 +330,13 @@ bool RenderSettingsLayer::init() {
                 this, menu_selector(RecordLayer::toggleSetting));
                 toggle->setPosition(ccp(130, -32));
                 toggle->setScale(0.555);
-                #ifndef GEODE_IS_IOS
+                #ifndef GEODE_IS_MOBILE
                 if (!usingApi) toggle->toggle(mod->getSavedValue<bool>("render_fade_in"));
                 #endif
                 toggle->setID("render_fade_in");
                 menu->addChild(toggle);
                 
-                #ifndef GEODE_IS_IOS
+                #ifndef GEODE_IS_MOBILE
                 if (usingApi) {
                     toggle->setCascadeOpacityEnabled(true);
                     toggle->setEnabled(false);
@@ -351,7 +351,7 @@ bool RenderSettingsLayer::init() {
                 lbl->setScale(0.325);
                 menu->addChild(lbl);
                 
-                #ifndef GEODE_IS_IOS
+                #ifndef GEODE_IS_MOBILE
                 if (usingApi) lbl->setOpacity(90);
                 #endif
                 
@@ -362,7 +362,7 @@ bool RenderSettingsLayer::init() {
                 lbl->setScale(0.3f);
                 menu->addChild(lbl);
                 
-                #ifndef GEODE_IS_IOS
+                #ifndef GEODE_IS_MOBILE
                 if (usingApi) lbl->setOpacity(90);
                 #endif
                 
@@ -388,13 +388,13 @@ bool RenderSettingsLayer::init() {
                     this, menu_selector(RecordLayer::toggleSetting));
                     toggle->setPosition(ccp(130, -58));
                     toggle->setScale(0.555);
-                    #ifndef GEODE_IS_IOS
+                    #ifndef GEODE_IS_MOBILE
                     if (!usingApi) toggle->toggle(mod->getSavedValue<bool>("render_fade_out"));
                     #endif
                     toggle->setID("render_fade_out");
                     menu->addChild(toggle);
                     
-                    #ifndef GEODE_IS_IOS
+                    #ifndef GEODE_IS_MOBILE
                     if (usingApi) {
                         toggle->setCascadeOpacityEnabled(true);
                         toggle->setEnabled(false);
@@ -441,7 +441,7 @@ bool RenderSettingsLayer::init() {
                             lbl->setPosition({188, 42});
                             menu->addChild(lbl);
                             
-                            #ifndef GEODE_IS_IOS
+                            #ifndef GEODE_IS_MOBILE
                             if (usingApi) lbl->setOpacity(90);
                             #endif
                             
@@ -461,7 +461,7 @@ bool RenderSettingsLayer::init() {
                             lbl->setPosition({188, 87});
                             menu->addChild(lbl);
                             
-                            #ifndef GEODE_IS_IOS
+                            #ifndef GEODE_IS_MOBILE
                             if (usingApi) lbl->setOpacity(90);
                             #endif
                             
@@ -502,7 +502,7 @@ bool RenderSettingsLayer::init() {
                             btn->setTag(0);
                             menu->addChild(btn);
                             
-                            #ifndef GEODE_IS_IOS
+                            #ifndef GEODE_IS_MOBILE
                             if (usingApi) {
                                 argsInput->m_textLabel->setOpacity(100);
                                 audioArgsInput->m_textLabel->setOpacity(100);

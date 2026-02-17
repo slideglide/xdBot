@@ -259,25 +259,27 @@ class $modify(PauseLayer) {
         this->updateTPS();
     }
     
-    // #ifndef GEODE_IS_IOS
-    /*void RecordLayer::toggleRender(CCObject* btn) {
-    if (!Renderer::toggle())
-    static_cast<CCMenuItemToggler*>(btn)->toggle(true);
-    
-    if (Global::get().renderer.recordingAudio)
-    static_cast<CCMenuItemToggler*>(btn)->toggle(false);
-    }*/
-    // #else
-    void RecordLayer::toggleRenderIOS(CCObject* btn) {
-        FLAlertLayer::create("Info", "Rendering is not supported yet!", "OK")->show();
+    void RecordLayer::toggleRender(CCObject* btn) {
+#ifdef GEODE_IS_WINDOWS
+        if (!Renderer::toggle())
+            static_cast<CCMenuItemToggler*>(btn)->toggle(true);
+
+        if (Global::get().renderer.recordingAudio)
+            static_cast<CCMenuItemToggler*>(btn)->toggle(false);
+#else
+        toggleRender2(btn);
+#endif
     }
-    // #endif
+
+    void RecordLayer::toggleRender2(CCObject* btn) {
+        FLAlertLayer::create("Info", "Rendering is <cr>not supported</c> on your platform due to <cl>technical limitations</c>.", "OK")->show();
+    }
     
     void RecordLayer::onEditMacro(CCObject*) {
         MacroEditLayer::open();
     }
     
-    void RecordLayer::toggleFPS(bool on) { // forgotten
+    void RecordLayer::toggleFPS(bool on) {
         return;
         float scaleSpr = -0.8, scaleBtn = -1;
         int opacityBtn = 57, opacityLbl = 80;
@@ -907,26 +909,26 @@ class $modify(PauseLayer) {
                             bg->setZOrder(29);
                             menu->addChild(bg);
                             
+                            #ifdef GEODE_IS_WINDOWS
+                            ButtonSprite* spriteOn2 = ButtonSprite::create("Stop");
+                            spriteOn2->setScale(0.74f);
+                            ButtonSprite* spriteOff2 = ButtonSprite::create("Start");
+                            spriteOff2->setScale(0.74f);
+
+                            renderToggle = CCMenuItemToggler::create(spriteOff2, spriteOn2, this, menu_selector(RecordLayer::toggleRender));
+                            renderToggle->toggle(g.renderer.recording || g.renderer.recordingAudio);
+                            renderToggle->setPosition(ccp(-65.5, -100));
+                            menu->addChild(renderToggle);
+                            #else
                             ButtonSprite* spriteOn2 = ButtonSprite::create("N/A");
                             spriteOn2->setScale(0.74f);
                             ButtonSprite* spriteOff2 = ButtonSprite::create("N/A");
                             spriteOff2->setScale(0.74f);
-                            // ButtonSprite* spriteOn2 = ButtonSprite::create("Stop");
-                            // spriteOn2->setScale(0.74f);
-                            // ButtonSprite* spriteOff2 = ButtonSprite::create("Start");
-                            // spriteOff2->setScale(0.74f);
-                            
-                            //#ifdef GEODE_IS_IOS
-                            renderToggle = CCMenuItemToggler::create(spriteOn2, spriteOff2, this, menu_selector(RecordLayer::toggleRenderIOS));
+
+                            renderToggle = CCMenuItemToggler::create(spriteOn2, spriteOff2, this, menu_selector(RecordLayer::toggleRender2));
                             renderToggle->setPosition(ccp(-65.5, -100));
                             menu->addChild(renderToggle);
-                            // #else
-                            // renderToggle = CCMenuItemToggler::create(spriteOff2, spriteOn2, this, menu_selector(RecordLayer::toggleRender));
-                            // renderToggle->toggle(g.renderer.recording || g.renderer.recordingAudio);
-                            
-                            renderToggle->setPosition(ccp(-65.5, -100));
-                            menu->addChild(renderToggle);
-                            // #endif
+                            #endif
                             
                             spr = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
                             spr->setScale(0.65f);

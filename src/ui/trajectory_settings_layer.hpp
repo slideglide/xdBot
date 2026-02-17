@@ -114,7 +114,6 @@ private:
         textChanged(nullptr);
     }
 
-    // Corrected color conversion function
     cocos2d::ccColor4F ccColor4FFromccColor4B(const cocos2d::ccColor4B& color) {
         return cocos2d::ccColor4F(
             color.r / 255.0f, 

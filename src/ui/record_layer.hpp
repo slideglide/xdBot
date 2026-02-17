@@ -125,7 +125,7 @@ public:
 
 	void toggleRender(CCObject* btn);
 	
-	void toggleRenderIOS(CCObject* btn);
+	void toggleRender2(CCObject* btn);
 
 	void openPresets(CCObject*);
 

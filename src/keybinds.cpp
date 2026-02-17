@@ -86,21 +86,20 @@ void handleKeybind(std::string const& id, bool down) {
         if (!g.showTrajectory) ShowTrajectory::trajectoryOff();
     }
     
-    //   else if (id == "toggle_render_keybind" && PlayLayer::get()) {
-    //     #ifndef GEODE_IS_IOS
-    //     bool result = Renderer::toggle();
-    
-    //     // if (result && Global::get().renderer.recording)
-    //     if (result)
-    //       Notification::create("Started Rendering", NotificationIcon::Info)->show();
-    
-    //     if (g.layer) {
-    //       // if (static_cast<RecordLayer*>(g.layer)->renderToggle)
-    //       //   static_cast<RecordLayer*>(g.layer)->renderToggle->toggle(Global::get().renderer.recording);
-    //     }
-    //     #endif
-    
-    //   }
+    else if (id == "toggle_render_keybind" && PlayLayer::get()) {
+      #ifdef GEODE_IS_WINDOWS
+      bool result = Renderer::toggle();
+
+      if (result)
+        Notification::create("Started Rendering", NotificationIcon::Info)->show();
+
+      if (g.layer) {
+        if (static_cast<RecordLayer*>(g.layer)->renderToggle)
+          static_cast<RecordLayer*>(g.layer)->renderToggle->toggle(Global::get().renderer.recording);
+      }
+      #endif
+
+    }
     
     else if (id == "toggle_noclip_keybind") {
         g.mod->setSavedValue("macro_noclip", !g.mod->getSavedValue<bool>("macro_noclip"));
@@ -134,9 +133,9 @@ $execute{
     listenForKeybindSettingPresses("show_trajectory_keybind", [](Keybind const&, bool down, bool repeat) {
         if (!repeat) handleKeybind("show_trajectory_keybind", down);
     });
-    //   listenForKeybindSettingPresses("toggle_render_keybind", [](Keybind const&, bool down, bool repeat) {
-    //     if (!repeat) handleKeybind("toggle_render_keybind", down);
-    //   });
+    listenForKeybindSettingPresses("toggle_render_keybind", [](Keybind const&, bool down, bool repeat) {
+      if (!repeat) handleKeybind("toggle_render_keybind", down);
+    });
     listenForKeybindSettingPresses("toggle_noclip_keybind", [](Keybind const&, bool down, bool repeat) {
         if (!repeat) handleKeybind("toggle_noclip_keybind", down);
     });

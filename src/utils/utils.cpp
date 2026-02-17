@@ -25,7 +25,7 @@ std::string Utils::narrow(const wchar_t* str) {
     return result;
 
 #else
-#if !defined (GEODE_IS_IOS) && !defined (GEODE_IS_MACOS)
+#if !defined (GEODE_IS_MOBILE) && !defined (GEODE_IS_MACOS)
     int size = WideCharToMultiByte(CP_UTF8, 0, str, -1, nullptr, 0, nullptr, nullptr);
     if (size <= 0) {
         return "";
@@ -58,7 +58,7 @@ std::wstring Utils::widen(const char* str) {
     return result;
 
 #else
-#if !defined (GEODE_IS_IOS) && !defined (GEODE_IS_MACOS)
+#if !defined (GEODE_IS_MOBILE) && !defined (GEODE_IS_MACOS)
     if (str == nullptr) {
         return L"Widen Error";
     }

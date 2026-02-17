@@ -60,8 +60,8 @@ class $modify(PlayLayer) {
   
   void pauseGame(bool b1) {
     // Global::updateKeybinds();
-    #ifndef GEODE_IS_IOS
-    // if (!Global::get().renderer.tryPause()) return;
+    #ifdef GEODE_IS_WINDOWS
+    if (!Global::get().renderer.tryPause()) return;
     #endif
     
     auto& g = Global::get();
@@ -131,10 +131,10 @@ class $modify(PlayLayer) {
     auto& g = Global::get();
     
     int frame = Global::getCurrentFrame();
-    // #ifndef GEODE_IS_IOS
-    // if (!m_isPracticeMode)
-    // g.renderer.levelStartFrame = frame;
-    // #endif
+    #ifdef GEODE_IS_WINDOWS
+    if (!m_isPracticeMode)
+      g.renderer.levelStartFrame = frame;
+    #endif
     
     if (g.restart && m_levelSettings->m_platformerMode && g.state != state::none)
     m_fields->delayedLevelRestart = frame + 2;
@@ -209,21 +209,21 @@ class $modify(BGLHook, GJBaseGameLayer) {
     Global::updateSeed();
     
     bool rendering = false;
-    #ifndef GEODE_IS_IOS
-    // rendering = g.renderer.recording || g.renderer.recordingAudio;
+    #ifdef GEODE_IS_WINDOWS
+    rendering = g.renderer.recording || g.renderer.recordingAudio;
     #endif
     
     if (g.state != state::none || rendering) {
-      #ifndef GEODE_IS_IOS
+      #ifndef GEODE_IS_MOBILE
       if (!g.firstAttempt) {
-        // g.renderer.dontRender = false;
-        // g.renderer.dontRecordAudio = false;
+        g.renderer.dontRender = false;
+        g.renderer.dontRecordAudio = false;
       }
       #endif
       int frame = Global::getCurrentFrame();
       if (frame > 2 && g.firstAttempt && g.macro.xdBotMacro) {
         g.firstAttempt = false;
-        #ifndef GEODE_IS_IOS
+        #ifndef GEODE_IS_MOBILE
         if ((m_levelSettings->m_platformerMode || rendering) && !m_levelEndAnimationStarted)
         return pl->resetLevelFromStart();
         else if (!m_levelEndAnimationStarted)
@@ -244,7 +244,7 @@ class $modify(BGLHook, GJBaseGameLayer) {
     g.previousFrame = frame;
     
     if (g.macro.xdBotMacro && g.restart && !m_levelEndAnimationStarted) {
-      #ifndef GEODE_IS_IOS
+      #ifndef GEODE_IS_MOBILE
       if ((m_levelSettings->m_platformerMode && g.state != state::none) /*|| g.renderer.recordingAudio*/)
       return pl->resetLevelFromStart();
       else
@@ -466,9 +466,9 @@ class $modify(PauseLayer) {
     
     Loader::get()->queueInMainThread([] {
       auto& g = Global::get();
-      #ifndef GEODE_IS_IOS
-      // if (g.renderer.recording) g.renderer.stop();
-      // if (g.renderer.recordingAudio) g.renderer.stopAudio();
+      #ifndef GEODE_IS_MOBILE
+      /if (g.renderer.recording) g.renderer.stop();
+      if (g.renderer.recordingAudio) g.renderer.stopAudio();
       #endif
     });
   }
@@ -480,9 +480,9 @@ class $modify(PauseLayer) {
     
     Loader::get()->queueInMainThread([] {
       auto& g = Global::get();
-      #ifndef GEODE_IS_IOS
-      // if (g.renderer.recording) g.renderer.stop();
-      // if (g.renderer.recordingAudio) g.renderer.stopAudio();
+      #ifndef GEODE_IS_MOBILE
+      if (g.renderer.recording) g.renderer.stop();
+      if (g.renderer.recordingAudio) g.renderer.stopAudio();
       #endif
     });
   }

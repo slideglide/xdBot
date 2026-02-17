@@ -72,8 +72,8 @@ class $modify(GJBaseGameLayer) {
         }
 
         auto& g = Global::get();
-        // #ifndef GEODE_IS_IOS
-        // if (!g.renderer.recording && g.frameStepper) {
+        #ifdef GEODE_IS_WINDOWS
+        if (!g.renderer.recording && g.frameStepper) {
         //     if (g.stepFrameParticle != 0)
         //         g.stepFrameParticle--;
 
