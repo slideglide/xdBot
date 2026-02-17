@@ -204,7 +204,11 @@ bool Renderer::toggle() {
             return false;
         }
         
+        #ifdef GEODE_IS_IOS
+        std::filesystem::path path = Mod::get()->getSaveDir() / "renders";
+        #else
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("render_folder");
+        #endif
         
         if (std::filesystem::exists(path))
         g.renderer.start();
@@ -249,7 +253,11 @@ void Renderer::start() {
     auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
     
     std::string filename = fmt::format("render_{}_{}{}", std::string_view(pl->m_level->m_levelName), std::to_string(timestamp), extension);
+    #ifdef GEODE_IS_IOS
+    std::string path = geode::utils::string::pathToString(Mod::get()->getSaveDir() / "renders" / filename);
+    #else
     std::string path = geode::utils::string::pathToString(Mod::get()->getSettingValue<std::filesystem::path>("render_folder") / filename);
+    #endif
     
     width = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_width2")).unwrap();
     height = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_height")).unwrap();

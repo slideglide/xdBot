@@ -76,7 +76,11 @@ public:
 	static void open(geode::Popup* layer, geode::Popup* layer2, bool autosaves = false);
 
 	void openFolder(CCObject*) {
+		#ifdef GEODE_IS_IOS
+		file::openFolder(Mod::get()->getSaveDir() / (isAutosaves ? "autosaves" : "macros"));
+		#else
 		file::openFolder(Mod::get()->getSettingValue<std::filesystem::path>(isAutosaves ? "autosaves_folder" : "macros_folder"));
+		#endif
 	}
 
 	void textChanged(CCTextInputNode* p) override;

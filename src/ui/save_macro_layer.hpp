@@ -77,7 +77,11 @@ public:
         if (Global::get().macro.inputs.empty())
             return FLAlertLayer::create("Save Macro", "You can't save an <cl>empty</c> macro.", "OK")->show();
 
+        #ifdef GEODE_IS_IOS
+        std::filesystem::path path = Mod::get()->getSaveDir() / "macros";
+        #else
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder");
+        #endif
 
         if (!std::filesystem::exists(path)) {
             if (!utils::file::createDirectoryAll(path).isOk())
@@ -94,7 +98,11 @@ public:
         if (macroName == "")
             return FLAlertLayer::create("Save Macro", "Give a <cl>name</c> to the macro.", "OK")->show();
 
+        #ifdef GEODE_IS_IOS
+        std::filesystem::path path = Mod::get()->getSaveDir() / "macros" / macroName;
+        #else
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder") / macroName;
+        #endif
         std::string author = authorInput->getString();
         std::string desc = descInput->getString();
 

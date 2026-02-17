@@ -27,14 +27,22 @@ class $modify(CCMenu) {
 };
 
 void LoadMacroLayer::open(geode::Popup* layer, geode::Popup* layer2, bool autosaves) {
+	#ifdef GEODE_IS_IOS
+	std::filesystem::path path = Mod::get()->getSaveDir();
+	#else
 	std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder");
+	#endif
 	
 	if (!std::filesystem::exists(path)) {
 		if (utils::file::createDirectoryAll(path).isErr())
 		return FLAlertLayer::create("Error", "There was an error getting the folder. ID: 6", "OK")->show();
 	}
 	
+	#ifdef GEODE_IS_IOS
+	path = Mod::get()->getSaveDir();
+	#else
 	path = Mod::get()->getSettingValue<std::filesystem::path>("autosaves_folder");
+	#endif
 	
 	if (!std::filesystem::exists(path)) {
 		if (utils::file::createDirectoryAll(path).isErr())
@@ -189,7 +197,11 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 				
 				std::string name = geode::utils::string::pathToString(path.filename()).substr(0, geode::utils::string::pathToString(path.filename()).find_last_of('.'));
 				
+				#ifdef GEODE_IS_IOS
+				std::filesystem::path newPath = Mod::get()->getSaveDir() / "macros" / name;
+				#else
 				std::filesystem::path newPath = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder") / name;
+				#endif
 				
 				std::string pathString = geode::utils::string::pathToString(newPath);
 				
@@ -423,7 +435,11 @@ void LoadMacroLayer::updateSort(CCObject*) {
 void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 	cocos2d::CCSize winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
 	
+	#ifdef GEODE_IS_IOS
+	std::filesystem::path path = Mod::get()->getSaveDir() / (isAutosaves ? "autosaves" : "macros");
+	#else
 	std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>(isAutosaves ? "autosaves_folder" : "macros_folder");
+	#endif
 	std::vector<std::filesystem::path> macros = file::readDirectory(path).unwrapOrDefault();
 	
 	CCArray* cells = CCArray::create();

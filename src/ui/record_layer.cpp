@@ -506,7 +506,11 @@ class $modify(PauseLayer) {
     }
     
     void RecordLayer::onAutosaves(CCObject*) {
+        #ifdef GEODE_IS_IOS
+        std::filesystem::path path = Mod::get()->getSaveDir() / "autosaves";
+        #else
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("autosaves_folder");
+        #endif
         
         if (std::filesystem::exists(path))
         LoadMacroLayer::open(static_cast<geode::Popup*>(this), nullptr, true);

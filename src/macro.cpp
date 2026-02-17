@@ -50,7 +50,11 @@ void Macro::autoSave(GJGameLevel* level, int number) {
     if (!level) return;
 
     std::string levelname = level->m_levelName;
+    #ifdef GEODE_IS_IOS
+    std::filesystem::path autoSavesPath = Mod::get()->getSaveDir() / "autosaves";
+    #else
     std::filesystem::path autoSavesPath = Mod::get()->getSettingValue<std::filesystem::path>("autosaves_folder");
+    #endif
     std::filesystem::path path = autoSavesPath / fmt::format("autosave_{}_{}", levelname, number);
 
     if (!std::filesystem::exists(autoSavesPath)) return;
@@ -70,7 +74,11 @@ void Macro::tryAutosave(GJGameLevel* level, CheckpointObject* cp) {
     if (!g.checkpoints.contains(cp)) return;
     if (g.checkpoints[cp].frame < g.lastAutoSaveFrame) return;
 
+    #ifdef GEODE_IS_IOS
+    std::filesystem::path autoSavesPath = g.mod->getSaveDir() / "autosaves";
+    #else
     std::filesystem::path autoSavesPath = g.mod->getSettingValue<std::filesystem::path>("autosaves_folder");
+    #endif
 
     if (!std::filesystem::exists(autoSavesPath))
         return log::debug("Failed to access auto saves path.");

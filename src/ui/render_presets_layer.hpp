@@ -105,7 +105,11 @@ private:
     }
 
     void openRendersFolder(CCObject*) {
+        #ifdef GEODE_IS_IOS
+        std::filesystem::path path = Mod::get()->getSaveDir() / "renders";
+        #else
         std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("render_folder");
+        #endif
 
         if (std::filesystem::exists(path))
             file::openFolder(path);
