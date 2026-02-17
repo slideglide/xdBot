@@ -131,7 +131,7 @@ class $modify(PlayLayer) {
         
         if (getActionByTag(16)) {
             #ifndef GEODE_IS_MOBILE
-            /if (Global::get().renderer.recordingAudio) Global::get().renderer.stopAudio();
+            if (Global::get().renderer.recordingAudio) Global::get().renderer.stopAudio();
             #endif
             
             if (g.mod->getSavedValue<bool>("respawn_time_enabled")) {

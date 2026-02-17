@@ -467,7 +467,7 @@ class $modify(PauseLayer) {
     Loader::get()->queueInMainThread([] {
       auto& g = Global::get();
       #ifndef GEODE_IS_MOBILE
-      /if (g.renderer.recording) g.renderer.stop();
+      if (g.renderer.recording) g.renderer.stop();
       if (g.renderer.recordingAudio) g.renderer.stopAudio();
       #endif
     });
