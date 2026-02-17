@@ -150,7 +150,7 @@
 
 //     bool foundApi = Loader::get()->isModLoaded("eclipse.ffmpeg-api");
 //     std::filesystem::path ffmpegPath = Mod::get()->getSettingValue<std::filesystem::path>("ffmpeg_path");
-//     bool foundExe = std::filesystem::exists(ffmpegPath) && ffmpegPath.filename().string() == "ffmpeg.exe";
+//     bool foundExe = std::filesystem::exists(ffmpegPath) && geode::utils::string::pathToString(ffmpegPath.filename()) == "ffmpeg.exe";
 
 //     return !foundExe && foundApi;
 
@@ -171,7 +171,7 @@
 
 //     bool foundApi = Loader::get()->isModLoaded("eclipse.ffmpeg-api");
 //     std::filesystem::path ffmpegPath = Mod::get()->getSettingValue<std::filesystem::path>("ffmpeg_path");
-//     bool foundExe = std::filesystem::exists(ffmpegPath) && ffmpegPath.filename().string() == "ffmpeg.exe";
+//     bool foundExe = std::filesystem::exists(ffmpegPath) && geode::utils::string::pathToString(ffmpegPath.filename()) == "ffmpeg.exe";
 
 //     g.renderer.usingApi = Renderer::shouldUseAPI();
 
@@ -196,7 +196,7 @@
 //             return false;
 //         }
 
-//         g.renderer.ffmpegPath = ffmpegPath.string();
+//         g.renderer.ffmpegPath = geode::utils::string::pathToString(ffmpegPath);
 // #else
 //         if (!foundApi) {
 //             FLAlertLayer::create("Error", "<cl>FFmpeg API</c> not found. Download it to render a level.", "Ok")->show();
@@ -234,7 +234,7 @@
 //     Mod* mod = Mod::get();
 //     fmod = FMODAudioEngine::sharedEngine();
 
-//     fps = std::stoi(mod->getSavedValue<std::string>("render_fps"));
+//     fps = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_fps")).unwrap();
 //     codec = mod->getSavedValue<std::string>("render_codec");
 //     bitrate = mod->getSavedValue<std::string>("render_bitrate") + "M";
 //     extraArgs = mod->getSavedValue<std::string>("render_args");
@@ -254,10 +254,10 @@
 //     auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
     
 //     std::string filename = fmt::format("render_{}_{}{}", std::string_view(pl->m_level->m_levelName), std::to_string(timestamp), extension);
-//     std::string path = (Mod::get()->getSettingValue<std::filesystem::path>("render_folder") / filename).string();
+//     std::string path = geode::utils::string::pathToString(Mod::get()->getSettingValue<std::filesystem::path>("render_folder") / filename);
 
-//     width = std::stoi(mod->getSavedValue<std::string>("render_width2"));
-//     height = std::stoi(mod->getSavedValue<std::string>("render_height"));
+//     width = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_width2")).unwrap();
+//     height = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_height")).unwrap();
 
 //     if (width % 2 != 0)
 //         width++;
@@ -437,7 +437,7 @@
 //             return;
 //         }
 
-//         std::filesystem::path tempPath = std::filesystem::path(path).parent_path() / ("temp_" + std::filesystem::path(path).filename().string());
+//         std::filesystem::path tempPath = std::filesystem::path(path).parent_path() / ("temp_" + geode::utils::string::pathToString(std::filesystem::path(path).filename()));
 //         std::filesystem::path tempPathAudio = (Mod::get()->getSaveDir() / "temp_audio_file.wav");
 
 //         if (usingApi) {

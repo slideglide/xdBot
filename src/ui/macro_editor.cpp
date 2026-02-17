@@ -527,7 +527,7 @@ void MacroEditLayer::textChanged(CCTextInputNode* input) {
     if (text == "") return;
     
     if (input == editLayer->pageInput->getInputNode()) {
-        int page = std::stoi(text);
+        int page = geode::utils::numFromString<int>(text).unwrap();
         
         if (page <= 0) return;
         
@@ -538,7 +538,7 @@ void MacroEditLayer::textChanged(CCTextInputNode* input) {
     }
     
     if (input == editLayer->frameInput->getInputNode()) {
-        int frame = std::stoi(text);
+        int frame = geode::utils::numFromString<int>(text).unwrap();
         
         editLayer->changeSelectedInputFrame(frame, false);
         

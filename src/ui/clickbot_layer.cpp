@@ -8,7 +8,7 @@ void ClickbotLayer::updateLabels() {
 
 		ClickSetting settings = matjson::Serialize<ClickSetting>::from_json(data);
 
-		std::string filename = settings.path.filename().string();
+		std::string filename = geode::utils::string::pathToString(settings.path.filename());
 
 		if (!std::filesystem::exists(settings.path)) filename = "N/A";
 
@@ -314,7 +314,7 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup* layer) {
 
 	matjson::Value data = Mod::get()->getSavedValue<matjson::Value>(button);
 	settings = matjson::Serialize<ClickSetting>::from_json(data);
-	std::string filename = settings.path.filename().string();
+	std::string filename = geode::utils::string::pathToString(settings.path.filename());
 
 	if (!std::filesystem::exists(settings.path)) filename = "N/A";
 
@@ -410,7 +410,7 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 			auto pathOpt = res.unwrapOrDefault();
 			if (pathOpt) {
 				std::filesystem::path path = pathOpt.value();
-				self->filenameLabel->setString(path.filename().string().c_str());
+				self->filenameLabel->setString(geode::utils::string::pathToString(path.filename()).c_str());
 				self->settings.path = path;
 				self->saveSettings();
 				static_cast<ClickbotLayer*>(self->clickbotLayer)->updateLabels();
@@ -432,7 +432,7 @@ void ClickSettingsLayer::onRestore(CCObject*) {
 	
 	std::filesystem::path path = Mod::get()->getResourcesDir() / fmt::format("default_{}.mp3", button);
 
-	filenameLabel->setString(path.filename().string().c_str());
+	filenameLabel->setString(geode::utils::string::pathToString(path.filename()).c_str());
 
 	settings.path = path;
 	saveSettings();

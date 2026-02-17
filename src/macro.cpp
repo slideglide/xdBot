@@ -56,7 +56,7 @@ void Macro::autoSave(GJGameLevel* level, int number) {
     if (!std::filesystem::exists(autoSavesPath)) return;
 
     std::string username = GJAccountManager::sharedState() != nullptr ? GJAccountManager::sharedState()->m_username : "";
-    int result = Macro::save(username, fmt::format("AutoSave {} in level {}", number, levelname), path.string());
+    int result = Macro::save(username, fmt::format("AutoSave {} in level {}", number, levelname), geode::utils::string::pathToString(path));
 
     if (result != 0)
         log::debug("Failed to autosave macro. ID: {}. Path: {}", result, path);
@@ -78,7 +78,7 @@ void Macro::tryAutosave(GJGameLevel* level, CheckpointObject* cp) {
     std::string levelname = level->m_levelName;
     std::filesystem::path path = autoSavesPath / fmt::format("autosave_{}_{}", levelname, g.currentSession);
     std::error_code ec;
-    std::filesystem::remove(path.string() + ".gdr", ec); // Remove previous save
+    std::filesystem::remove(geode::utils::string::pathToString(path) + ".gdr", ec); // Remove previous save
     if (ec) log::warn("Failed to remove previous autosave");
 
     autoSave(level, g.currentSession);
@@ -167,32 +167,22 @@ int Macro::save(std::string author, std::string desc, std::string path, bool jso
     g.macro.description = desc;
     g.macro.duration = g.macro.inputs.back().frame / g.macro.framerate;
 
-    std::wstring widePath = Utils::widen(path);
+    std::ofstream f(path, std::ios::binary);
 
-    if (widePath == L"Widen Error")
-        return 30;
-
-    std::ofstream f(std::filesystem::path(widePath), std::ios::binary);
-
-    if (!f)
-        f.open(path, std::ios::binary);
-
-    if (!f)
+    if (!f.is_open())
         return 20;
-
-    std::vector<gdr::FrameFix> frameFixes = g.macro.frameFixes;
 
     auto data = g.macro.exportData(json);
 
+    if (data.empty())
+        return 23;
+
     f.write(reinterpret_cast<const char*>(data.data()), data.size());
 
-    if (!f) {
+    if (!f.good()) {
         f.close();
         return 21;
     }
-
-    if (!f)
-        return 22;
 
     f.close();
 
@@ -241,15 +231,15 @@ Macro Macro::XDtoGDR(std::filesystem::path path) {
             if (action[0] == "android")
                 fpsMultiplier = 4.f;
             else {
-                int fps = std::stoi(action[0]);
+                int fps = geode::utils::numFromString<int>(action[0]).unwrap();
                 fpsMultiplier = 240.f / fps;
             }
 
             continue;
         }
 
-        int frame = static_cast<int>(round(std::stoi(action[0]) * fpsMultiplier));
-        int button = std::stoi(action[2]);
+        int frame = static_cast<int>(round(geode::utils::numFromString<float>(action[0]).unwrap() * fpsMultiplier));
+        int button = geode::utils::numFromString<int>(action[2]).unwrap();
         bool hold = action[1] == "1";
         bool player2 = action[3] == "1";
         bool posOnly = action[4] == "1";
@@ -257,8 +247,8 @@ Macro Macro::XDtoGDR(std::filesystem::path path) {
         if (!posOnly)
             newMacro.inputs.push_back(input(frame, button, player2, hold));
         else {
-            cocos2d::CCPoint p1Pos = ccp(std::stof(action[5]), std::stof(action[6]));
-            cocos2d::CCPoint p2Pos = ccp(std::stof(action[11]), std::stof(action[12]));
+            cocos2d::CCPoint p1Pos = ccp(geode::utils::numFromString<float>(action[5]).unwrap(), geode::utils::numFromString<float>(action[6]).unwrap());
+            cocos2d::CCPoint p2Pos = ccp(geode::utils::numFromString<float>(action[11]).unwrap(), geode::utils::numFromString<float>(action[12]).unwrap());
 
             newMacro.frameFixes.push_back({ frame, {p1Pos, 0.f, false}, {p2Pos, 0.f, false} });
         }

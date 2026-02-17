@@ -13,9 +13,9 @@ cocos2d::CCPoint dataFromString(std::string dataString) {
     for (int i = 0; i < 3; i++) {
         std::getline(ss, item, ',');
         if (i == 1)
-            xPos = std::stof(item);
+            xPos = geode::utils::numFromString<float>(item).unwrap();
         else if (i == 2)
-            yPos = std::stof(item);
+            yPos = geode::utils::numFromString<float>(item).unwrap();
     }
 
     return { xPos, yPos };

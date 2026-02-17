@@ -37,7 +37,7 @@ class $modify(CCScheduler) {
             std::string speedhackValue = g.mod->getSavedValue<std::string>("macro_speedhack");
 
             if (speedhackValue != "0.0" && speedhackValue != "") {
-                speedhack = std::stof(speedhackValue);
+                speedhack = geode::utils::numFromString<float>(speedhackValue).unwrap();
                 float decimals = speedhack - static_cast<int>(speedhack);
 
                 float closest = safeValues[0];

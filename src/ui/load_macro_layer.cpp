@@ -183,11 +183,11 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 			
 			int iterations = 0;
 			
-			std::string name = path.filename().string().substr(0, path.filename().string().find_last_of('.'));
+			std::string name = geode::utils::string::pathToString(path.filename()).substr(0, geode::utils::string::pathToString(path.filename()).find_last_of('.'));
 			
 			std::filesystem::path newPath = Mod::get()->getSettingValue<std::filesystem::path>("macros_folder") / name;
 			
-			std::string pathString = newPath.string();
+			std::string pathString = geode::utils::string::pathToString(newPath);
 			
 			while (std::filesystem::exists(pathString + ".gdr.json")) {
 				iterations++;
@@ -427,7 +427,7 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 		
 		if (macros[i].extension() != ".gdr" && macros[i].extension() != ".xd" && macros[i].extension() != ".json") continue;
 		
-		std::string name = macros[i].filename().string().substr(0, macros[i].filename().string().find_last_of('.'));
+		std::string name = geode::utils::string::pathToString(macros[i].filename()).substr(0, geode::utils::string::pathToString(macros[i].filename()).find_last_of('.'));
 		
 		if (macros[i].extension() == ".json")
 		name = name.substr(0, name.find_last_of('.'));
@@ -617,11 +617,11 @@ bool MacroCell::init(std::filesystem::path path, std::string name, std::time_t d
 	#ifdef GEODE_IS_WINDOWS
 	std::string subText = Utils::formatTime(date) + " | ";
 	
-	subText += autosave ? "Auto Save" : path.extension().string();
+	subText += autosave ? "Auto Save" : geode::utils::string::pathToString(path.extension());
 	
 	lbl = CCLabelBMFont::create(subText.c_str(), "chatFont.fnt");
 	#else
-	std::string subText = autosave ? "Auto Save" : path.extension().string();
+	std::string subText = autosave ? "Auto Save" : geode::utils::string::pathToString(path.extension());
 	
 	lbl = CCLabelBMFont::create(subText.c_str(), "chatFont.fnt");
 	#endif
@@ -686,7 +686,7 @@ void MacroCell::handleLoad() {
 		g.macro = oldMacro;
 	}
 	else {
-		std::ifstream f(path.string(), std::ios::binary);
+		std::ifstream f(geode::utils::string::pathToString(path), std::ios::binary);
 		
 		f.seekg(0, std::ios::end);
 		size_t fileSize = f.tellg();

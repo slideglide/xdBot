@@ -338,7 +338,7 @@ class $modify(PauseLayer) {
         mod->setSavedValue("render_bitrate", std::string(bitrateInput->getString()));
         
         if (std::string_view(fpsInput->getString()) != "" && node == fpsInput) {
-            if (std::stoi(fpsInput->getString()) > 240)
+            if (geode::utils::numFromString<int>(fpsInput->getString()).unwrapOr(0) > 240)
             return fpsInput->setString(mod->getSavedValue<std::string>("render_fps").c_str());
             mod->setSavedValue("render_fps", std::string(fpsInput->getString()));
         }
@@ -364,7 +364,7 @@ class $modify(PauseLayer) {
             
             if (value == ".")
             speedhackInput->setString("0.");
-            else if (std::count(value.begin(), value.end(), '.') == 2 || std::stof(value) > 10)
+            else if (std::count(value.begin(), value.end(), '.') == 2 || geode::utils::numFromString<float>(value).unwrapOr(0) > 10)
             return speedhackInput->setString(mod->getSavedValue<std::string>("macro_speedhack").c_str());
         }
         

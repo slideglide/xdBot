@@ -81,7 +81,7 @@ public:
 
         if (!std::filesystem::exists(path)) {
             if (!utils::file::createDirectoryAll(path).isOk())
-                return FLAlertLayer::create("Error", ("There was an error getting the folder \"" + path.string() + "\". ID: 10").c_str(), "Ok")->show();
+                return FLAlertLayer::create("Error", ("There was an error getting the folder \"" + geode::utils::string::pathToString(path) + "\". ID: 10").c_str(), "Ok")->show();
         }
 
         SaveMacroLayer* layerReal = create();
@@ -98,7 +98,7 @@ public:
         std::string author = authorInput->getString();
         std::string desc = descInput->getString();
 
-        int result = Macro::save(author, desc, path.string(), jsonToggle->isToggled());
+        int result = Macro::save(author, desc, geode::utils::string::pathToString(path), jsonToggle->isToggled());
 
         if (result != 0)
             return FLAlertLayer::create("Error", "There was an error saving the macro. ID: " + std::to_string(result), "Ok")->show();

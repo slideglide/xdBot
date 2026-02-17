@@ -145,7 +145,7 @@ void Clickbot::updateSounds() {
         if (!std::filesystem::exists(settings.path)) continue;
 
         FMOD::Sound* sound = getSound(name);
-        result = c.system->createSound(settings.path.string().c_str(), FMOD_DEFAULT, nullptr, &sound);
+        result = c.system->createSound(geode::utils::string::pathToString(settings.path).c_str(), FMOD_DEFAULT, nullptr, &sound);
         if (result != FMOD_OK) {
             log::debug("Click sound errored. ID: 1");
             continue;

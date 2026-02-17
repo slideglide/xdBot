@@ -81,8 +81,8 @@ std::string LayoutMode::getModifiedString(std::string levelString) {
 
     for (int i = 0; i < levelSettings.size(); i++) {
         if (levelSettings[i] == "kA36") {
-            if (std::stoi(levelSettings[i + 1]) != 0)
-                importantGroups.insert(std::stoi(levelSettings[i + 1]));
+            if (geode::utils::numFromString<int>(levelSettings[i + 1]).unwrapOr(0) != 0)
+                importantGroups.insert(geode::utils::numFromString<int>(levelSettings[i + 1]).unwrap());
 
             break;
         }
@@ -109,14 +109,14 @@ std::string LayoutMode::getModifiedString(std::string levelString) {
 
         if (!props.contains(1)) continue;
 
-        if (!importantTriggerIDs.contains(std::stoi(props.at(1)))) continue;
+        if (!importantTriggerIDs.contains(geode::utils::numFromString<int>(props.at(1)).unwrap())) continue;
 
-        for (int i = 0; i < importantTriggerIDs.at(std::stoi(props.at(1))).size(); i++) {
-            int propID = importantTriggerIDs.at(std::stoi(props.at(1)))[i];
+        for (int i = 0; i < importantTriggerIDs.at(geode::utils::numFromString<int>(props.at(1)).unwrap()).size(); i++) {
+            int propID = importantTriggerIDs.at(geode::utils::numFromString<int>(props.at(1)).unwrap())[i];
             if (!props.contains(propID)) continue;
 
-            if (std::stoi(props[propID]) != 0)
-                importantGroups.insert(std::stoi(props[propID]));
+            if (geode::utils::numFromString<int>(props[propID]).unwrapOr(0) != 0)
+                importantGroups.insert(geode::utils::numFromString<int>(props[propID]).unwrap());
         }
 
     }
@@ -131,12 +131,12 @@ std::string LayoutMode::getModifiedString(std::string levelString) {
 
         if (!props.contains(1)) continue;
 
-        if (decoObjectIDs.contains(std::stoi(props.at(1))) || props.contains(121)) {
+        if (decoObjectIDs.contains(geode::utils::numFromString<int>(props.at(1)).unwrap()) || props.contains(121)) {
             if (!props.contains(57)) continue;
 
             for (const auto& el : Utils::splitByChar(props.at(57), '.')) {
                 if (el.empty()) continue;
-                if (!importantGroups.contains(std::stoi(el))) continue;
+                if (!importantGroups.contains(geode::utils::numFromString<int>(el).unwrapOr(0))) continue;
 
                 if (!props.contains(135)) {
                     vec.push_back("135");
@@ -150,13 +150,13 @@ std::string LayoutMode::getModifiedString(std::string levelString) {
             continue;
         }
 
-        if (!solidObjectIDs.contains(std::stoi(props.at(1)))) {
+        if (!solidObjectIDs.contains(geode::utils::numFromString<int>(props.at(1)).unwrap())) {
             newString += ";" + obj.ogString;
             continue;
         }
 
         if (props.contains(129)) {
-            if (std::stof(props[129]) <= 0.f && hidden == 0) {
+            if (geode::utils::numFromString<float>(props[129]).unwrap() <= 0.f && hidden == 0) {
                 vec.push_back("135");
                 vec.push_back("1");
 

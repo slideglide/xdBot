@@ -28,7 +28,7 @@ struct matjson::Serialize<ClickSetting> {
         matjson::Value obj;
 
         obj["disabled"] = sett.disabled;
-        obj["path"] = sett.path.string();
+        obj["path"] = geode::utils::string::pathToString(sett.path);
         obj["volume"] = sett.volume;
         obj["pitch"] = sett.pitch;
 
