@@ -405,7 +405,6 @@ void Renderer::start() {
             #ifdef GEODE_IS_WINDOWS
             
             if (process.close()) {
-                log::error("[RENDER] FFmpeg process failed with error code");
                 Loader::get()->queueInMainThread([] {
                     FLAlertLayer::create("Error", "There was an error saving the render. Wrong render Args.", "OK")->show();
                 });
@@ -722,7 +721,6 @@ void Renderer::captureFrame() {
     while (frameHasData) {}
     renderer.capture(lock, currentFrame, frameHasData);
     captureCount++;
-    if (captureCount % 30 == 0) log::debug("[RENDER] Captured {} frames", captureCount);
 }
 int wa = 0;
 void Renderer::handleRecording(PlayLayer* pl, int frame) {
