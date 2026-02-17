@@ -90,7 +90,7 @@ public:
     geode::Popup* layer = nullptr;
 
     Macro macro;
-    #ifdef GEODE_IS_DESKTOP
+    #ifdef GEODE_IS_WINDOWS
     Renderer renderer;
     #endif
     state state = none;
