@@ -130,7 +130,7 @@ class $modify(PlayLayer) {
             Global::get().safeMode = true;
         
         if (getActionByTag(16)) {
-            #ifndef GEODE_IS_MOBILE
+            #ifdef GEODE_IS_WINDOWS
             if (Global::get().renderer.recordingAudio) Global::get().renderer.stopAudio();
             #endif
             

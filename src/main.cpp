@@ -214,7 +214,7 @@ class $modify(BGLHook, GJBaseGameLayer) {
     #endif
     
     if (g.state != state::none || rendering) {
-      #ifndef GEODE_IS_MOBILE
+      #ifdef GEODE_IS_WINDOWS
       if (!g.firstAttempt) {
         g.renderer.dontRender = false;
         g.renderer.dontRecordAudio = false;
@@ -466,7 +466,7 @@ class $modify(PauseLayer) {
     
     Loader::get()->queueInMainThread([] {
       auto& g = Global::get();
-      #ifndef GEODE_IS_MOBILE
+      #ifdef GEODE_IS_WINDOWS
       if (g.renderer.recording) g.renderer.stop();
       if (g.renderer.recordingAudio) g.renderer.stopAudio();
       #endif
@@ -480,7 +480,7 @@ class $modify(PauseLayer) {
     
     Loader::get()->queueInMainThread([] {
       auto& g = Global::get();
-      #ifndef GEODE_IS_MOBILE
+      #ifdef GEODE_IS_WINDOWS
       if (g.renderer.recording) g.renderer.stop();
       if (g.renderer.recordingAudio) g.renderer.stopAudio();
       #endif
