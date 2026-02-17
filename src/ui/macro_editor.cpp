@@ -1,12 +1,15 @@
 #include "macro_editor.hpp"
 #include "record_layer.hpp"
 
+#ifndef GEODE_IS_WINDOWS
 #include <Geode/modify/CCEGLView.hpp>
+#endif
+
 #include <Geode/modify/FLAlertLayer.hpp>
 
 MacroEditLayer* editLayer = nullptr;
 
-#ifdef GEODE_IS_WINDOWS
+#ifndef GEODE_IS_WINDOWS
 
 class $modify(CCEGLView) {
     void onGLFWMouseMoveCallBack(GLFWwindow* v1, double v2, double v3) {
