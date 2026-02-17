@@ -55,7 +55,8 @@
 			"default": {
 				"win": "{gd_dir}/macros",
 				"mac": "{gd_dir}/macros",
-				"android": "{gd_dir}/macros"
+				"android": "{gd_dir}/macros",
+				"ios": "{gd_dir}/macros"
 			},
 			"platforms": ["win", "mac", "android"]
 		},
@@ -65,7 +66,8 @@
 			"default": {
 				"win": "{gd_dir}/autosaves",
 				"mac": "{gd_dir}/autosaves",
-				"android": "{gd_dir}/autosaves"
+				"android": "{gd_dir}/autosaves",
+				"ios": "{gd_dir}/autosaves"
 			},
 			"platforms": ["win", "mac", "android"]
 		},
@@ -75,7 +77,8 @@
 			"default": {
 				"win": "{gd_dir}/renders",
 				"mac": "{gd_dir}/renders",
-				"android": "{gd_dir}/renders"
+				"android": "{gd_dir}/renders",
+				"ios": "{gd_dir}/renders"
 			},
 			"platforms": ["win", "mac", "android"]
 		},
