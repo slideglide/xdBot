@@ -85,9 +85,9 @@ bool RenderSettingsLayer::init() {
     if (!Popup::init(396, 277, Utils::getTexture().c_str())) return false;
     setTitle("Render Settings");
     bool usingApi = false;
-    // #ifndef GEODE_IS_MOBILE
+    #ifdef GEODE_IS_WINDOWS
     usingApi = Renderer::shouldUseAPI();
-    // #endif
+    #endif
     
     cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);

@@ -158,6 +158,14 @@ bool Renderer::toggle() {
         return false;
     }
     
+    #ifdef GEODE_IS_WINDOWS
+    if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps) ||
+        GameManager::sharedState()->getGameVariable(GameVar::ClickOnSteps)) {
+        FLAlertLayer::create("Render", "Disable <cr>Click Between Steps</c> and <cr>Click On Steps</c> in GD settings to render a level.", "OK")->show();
+        return false;
+    }
+    #endif
+    
     bool foundApi = Loader::get()->isModLoaded("eclipse.ffmpeg-api");
     std::filesystem::path ffmpegPath = Mod::get()->getSettingValue<std::filesystem::path>("ffmpeg_path");
     bool foundExe = std::filesystem::exists(ffmpegPath) && geode::utils::string::pathToString(ffmpegPath.filename()) == "ffmpeg.exe";
