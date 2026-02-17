@@ -1,34 +1,9 @@
 #include "macro_editor.hpp"
 #include "record_layer.hpp"
 
-/* #ifndef GEODE_IS_WINDOWS
-#include <Geode/modify/CCEGLView.hpp>
-#endif */
-
 #include <Geode/modify/FLAlertLayer.hpp>
 
 MacroEditLayer* editLayer = nullptr;
-
-/* #ifndef GEODE_IS_WINDOWS
-
-class $modify(CCEGLView) {
-    void onGLFWMouseMoveCallBack(GLFWwindow* v1, double v2, double v3) {
-        CCEGLView::onGLFWMouseMoveCallBack(v1, v2, v3);
-        
-        if (!editLayer) return;
-        
-        CCScene* scene = CCDirector::get()->getRunningScene();
-        if (MacroEditLayer* layer = scene->getChildByType<MacroEditLayer>(0))
-        editLayer = layer;
-        else
-        return;
-        
-        editLayer->updateHover(getMousePos());
-        
-    }
-}; 
-
-#endif*/
 
 class $modify(FLAlertLayer) {
     
@@ -81,6 +56,7 @@ void MacroEditLayer::onClose(CCObject*) {
             [this](auto, bool btn2) {
                 if (!btn2) return;
                 editLayer = nullptr;
+                this->unscheduleUpdate();
                 this->setKeypadEnabled(false);
                 this->setTouchEnabled(false);
                 this->removeFromParentAndCleanup(true);
@@ -88,6 +64,7 @@ void MacroEditLayer::onClose(CCObject*) {
         );
     } else {
         editLayer = nullptr;
+        this->unscheduleUpdate();
         this->setKeypadEnabled(false);
         this->setTouchEnabled(false);
         this->removeFromParentAndCleanup(true);
@@ -410,6 +387,8 @@ bool MacroEditLayer::init() {
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
     
+    this->scheduleUpdate();
+             
     return true;
 }
 
@@ -640,6 +619,14 @@ void MacroEditLayer::reSelectInput() {
     hoveredInput = -2;
     
     selectInput(prevSelected);
+}
+
+void MacroEditLayer::update(float dt) {
+    #ifdef GEODE_IS_DESKTOP
+    if (!editLayer) return;
+    
+    updateHover(geode::cocos::getMousePos());
+    #endif
 }
 
 int MacroEditLayer::getSum(CCObject* obj) {

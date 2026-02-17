@@ -78,6 +78,8 @@ public:
     void selectInput(int input);
 
     void reSelectInput();
+    
+    void update(float dt) override;
 
     void updatePageInputs(int page);
 
