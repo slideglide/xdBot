@@ -39,7 +39,7 @@ class $modify(CCKeyboardDispatcher) {
     }
 };
 
-void handleKeybind(std::string const& id, bool down) {
+void handleKeybind(std::string const& id, bool down, bool repeat, double time) {
     auto& g = Global::get();
     
     if (!down || (LevelEditorLayer::get() && !g.mod->getSettingValue<bool>("editor_keybinds")) || g.mod->getSettingValue<bool>("disable_keybinds")) return;
@@ -112,32 +112,32 @@ void handleKeybind(std::string const& id, bool down) {
 }
 
 $execute{
-    listenForKeybindSettingPresses("open_menu_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("open_menu_keybind", down);
+    listenForKeybindSettingPresses("open_menu_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("open_menu_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_recording_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("toggle_recording_keybind", down);
+    listenForKeybindSettingPresses("toggle_recording_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("toggle_recording_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_playing_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("toggle_playing_keybind", down);
+    listenForKeybindSettingPresses("toggle_playing_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("toggle_playing_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_speedhack_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("toggle_speedhack_keybind", down);
+    listenForKeybindSettingPresses("toggle_speedhack_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("toggle_speedhack_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_frame_stepper_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("toggle_frame_stepper_keybind", down);
+    listenForKeybindSettingPresses("toggle_frame_stepper_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("toggle_frame_stepper_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("step_frame_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("step_frame_keybind", down);
+    listenForKeybindSettingPresses("step_frame_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("step_frame_keybind", down, repeat, time);
     });
-    listenForKeybindSettingPresses("show_trajectory_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("show_trajectory_keybind", down);
+    listenForKeybindSettingPresses("show_trajectory_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("show_trajectory_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_render_keybind", [](Keybind const&, bool down, bool repeat) {
-      if (!repeat) handleKeybind("toggle_render_keybind", down);
+    listenForKeybindSettingPresses("toggle_render_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+      handleKeybind("toggle_render_keybind", down, false, time);
     });
-    listenForKeybindSettingPresses("toggle_noclip_keybind", [](Keybind const&, bool down, bool repeat) {
-        if (!repeat) handleKeybind("toggle_noclip_keybind", down);
+    listenForKeybindSettingPresses("toggle_noclip_keybind", [](Keybind const&, bool down, bool repeat, double time) {
+        handleKeybind("toggle_noclip_keybind", down, false, time);
     });
 }
 #endif

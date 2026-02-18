@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-beta.2",
+	"geode": "5.0.0-beta.3",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -87,63 +87,81 @@
 			"description": "The keybind to open the xdBot menu.",
 			"type": "keybind",
 			"default": "Alt+F",
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "universal",
+			"migrate-from": "zilko.xdbot/open_menu"
 		},
 		"toggle_recording_keybind": {
 			"name": "Recording Keybind",
 			"description": "The keybind to start and stop recording a macro.",
 			"type": "keybind",
 			"default": "Alt+G",	
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_recording"
 		},
 		"toggle_playing_keybind": {
 			"name": "Playing Keybind",
 			"description": "The keybind to start and stop playing a macro.",
 			"type": "keybind",
 			"default": "Alt+H",
-			"platforms": ["win", "mac"]	
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_playing"
 		},
 		"toggle_speedhack_keybind": {
 			"name": "Speedhack Keybind",
 			"description": "The keybind to toggle speedhack.",
 			"type": "keybind",
 			"default": "Alt+S",	
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_speedhack"
 		},
 		"toggle_noclip_keybind": {
 			"name": "Noclip Keybind",
 			"description": "The keybind to toggle noclip.",
 			"type": "keybind",
 			"default": "Alt+N",	
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_noclip"
 		},
 		"toggle_frame_stepper_keybind": {
 			"name": "Frame Stepper Keybind",
 			"description": "The keybind to toggle the frame stepper.",
 			"type": "keybind",
 			"default": "Alt+C",	
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_frame_stepper"
 		},
 		"step_frame_keybind": {
 			"name": "Step Frame Keybind",
 			"description": "The keybind to step a frame when the frame stepper is enabled.",
 			"type": "keybind",
 			"default": "V",	
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/step_frame"
 		},
 		"show_trajectory_keybind": {
 			"name": "Show Trajectory Keybind",
 			"description": "The keybind to toggle the trajectory while recording a macro.",
 			"type": "keybind",
 			"default": "Alt+T",
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/show_trajectory"
 		},
 		"toggle_render_keybind": {
 			"name": "Render Keybind",
 			"description": "The keybind to start and stop the renderer.",
 			"type": "keybind",
 			"default": "Alt+P",
-			"platforms": ["win", "mac"]
+			"platforms": ["win", "mac"],
+			"category": "gameplay",
+			"migrate-from": "zilko.xdbot/toggle_render"
 		},
 		"background_color": {
             "name": "Menu background color",
