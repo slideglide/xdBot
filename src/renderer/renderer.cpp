@@ -159,11 +159,21 @@ bool Renderer::toggle() {
     }
     
     #ifdef GEODE_IS_WINDOWS
-    if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps) ||
-        GameManager::sharedState()->getGameVariable(GameVar::ClickOnSteps)) {
-        FLAlertLayer::create("Render", "Disable <cr>Click Between Steps</c> and <cr>Click On Steps</c> in GD settings to render a level.", "OK")->show();
-        return false;
+    std::vector<std::string> incompatSettings;
+    
+    if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps)) incompatSettings.push_back("Click Between Steps");
+    if (GameManager::sharedState()->getGameVariable(GameVar::ClickOnSteps)) incompatSettings.push_back("Click On Steps");
+    
+    if (!incompatSettings.empty()) {
+        geode::utils::StringBuffer incompatString;
+        
+        for (const std::string& name : incompatSettings) {
+            incompatString.append("<cr>{}</c>{}", name, (name != incompatSettings.back() ? "," : ""));
+            
+            FLAlertLayer::create("Render", "Disable incompatible GD settings to render a level: \n" + incompatString.str(), "OK")->show();
+        }
     }
+    
     #endif
     
     bool foundApi = Loader::get()->isModLoaded("eclipse.ffmpeg-api");
