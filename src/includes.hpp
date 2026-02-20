@@ -168,7 +168,6 @@ public:
     size_t currentAction = 0;
     size_t currentFrameFix = 0;
     int frameFixesLimit = 240;
-    int currentActiveSeed = 0;
     bool frameFixes = false;
     bool inputFixes = false;
 

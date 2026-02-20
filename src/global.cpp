@@ -267,7 +267,7 @@ void Global::updateSeed(bool isRestart) {
             g.mod->getSavedValue<std::string>("macro_seed")
         ).unwrapOr(0);
         
-        int finalSeed;
+        uint64_t finalSeed;
         
         if (!pl->m_player1->m_isDead) {
             g.gen.seed(seed + static_cast<uint64_t>(pl->m_gameState.m_currentProgress));
