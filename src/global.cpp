@@ -257,46 +257,37 @@ int Global::getCurrentFrame(bool editor) {
 // }
 
 void Global::updateSeed(bool isRestart) {
-  
-  auto& g = Global::get();
-  
-  if (g.seedEnabled) {
-    PlayLayer* pl = PlayLayer::get();
-    if (!pl) return;
+    auto& g = Global::get();
     
-    unsigned long long ull = std::stoull(g.mod->getSavedValue<std::string>("macro_seed"), nullptr, 0);
-    uintptr_t seed = static_cast<uintptr_t>(ull);
-    int finalSeed;
-    
-    if (!pl->m_player1->m_isDead) {
-      std::mt19937 generator(seed + pl->m_gameState.m_currentProgress);
-      std::uniform_int_distribution<int> distribution(10000, 999999999);
-      finalSeed = distribution(generator);
+    if (g.seedEnabled) {
+        PlayLayer* pl = PlayLayer::get();
+        if (!pl) return;
+        
+        uint64_t seed = geode::utils::numFromString<uint64_t>(
+            g.mod->getSavedValue<std::string>("macro_seed")
+        ).unwrapOr(0);
+        
+        int finalSeed;
+        
+        if (!pl->m_player1->m_isDead) {
+            g.gen.seed(seed + static_cast<uint64_t>(pl->m_gameState.m_currentProgress));
+            
+            finalSeed = g.gen.generate(10000, 1000000000);
+        }
+        else {
+            finalSeed = geode::utils::random::generate(1000, 1000000000);
+        }
+        
+        GameToolbox::fast_srand(finalSeed);
+        g.safeMode = true;
     }
-    else {
-      std::random_device rd;
-      std::mt19937 generator(rd());
-      std::uniform_int_distribution<int> distribution(1000, 999999999);
-      finalSeed = distribution(generator);
+    
+    if (isRestart && g.state == state::recording) {
+        uint64_t gdSeed = GameToolbox::getfast_srand();
+        g.macro.seed = gdSeed;
+        
+        g.gen.seed(gdSeed);
     }
-    
-    #ifdef GEODE_IS_WINDOWS
-    *(uintptr_t*)((char*)geode::base::get() + seedAddr) = finalSeed;
-    #else
-    GameToolbox::fast_srand(finalSeed);
-    #endif
-    
-    g.safeMode = true;
-  }
-  
-  if (isRestart && g.state == state::recording) {
-    #ifdef GEODE_IS_WINDOWS
-    g.macro.seed = *(uintptr_t*)((char*)geode::base::get() + seedAddr);
-    #else
-    g.macro.seed = 0;
-    #endif
-  }
-  
 }
 
 void Global::updatePitch(float value) {

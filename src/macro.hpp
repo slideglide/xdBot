@@ -334,6 +334,6 @@ struct CheckpointData {
     int frame;
     PlayerData p1;
     PlayerData p2;
-    uintptr_t seed;
+    uint64_t seed;
     int previousFrame;
 };

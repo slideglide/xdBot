@@ -15,7 +15,7 @@
 
 using namespace geode::prelude;
 
-const int seedAddr = 0x6a4e20;
+// const int seedAddr = 0x6a4e20;
 
 const int indexButton[6] = { 1, 2, 3, 1, 2, 3 };
 
@@ -94,7 +94,8 @@ public:
     Renderer renderer;
     #endif
     state state = none;
-
+    
+    geode::utils::random::Generator gen;
     std::unordered_map<CheckpointObject*, CheckpointData> checkpoints;
     std::unordered_set<int> allKeybinds;
     std::unordered_set<int> playedFrames;
@@ -167,6 +168,7 @@ public:
     size_t currentAction = 0;
     size_t currentFrameFix = 0;
     int frameFixesLimit = 240;
+    int currentActiveSeed = 0;
     bool frameFixes = false;
     bool inputFixes = false;
 
