@@ -117,7 +117,7 @@ class $modify(CheckpointObject) {
       if (g.seedEnabled) {
         uint64_t savedSeed = g.checkpoints[cp].seed;
         
-        GameToolbox::fast_srand(static_cast<int>(savedSeed));
+        GameToolbox::fast_srand(savedSeed);
         
         g.gen.seed(savedSeed);
       }
