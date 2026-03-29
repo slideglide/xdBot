@@ -59,37 +59,12 @@ void DSPRecorder::start() {
 
 void DSPRecorder::stop() {
     if (!m_recording) return;
-    // FMOD operations must be done on the main thread, so queue the stop operation
+    m_recording = false;
     geode::queueInMainThread([this] {
-        if (!m_recording) return;
         m_masterGroup->removeDSP(m_dsp);
-        m_recording = false;
-        log::info("DSPRecorder: stopped, {} samples captured", m_data.lock()->size());
         m_masterGroup->setPaused(false);
-    });
-}
-
-void DSPRecorder::stopBlocking() {
-    if (!m_recording) return;
-    
-    // FMOD operations must be done on the main thread, so queue the stop operation
-    geode::queueInMainThread([this] {
-        if (!m_recording) return;
-        m_masterGroup->removeDSP(m_dsp);
-        m_recording = false;
         log::info("DSPRecorder: stopped, {} samples captured", m_data.lock()->size());
-        m_masterGroup->setPaused(false);
-        
-        // Signal that we're done by setting the flag
-        m_stopComplete = true;
     });
-    
-    // wait for the main thread to finish stopping the DSP
-    // This is a simple spin-wait since the FMOD operations are very fast
-    for (int i = 0; i < 100 && !m_stopComplete; i++) {
-        asp::sleep(asp::Duration::fromMillis(1));
-    }
-    m_stopComplete = false;
 }
 
 std::vector<float> DSPRecorder::getData() {
@@ -98,8 +73,6 @@ std::vector<float> DSPRecorder::getData() {
 }
 
 void DSPRecorder::tryUnpause(float time) const {
-    // Don't try to unpause if we've stopped recording (m_recording is false)
-    // This prevents unpausing while the audio is being mixed in another thread
     if (!m_recording) return;
     if (!m_masterGroup) return;
     auto* system = FMODAudioEngine::sharedEngine()->m_system;

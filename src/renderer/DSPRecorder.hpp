@@ -3,6 +3,7 @@
 #include <vector>
 #include <asp/sync/Mutex.hpp>
 #include <Geode/fmod/fmod.hpp>
+#include "spinlock.hpp"
 
 #ifndef GEODE_IS_IOS
 
@@ -12,7 +13,6 @@ public:
 
     void start();
     void stop();
-    void stopBlocking();
     std::vector<float> getData();
     void tryUnpause(float time) const;
 
@@ -25,8 +25,6 @@ private:
     FMOD::ChannelGroup* m_masterGroup = nullptr;
     asp::Mutex<std::vector<float>> m_data;
     bool                m_recording   = false;
-    // Signal for blocking stop
-    bool m_stopComplete = false;
 };
 
 #endif

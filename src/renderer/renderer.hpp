@@ -28,30 +28,24 @@ class Renderer {
 public:
     Renderer() : width(1920), height(1080), fps(60) {}
 
-    // Level state
     bool recording     = false;
     bool levelFinished = false;
     bool capturing     = false;
 
-    // Audio
     AudioMode audioMode   = AudioMode::Off;
     float     SFXVolume   = 1.f;
     float     musicVolume = 1.f;
 
-    // Flags
     bool usingApi = false;
 
-    // Timing - end screen
     float stopAfter = 3.f;
     float timeAfter = 0.f;
 
-    // Timing - eclipse frame accumulation pattern
     float totalTime   = 0.f;
     float extra_t     = 0.f;
     float lastFrame_t = 0.f;
     float capturedLastFrameTime = 0.f; 
 
-    // Resolution
     unsigned width, height, fps;
 
     cocos2d::CCSize oldDesignResolution = {0, 0};
@@ -59,17 +53,14 @@ public:
     cocos2d::CCSize originalScreenScale = {0, 0};
     cocos2d::CCSize newScreenScale      = {0, 0};
 
-    // ffmpeg
     ffmpeg::events::Recorder ffmpeg;
 
 #ifdef GEODE_IS_WINDOWS
-    // Set in toggle() from the "ffmpeg_path" mod setting before start() is called
     std::string ffmpegPath;
 #endif
 
     std::string codec, bitrate, extraArgs, videoArgs, extraAudioArgs, path;
 
-    // FMOD
     FMODAudioEngine* fmod = nullptr;
 
     void captureFrame();

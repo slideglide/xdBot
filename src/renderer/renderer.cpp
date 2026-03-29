@@ -399,7 +399,6 @@ void Renderer::stop(int /*frame*/) {
 
     m_renderTexture.end();
     restoreWinSize();
-    
     DSPRecorder::get()->stop();
 }
 
@@ -492,8 +491,8 @@ void Renderer::recordThread() {
         if (res.isErr()) {
             recording = false;
             m_frameReady.set(true);
+            DSPRecorder::get()->stop();
             Loader::get()->queueInMainThread([] {
-                DSPRecorder::get()->stop();
                 FLAlertLayer::create("Error", "FFmpeg API failed to initialize.", "OK")->show();
             });
             return;
@@ -561,6 +560,7 @@ void Renderer::recordThread() {
 #ifdef GEODE_IS_WINDOWS
     else {
         if (process.close()) {
+            DSPRecorder::get()->stop();
             Loader::get()->queueInMainThread([] {
                 FLAlertLayer::create("Error",
                     "There was an error saving the render. Wrong render Args.", "OK")->show();
@@ -570,8 +570,7 @@ void Renderer::recordThread() {
     }
 #endif
 
-    // stop DSP here in the thread, just like Eclipse does
-    DSPRecorder::get()->stopBlocking();
+    DSPRecorder::get()->stop();
     auto pcm = DSPRecorder::get()->getData();
 
     Loader::get()->queueInMainThread([] {
