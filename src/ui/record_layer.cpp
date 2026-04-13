@@ -10,6 +10,7 @@
 #include "../gdr/gdr.hpp"
 #include "../hacks/coin_finder.hpp"
 #include "../hacks/show_trajectory.hpp"
+#include "../global.hpp"
 
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/utils/web.hpp>
@@ -449,7 +450,7 @@ class $modify(PauseLayer) {
             if (!pl) return;
             if (!pl->m_isPaused) return;
             
-            if (PauseLayer* layer = Global::getPauseLayer()) {
+            if (PauseLayer* layer = Utils::getPauseLayer()) {
                 layer->onResume(nullptr);
                 PlayLayer::get()->pauseGame(false);
                 
@@ -1116,7 +1117,7 @@ class $modify(PauseLayer) {
                                 tpsInput->setTouchEnabled(true);
                                 tpsInput->setContentSize({ 32, 20 });
                                 tpsInput->setAllowedChars("0123456789.");
-                                tpsInput->setString(Utils::getSimplifiedString(fmt::format("{:.3f}", Mod::get()->getSavedValue<double>("macro_tps"))).c_str());
+                                tpsInput->setString(fmt::format("{:.3}", Mod::get()->getSavedValue<double>("macro_tps")).c_str());
                                 tpsInput->setMaxLabelWidth(30.f);
                                 tpsInput->setDelegate(this);
                                 tpsInput->setMaxLabelLength(9);
@@ -1237,7 +1238,7 @@ class $modify(PauseLayer) {
                             auto& g = Global::get();
                             
                             tpsToggle->toggle(g.tpsEnabled);
-                            tpsInput->setString(Utils::getSimplifiedString(fmt::format("{:.3f}", Mod::get()->getSavedValue<double>("macro_tps"))).c_str());
+                            tpsInput->setString(fmt::format("{:.3}", Mod::get()->getSavedValue<double>("macro_tps")).c_str());
                             
                             if (g.state == state::none || g.macro.inputs.empty()) {
                                 if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(0))

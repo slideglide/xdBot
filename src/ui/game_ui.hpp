@@ -21,7 +21,8 @@ public:
     }
 
     void onFrameStepperOff() {
-        Global::frameStepperOff();
+        if (Global::get().frameStepper)
+            Global::toggleFrameStepper();
     }
 
     static void openButtonEditor() {
