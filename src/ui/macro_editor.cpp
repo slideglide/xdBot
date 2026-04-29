@@ -881,9 +881,9 @@ void MacroEditLayer::onSave(CCObject*) {
             
             onClose(nullptr);
             
-            auto children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+            auto children = CCScene::get()->getChildrenExt<CCNode*>();
             
-            for (auto child : CCArrayExt<CCNode*>(children)) {
+            for (auto child : children) {
                 if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(child)) {
                     layer->onClose(nullptr);
                     break;
@@ -894,9 +894,9 @@ void MacroEditLayer::onSave(CCObject*) {
             MacroEditLayer::open(true);
             
             Loader::get()->queueInMainThread([] {
-                auto children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+                auto children = CCScene::get()->getChildrenExt<CCNode*>();
                 
-                for (auto child : CCArrayExt<CCNode*>(children)) {
+                for (auto child : children) {
                     if (MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(child)) {
                         editLayer = layer;
                         break;
@@ -954,9 +954,9 @@ void MacroEditLayer::onMerge(CCObject*) {
     if (Global::get().layer) {
         layer = typeinfo_cast<geode::Popup*>(Global::get().layer);
     } else {
-        auto children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+        auto children = CCScene::get()->getChildrenExt<CCNode*>();
         
-        for (auto child : CCArrayExt<CCNode*>(children)) {
+        for (auto child : children) {
             if (typeinfo_cast<RecordLayer*>(child)) {
                 layer = typeinfo_cast<geode::Popup*>(child);
                 break;

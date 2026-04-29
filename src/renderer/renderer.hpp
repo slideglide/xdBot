@@ -68,7 +68,7 @@ public:
     void restoreWinSize();
     void fixUIObjects();
     void start();
-    void stop(int frame = 0);
+    void stop();
 
     static bool toggle();
     static bool shouldUseAPI();

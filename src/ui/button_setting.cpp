@@ -40,10 +40,14 @@ protected:
         if (!SettingNodeV3::init(setting, width))
             return false;
 
-        CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
-        sprite->setScale(0.325f);
-        CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(
-            sprite, this, menu_selector(MyButtonSettingNodeV3::onButton)
+        // CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
+        // sprite->setScale(0.325f);
+        CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtraWithFrameName(
+            "GJ_playBtn2_001.png",
+            0.325f,
+            [this](auto sender) {
+                onButton(sender);
+            }
         );
         getButtonMenu()->addChildAtPosition(btn, Anchor::Center);
         getButtonMenu()->updateLayout();
@@ -58,7 +62,7 @@ protected:
     }
 
     void onButton(CCObject*) {
-        CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+        CCArray* children = CCScene::get()->getChildren();
         if (FLAlertLayer* layer = typeinfo_cast<FLAlertLayer*>(children->lastObject()))
             layer->keyBackClicked();
 

@@ -7,7 +7,7 @@
 
 class $modify(CCMenu) {
 	virtual bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
-		CCScene* scene = CCDirector::sharedDirector()->getRunningScene();
+		CCScene* scene = CCScene::get();
 		LoadMacroLayer* layer = scene->getChildByType<LoadMacroLayer>(0);
 		
 		if (!layer) return CCMenu::ccTouchBegan(touch, event);
@@ -102,27 +102,6 @@ void LoadMacroLayer::reloadList(int amount) {
 	addList(childrenCount > 7 && amount != 0, posY + (35.f * amount));
 }
 
-void LoadMacroLayer::deleteSelected(CCObject*) {
-	int amount = selectedMacros.size();
-	if (amount < 1) return;
-	
-	geode::createQuickPopup(
-		"Warning",
-		"Are you sure you want to <cr>delete</c> <cy>" + geode::utils::numToString(amount) + "</c> " + (isAutosaves ? "autosave" : "macro") + "(s)?",
-		"Cancel", "Yes",
-		[this, amount](auto, bool btn2) {
-			if (btn2) {
-				for (size_t i = 0; i < this->selectedMacros.size(); i++)
-				this->selectedMacros[i]->deleteMacro(false);
-				
-				this->reloadList(amount);
-				Notification::create("Macros Deleted", NotificationIcon::Success)->show();
-			}
-		}
-	);
-	
-}
-
 void LoadMacroLayer::onSelectAll(CCObject* obj) {
 	bool on = !static_cast<CCMenuItemToggler*>(obj)->isToggled();
 	
@@ -168,7 +147,7 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 		std::filesystem::path path = pathOpt.value();
 		std::string ext = geode::utils::string::pathToString(path.extension());
 		std::string stemExt = geode::utils::string::pathToString(path.stem().extension());
-        bool isGdrJson = (ext == ".json") && (stemExt == ".gdr");
+		bool isGdrJson = (ext == ".json") && (stemExt == ".gdr");
 		bool needsConversion = (ext == ".xd");
 		std::string outExt = isGdrJson ? ".gdr.json" : ext;
 		
@@ -274,10 +253,15 @@ bool LoadMacroLayer::init(geode::Popup* layer, geode::Popup* layer2, bool autosa
 		folderIcon->setPosition(emptyBtn->getContentSize() / 2);
 		folderIcon->setScale(0.7f);
 		emptyBtn->addChild(folderIcon);
-		btn = CCMenuItemSpriteExtra::create(
+		btn = CCMenuItemExt::createSpriteExtra(
 			emptyBtn,
-			this,
-			menu_selector(LoadMacroLayer::openFolder)
+			[this](auto) {
+				#ifdef GEODE_IS_IOS
+				file::openFolder(Mod::get()->getSaveDir() / (isAutosaves ? "autosaves" : "macros"));
+				#else
+				file::openFolder(Mod::get()->getSettingValue<std::filesystem::path>(isAutosaves ? "autosaves_folder" : "macros_folder"));
+				#endif
+			}
 		);
 		btn->setPosition(ccp(115, -121));
 		
@@ -285,10 +269,27 @@ bool LoadMacroLayer::init(geode::Popup* layer, geode::Popup* layer2, bool autosa
 		
 		CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
 		spr->setScale(0.585f);
-		btn = CCMenuItemSpriteExtra::create(
+		btn = CCMenuItemExt::createSpriteExtra(
 			spr,
-			this,
-			menu_selector(LoadMacroLayer::deleteSelected)
+			[this](CCMenuItemSpriteExtra* sender) {
+				int amount = selectedMacros.size();
+				if (amount < 1) return;
+				
+				geode::createQuickPopup(
+					"Warning",
+					"Are you sure you want to <cr>delete</c> <cy>" + geode::utils::numToString(amount) + "</c> " + (isAutosaves ? "autosave" : "macro") + "(s)?",
+					"Cancel", "Yes",
+					[this, amount](auto, bool btn2) {
+						if (btn2) {
+							for (size_t i = 0; i < this->selectedMacros.size(); i++)
+							this->selectedMacros[i]->deleteMacro(false);
+							
+							this->reloadList(amount);
+							Notification::create("Macros Deleted", NotificationIcon::Success)->show();
+						}
+					}
+				);
+			}
 		);
 		btn->setPosition(ccp(65, -121));
 		
@@ -297,11 +298,7 @@ bool LoadMacroLayer::init(geode::Popup* layer, geode::Popup* layer2, bool autosa
 		if (isAutosaves) {
 			spr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
 			spr->setScale(0.55f);
-			btn = CCMenuItemSpriteExtra::create(
-				spr,
-				this,
-				menu_selector(AutoSaveLayer::open)
-			);
+			btn = CCMenuItemExt::createSpriteExtra(spr, [this](auto) { AutoSaveLayer::create()->show(); });
 			btn->setPosition(ccp(15, -121));
 			
 			menu->addChild(btn);
@@ -470,7 +467,7 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 	
 	cocos2d::ccColor3B color = Mod::get()->getSettingValue<cocos2d::ccColor3B>("background_color");
 	
-	auto children = contentLayer->getChildren();
+	auto children = contentLayer->getChildrenExt<CCNode*>();
 	
 	int it = 0;
 	
@@ -485,7 +482,7 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 		std::max(0, color.b - 55)
 	);
 	
-	for (auto child : CCArrayExt<CCNode*>(children)) {
+	for (auto child : children) {
 		if (auto cell = typeinfo_cast<GenericListCell*>(child)) {
 			if (auto macroCell = typeinfo_cast<MacroCell*>(cell->getChildrenExt<CCNode*>()[2])) {
 				allMacros.push_back(macroCell);

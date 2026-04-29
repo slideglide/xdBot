@@ -33,8 +33,8 @@ public:
     Mod* mod = nullptr;
     CCMenu* menu = nullptr;
 
-    Slider* scaleSlider = nullptr;
-    Slider* opacitySlider = nullptr;
+    SliderNode* scaleSlider = nullptr;
+    SliderNode* opacitySlider = nullptr;
 
     CCLabelBMFont* scaleLbl = nullptr;
     CCLabelBMFont* opacityLbl = nullptr;
@@ -50,13 +50,9 @@ public:
     std::map<std::string, float> scales;
     std::map<std::string, float> opacities;
 
-    void onRestore(CCObject*);
-
-    void onSave(CCObject*);
-
-    void updateScale(CCObject*);
-
-    void updateOpacity(CCObject*);
+    bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchMoved(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchEnded(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
 
     void updateSelectedLabels();
 

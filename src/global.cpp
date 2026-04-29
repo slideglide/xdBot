@@ -37,7 +37,6 @@ const std::vector<IncompatibleMod> incompatibleMods {
     { "syzzi.click_between_frames", true, { {"soft-toggle", false, true }, { "actual-delta", true } } },
     { "alphalaneous.click_after_frames", true, { { "soft-toggle", false, true } } },
     { "thesillydoggo.qolmod", true, { { "tps-bypass_enabled", true, false, true } } }
-    // { "zmx.cbf-lite", false, {  } }
 };
 
 bool Global::hasIncompatibleMods() {
@@ -126,20 +125,20 @@ bool Global::hasIncompatibleMods() {
     }
     
     if (!modsToDisable.empty()) {
-        std::string incompatString = "";
+        geode::utils::StringBuffer incompatString;
         
         for (const std::string name : modsToDisable)
-        incompatString += fmt::format("<cr>{}</c>{}", name, (name != modsToDisable.back() ? ", " : ""));
+        incompatString.append("<cr>{}</c>{}", name, (name != modsToDisable.back() ? ", " : ""));
         
-        FLAlertLayer::create("Warning", "The following mods are incompatible: \n" + incompatString, "OK")->show();
+        FLAlertLayer::create("Warning", "The following mods are incompatible: \n" + incompatString.str(), "OK")->show();
         
     } else if (!settingsToDisable.empty()) {
-        std::string incompatString = "";
+        geode::utils::StringBuffer incompatString;
         
         for (const std::string name : settingsToDisable)
-        incompatString += fmt::format("<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
+        incompatString.append("<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
         
-        FLAlertLayer::create("Warning", "The following mod settings are incompatible: \n" + incompatString, "OK")->show();
+        FLAlertLayer::create("Warning", "The following mod settings are incompatible: \n" + incompatString.str(), "OK")->show();
         
     }
     
@@ -158,27 +157,46 @@ bool Global::enabledIncompatibleGDSettings() {
     std::vector<std::string> settingsToDisable;
     
     if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps))
-    settingsToDisable.push_back("Click Between Steps");
-    
+        settingsToDisable.push_back("Click Between Steps");
+        
     #ifdef GEODE_IS_MOBILE
+    bool cbsOverridden = false;
+    
     if (auto pl = PlayLayer::get()) {
-        if (pl->m_level->m_cbsOverride == 1)
-        settingsToDisable.push_back("Click Between Steps (Override)");
+        if (pl->m_level->m_cbsOverride == 1) {
+            cbsOverridden = true;
+        }
     }
-    else if (auto el = LevelEditorLayer::get()) {
-        if (el->m_level->m_cbsOverride == 1)
-        settingsToDisable.push_back("Click Between Steps (Override)");
+    
+    if (!cbsOverridden) {
+        if (auto layer = LevelInfoLayer::get()) {
+            if (layer->m_level->m_cbsOverride == 1) {
+                cbsOverridden = true;
+            }
+        }
     }
-    else if (auto scene = CCScene::get()) {
-        if (auto children = scene->getChildren()) {
-            for (auto obj : CCArrayExt<CCObject*>(children)) {
-                if (auto layer = typeinfo_cast<LevelInfoLayer*>(obj)) {
-                    if (layer->m_level->m_cbsOverride == 1) {
-                        settingsToDisable.push_back("Click Between Steps (Override)");
+
+    if (!cbsOverridden) {
+        if (auto scene = CCScene::get()) {
+            for (auto obj : scene->getChildrenExt<CCObject*>()) {
+                if (auto pl = typeinfo_cast<PlayLayer*>(obj)) {
+                    if (pl->m_level->m_cbsOverride == 1) {
+                        cbsOverridden = true;
+                        break;
+                    }
+                }
+                if (auto lil = typeinfo_cast<LevelInfoLayer*>(obj)) {
+                    if (lil->m_level->m_cbsOverride == 1) {
+                        cbsOverridden = true;
+                        break;
                     }
                 }
             }
         }
+    }
+    
+    if (cbsOverridden) {
+        settingsToDisable.push_back("Click Between Steps (Level Settings Override)");
     }
     #endif
     
@@ -207,34 +225,6 @@ float Global::getTPS() {
     return g.tpsEnabled ? g.tps : 240.f;
 }
 
-/*int Global::getCurrentFrame(bool editor) {
-// double levelTime;
-PlayLayer* pl = PlayLayer::get();
-
-if (!pl) {
-if (!editor) return 0;
-
-// levelTime = GJBaseGameLayer::get()->m_gameState.m_levelTime;
-}
-
-auto& g = Global::get();
-int frame;
-// levelTime = pl->m_gameState.m_levelTime;
-
-if (!g.macro.xdBotMacro && g.state == state::playing) {
-frame = pl->m_gameState.m_currentProgress;
-}
-else {
-frame = static_cast<int>(pl->m_gameState.m_levelTime * getTPS());
-frame++;
-}
-
-frame -= g.frameOffset;
-if (frame < 0) return 0;
-
-return frame;
-}*/
-
 int Global::getCurrentFrame(bool editor) {
     auto& g = Global::get();
     auto* pl = PlayLayer::get();
@@ -244,6 +234,10 @@ int Global::getCurrentFrame(bool editor) {
     }
     
     if (!pl) return 0;
+    
+    if (g.macro.isLegacy) {
+        return pl->m_gameState.m_currentProgress / 2 - g.frameOffset;
+    }
     
     return pl->m_gameState.m_currentProgress - g.frameOffset;
 }
@@ -350,28 +344,28 @@ void Global::toggleSpeedhack() {
 
 void Global::toggleFrameStepper() {
     auto& g = Global::get();
-
+    
     g.frameStepper = !g.frameStepper;
     g.mod->setSavedValue("macro_frame_stepper", g.frameStepper);
-
+    
     if (!g.frameStepper) {
         g.stepFrame = false;
         g.stepFrameParticle = false;
-
+        
         if (PlayLayer::get() && g.frameStepperMusicTime != 0) {
             FMODAudioEngine::sharedEngine()->setMusicTimeMS(g.frameStepperMusicTime, true, 0);
             g.frameStepperMusicTime = 0;
         }
     } else {
         if (PlayLayer::get())
-            g.frameStepperMusicTime = FMODAudioEngine::sharedEngine()->getMusicTimeMS(0);
+        g.frameStepperMusicTime = FMODAudioEngine::sharedEngine()->getMusicTimeMS(0);
     }
-
+    
     if (auto rl = static_cast<RecordLayer*>(g.layer)) {
         if (rl->frameStepperToggle)
-            rl->frameStepperToggle->toggle(g.frameStepper);
+        rl->frameStepperToggle->toggle(g.frameStepper);
     }
-
+    
     Interface::updateButtons();
 }
 

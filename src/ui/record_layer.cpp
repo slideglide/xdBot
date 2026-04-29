@@ -116,9 +116,9 @@ class $modify(PauseLayer) {
         geode::listenForSettingChanges<cocos2d::ccColor3B>("background_color", +[](cocos2d::ccColor3B value) {
             auto& g = Global::get();
             if (g.layer) {
-                CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+                CCArray* children = CCScene::get()->getChildren();
                 if (FLAlertLayer* layer = typeinfo_cast<FLAlertLayer*>(children->lastObject()))
-                layer->keyBackClicked();
+                    layer->keyBackClicked();
                 
                 static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
                 RecordLayer::openMenu(true);
@@ -139,11 +139,11 @@ class $modify(PauseLayer) {
         PlayLayer* pl = PlayLayer::get();
         bool cursor = false;
         
-        CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
+        CCArray* children = CCScene::get()->getChildren();
         CCObject* child;
         
         if (g.layer)
-        static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
+            static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
         
         if (pl && g.mod->getSavedValue<bool>("menu_pause_on_open")) {
             if (!pl->m_isPaused)
@@ -174,16 +174,16 @@ class $modify(PauseLayer) {
         std::string speedhackValue = mod->getSavedValue<std::string>("macro_speedhack");
         
         if (std::count(speedhackValue.begin(), speedhackValue.end(), '.') == 0)
-        speedhackValue += ".0";
+            speedhackValue += ".0";
         
         if (speedhackValue.back() == '.')
-        speedhackValue += "0";
+            speedhackValue += "0";
         
         if (speedhackValue[0] == '0' && speedhackValue[1] != '.')
-        speedhackValue.erase(0, 1);
+            speedhackValue.erase(0, 1);
         
         if (speedhackValue[0] == '.')
-        speedhackValue = "0" + speedhackValue;
+            speedhackValue = "0" + speedhackValue;
         
         mod->setSavedValue("macro_speedhack", speedhackValue);
     }
@@ -194,7 +194,7 @@ class $modify(PauseLayer) {
         PlayLayer* pl = PlayLayer::get();
         
         if (cursorWasHidden && pl)
-        PlatformToolbox::hideCursor();
+            PlatformToolbox::hideCursor();
         
         Global::get().layer = nullptr;
         
@@ -207,7 +207,7 @@ class $modify(PauseLayer) {
         auto& g = Global::get();
         
         if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings())
-        return recording->toggle(true);
+            return recording->toggle(true);
         
         if (g.state == state::playing) playing->toggle(false);
         g.state = g.state == state::recording ? state::none : state::recording;
@@ -236,10 +236,10 @@ class $modify(PauseLayer) {
         auto& g = Global::get();
         
         if (Global::hasIncompatibleMods() || Global::enabledIncompatibleGDSettings())
-        return playing->toggle(true);
+            return playing->toggle(true);
         
         if (g.state == state::recording)
-        recording->toggle(false);
+            recording->toggle(false);
         
         g.state = g.state == state::playing ? state::none : state::playing;
         
@@ -332,21 +332,21 @@ class $modify(PauseLayer) {
         }
         
         if (node == codecInput)
-        mod->setSavedValue("render_codec", std::string(codecInput->getString()));
+            mod->setSavedValue("render_codec", std::string(codecInput->getString()));
         
         if (std::string_view(widthInput->getString()) != "" && node == widthInput)
-        mod->setSavedValue("render_width2", std::string(widthInput->getString()));
+            mod->setSavedValue("render_width2", std::string(widthInput->getString()));
         
         if (std::string_view(heightInput->getString()) != "" && node == heightInput)
-        mod->setSavedValue("render_height", std::string(heightInput->getString()));
+            mod->setSavedValue("render_height", std::string(heightInput->getString()));
         
         if (std::string_view(bitrateInput->getString()) != "" && node == bitrateInput)
-        mod->setSavedValue("render_bitrate", std::string(bitrateInput->getString()));
+            mod->setSavedValue("render_bitrate", std::string(bitrateInput->getString()));
         
         if (std::string_view(fpsInput->getString()) != "" && node == fpsInput) {
             if (geode::utils::numFromString<int>(fpsInput->getString()).unwrapOr(0) > 240)
             return fpsInput->setString(mod->getSavedValue<std::string>("render_fps").c_str());
-            mod->setSavedValue("render_fps", std::string(fpsInput->getString()));
+                mod->setSavedValue("render_fps", std::string(fpsInput->getString()));
         }
         
         if (respawnInput && node == respawnInput) {
@@ -436,13 +436,13 @@ class $modify(PauseLayer) {
         }
         
         if (id == "clickbot_enabled" || id == "clickbot_playing_only")
-        Clickbot::updateSounds();
+            Clickbot::updateSounds();
         
         if (id == "macro_hide_recording_label" || id == "macro_hide_playing_label" || id == "render_hide_labels")
-        Interface::updateLabels();
+            Interface::updateLabels();
         
         if (id == "macro_hide_speedhack" || id == "macro_hide_stepper" || id == "macro_always_show_buttons")
-        Interface::updateButtons();
+            Interface::updateButtons();
             
         if (id == "menu_show_button") {
             PlayLayer* pl = PlayLayer::get();
@@ -475,16 +475,16 @@ class $modify(PauseLayer) {
     }
     
     void RecordLayer::openKeybinds(CCObject*) {
-        #ifdef GEODE_IS_DESKTOP
+        // #ifdef GEODE_IS_DESKTOP
         
-        geode::openSettingsPopup(Mod::get(), false);
-        RecordLayer::showKeybindsWarning();
+        // geode::openSettingsPopup(Mod::get(), false);
+        // RecordLayer::showKeybindsWarning();
         
-        #else
+        // #else
         
         Interface::openButtonEditor();
         
-        #endif
+        // #endif
     }
     
     void RecordLayer::openPresets(CCObject*) {
@@ -557,7 +557,7 @@ class $modify(PauseLayer) {
         float center = 103 - (width / 2.0f);
         
         for (int i = 0; i < dots.size(); ++i)
-        dots[i]->setPosition({ center + i * spacing, 96.5f });
+            dots[i]->setPosition({ center + i * spacing, 96.5f });
         
         updateDots();
         
@@ -969,7 +969,7 @@ class $modify(PauseLayer) {
                             }
                             
                             if (!mod->getSettingValue<bool>("restore_page"))
-                            g.currentPage = 0;
+                                g.currentPage = 0;
                             
                             goToSettingsPage(g.currentPage);
                             
@@ -980,7 +980,7 @@ class $modify(PauseLayer) {
                             m_buttonMenu->addChild(dickordBtn);
                             
                             if (!Mod::get()->setSavedValue<bool>("dickord", true))
-                            dickordSpr->runAction(CCSequence::create(CCScaleTo::create(0.25f, 1.5f), CCRotateTo::create(0.25f, 90), CCRotateTo::create(0.25f, 180), CCRotateTo::create(0.25f, 270), CCRotateTo::create(0.25f, 0), CCScaleTo::create(0.25f, 0.9f), nullptr));
+                                dickordSpr->runAction(CCSequence::create(CCScaleTo::create(0.25f, 1.5f), CCRotateTo::create(0.25f, 90), CCRotateTo::create(0.25f, 180), CCRotateTo::create(0.25f, 270), CCRotateTo::create(0.25f, 0), CCScaleTo::create(0.25f, 0.9f), nullptr));
                             
                             return true;
                         }
@@ -1195,7 +1195,7 @@ class $modify(PauseLayer) {
                             checkSpeedhack();
                             
                             for (size_t i = 0; i < nodes.size(); i++)
-                            nodes[i]->removeFromParentAndCleanup(false);
+                                nodes[i]->removeFromParentAndCleanup(false);
                             
                             nodes.clear();
                             
@@ -1213,7 +1213,7 @@ class $modify(PauseLayer) {
                             tpsBg = nullptr;
                             
                             for (size_t i = 0; i < 6; i++)
-                            loadSetting(settings[page][i], ySettingPositions[i]);
+                                loadSetting(settings[page][i], ySettingPositions[i]);
                             
                             updateDots();
                             updateTPS();
@@ -1242,11 +1242,11 @@ class $modify(PauseLayer) {
                             
                             if (g.state == state::none || g.macro.inputs.empty()) {
                                 if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(0))
-                                if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
-                                spr->setOpacity(255);
+                                    if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
+                                        spr->setOpacity(255);
                                 if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(1))
-                                if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
-                                spr->setOpacity(255);
+                                    if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
+                                        spr->setOpacity(255);
                                 
                                 tpsInput->setID("");
                                 tpsBg->setOpacity(75);
@@ -1259,10 +1259,10 @@ class $modify(PauseLayer) {
                             } else {
                                 if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(0))
                                 if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
-                                spr->setOpacity(120);
-                                if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(1))
-                                if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
-                                spr->setOpacity(120);
+                                    spr->setOpacity(120);
+                                    if (CCMenuItemSpriteExtra* btn = tpsToggle->getChildByType<CCMenuItemSpriteExtra>(1))
+                                        if (CCSprite* spr = btn->getChildByType<CCSprite>(0))
+                                            spr->setOpacity(120);
                                 
                                 tpsInput->setID("disabled-input"_spr);
                                 tpsBg->setOpacity(30);

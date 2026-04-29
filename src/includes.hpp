@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
-// #include <Geode/loader/SettingEvent.hpp>
 #include <eclipse.eclipse-menu/include/config.hpp>
 
 #include <string>
@@ -9,10 +8,10 @@
 #include "renderer/renderer.hpp"
 #include "macro.hpp"
 #include "global.hpp"
+#include <Geode/ui/Button.hpp>
+#include <Geode/ui/SliderNode.hpp>
 
 using namespace geode::prelude;
-
-// const int seedAddr = 0x6a4e20;
 
 const int indexButton[6] = { 1, 2, 3, 1, 2, 3 };
 

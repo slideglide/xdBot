@@ -11,8 +11,6 @@ private:
 	CCLabelBMFont* intervalLbl = nullptr;
 	CCLabelBMFont* intervalLbl2 = nullptr;
 
-	STATIC_CREATE(AutoSaveLayer)
-
 	void textChanged(CCTextInputNode*) override {
 		std::string str = intervalInput->getString();
 		float mins = geode::utils::numFromString<float>(str).unwrapOr(0.f);
@@ -138,10 +136,6 @@ private:
 
 	}
 
-public:
-	
-	void open(CCObject*) {
-		create()->show();
-	}
-
+	public:
+		STATIC_CREATE(AutoSaveLayer)
 };

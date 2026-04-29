@@ -14,6 +14,10 @@ void Macro::recordAction(int frame, int button, bool player2, bool hold) {
         Macro::updateInfo(pl);
 
     if (g.tpsEnabled) g.macro.framerate = g.tps;
+
+    // Store inputs in the same player lane GD uses for the current mode/settings.
+    if (Macro::flipControls())
+        player2 = !player2;
     
     for (int i = (int)g.macro.inputs.size() - 1; i >= 0; i--) {
         auto& last = g.macro.inputs[i];
@@ -35,9 +39,6 @@ void Macro::recordAction(int frame, int button, bool player2, bool hold) {
         if (!hasPress) return;
     }
 
-    if (Macro::flipControls())
-        player2 = !player2;
-
     g.macro.inputs.push_back(input(frame, button, player2, hold));
 }
 
@@ -51,7 +52,6 @@ void Macro::recordFrameFix(int frame, PlayerObject* p1, PlayerObject* p2) {
     while (p2Rotation < 0 || p2Rotation > 360)
       p2Rotation += p2Rotation < 0 ? 360.f : -360.f;
 
-    // Extended frame data with velocity for improved accuracy
     gdr_legacy::FrameData p1Data;
     p1Data.pos = p1->getPosition();
     p1Data.rotation = p1Rotation;
@@ -111,7 +111,6 @@ void Macro::tryAutosave(GJGameLevel* level, CheckpointObject* cp) {
     if (g.state != state::recording) return;
     if (!g.autosaveEnabled) return;
     if (!g.checkpoints.contains(cp)) return;
-    if (g.checkpoints[cp].frame < g.lastAutoSaveFrame) return;
 
     #ifdef GEODE_IS_IOS
     std::filesystem::path autoSavesPath = g.mod->getSaveDir() / "autosaves";
@@ -241,6 +240,7 @@ Macro Macro::fromLegacy(const LegacyMacro& legacy) {
     }
 
     macro.xdBotMacro = legacy.botInfo.name == "xdBot";
+    macro.isLegacy = true;
 
     return macro;
 }
@@ -486,6 +486,9 @@ void Macro::resetVariables() {
 
     g.addSideHoldingMembers[0] = false;
     g.addSideHoldingMembers[1] = false;
+    for (bool& held : g.respawnHeldButtons) {
+        held = false;
+    }
     /*
     for (int x = 0; x < 2; x++) {
         for (int y = 0; y < 2; y++)

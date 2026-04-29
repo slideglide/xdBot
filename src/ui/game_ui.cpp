@@ -1,4 +1,3 @@
-#include "../includes.hpp"
 #include "game_ui.hpp"
 
 #include <Geode/modify/PlayLayer.hpp>
@@ -24,15 +23,13 @@ class $modify(PlayLayer) {
         #endif
     }
     
-    bool init(GJGameLevel * level, bool b1, bool b2) {
-        if (!PlayLayer::init(level, b1, b2)) return false;
-        
+    void setupHasCompleted() {
+        PlayLayer::setupHasCompleted();
+
         Interface::addLabels(this);
         Interface::addButtons(this);
-        
-        m_fields->frameLabel = static_cast<CCLabelBMFont*>(getChildByID("frame-label"_spr));
-        
-        return true;
+
+        m_fields->frameLabel = static_cast<CCLabelBMFont*>(m_uiLayer->getChildByID("frame_label"_spr));
     }
 };
 
@@ -43,7 +40,7 @@ void Interface::addLabels(PlayLayer* pl) {
     lbl->setID("state-label"_spr);
     lbl->setZOrder(300);
     lbl->setScale(0.625f);
-    pl->addChild(lbl);
+    pl->m_uiLayer->addChild(lbl);
     
     lbl = CCLabelBMFont::create("", "chatFont.fnt");
     lbl->setPosition({ 6.5f, 12 });
@@ -51,58 +48,50 @@ void Interface::addLabels(PlayLayer* pl) {
     lbl->setID("frame-label"_spr);
     lbl->setZOrder(300);
     lbl->setScale(0.625f);
-    pl->addChild(lbl);
-    
-    lbl = CCLabelBMFont::create("Recording Audio", "bigFont.fnt");
-    lbl->setPosition(pl->getContentSize() / 2);
-    lbl->setID("recording-audio-label"_spr);
-    lbl->setZOrder(300);
-    lbl->setOpacity(75);
-    lbl->setVisible(false);
-    pl->addChild(lbl);
+    pl->m_uiLayer->addChild(lbl);
     
     Interface::updateLabels();
 }
 
 void Interface::addButtons(PlayLayer* pl) {
-    cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+    auto stepBtn = Button::createWithSpriteFrameName(
+        "GJ_arrow_02_001.png",
+        [](auto) {
+            if (!Global::get().frameStepper)
+                Global::toggleFrameStepper();
+            else
+                Global::frameStep();
+        }
+    );
+    CCSprite* stepSprite = static_cast<CCSprite*>(stepBtn->getDisplayNode());
+    stepSprite->setFlipX(true);
+    stepSprite->setPosition({ 0, 0 });
+    stepBtn->setAnchorPoint({ 0, 0 });
+    stepBtn->setID("step-frame-btn"_spr);
     
-    CCMenu* menu = CCMenu::create();
-    menu->setZOrder(300);
-    menu->setPosition({ 0, 0 });
-    menu->setID("button-menu"_spr);
-    pl->addChild(menu);
+    pl->m_uiLayer->addChild(stepBtn);
+       
+    auto disableStepperBtn = Button::createWithSpriteFrameName(
+        "GJ_deleteIcon_001.png",
+        [](auto) {
+            if (Global::get().frameStepper)
+                Global::toggleFrameStepper();
+        }
+    );
+    CCSprite* disableSprite = static_cast<CCSprite*>(disableStepperBtn->getDisplayNode());
+    disableStepperBtn->setID("disable-stepper-btn"_spr);
+    disableStepperBtn->setAnchorPoint({ 0, 0 });
+    disableSprite->setPosition({ 0, 0 });
     
-    CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
-    spr->setFlipX(true);
+    pl->m_uiLayer->addChild(disableStepperBtn);
+        
+    auto speedHackBtn = Button::createWithSpriteFrameName("GJ_timeIcon_001.png", [](auto) { Global::toggleSpeedhack(); });
+    CCSprite* speedHackSprite = static_cast<CCSprite*>(speedHackBtn->getDisplayNode());
+    speedHackBtn->setAnchorPoint({ 0, 0 });
+    speedHackBtn->setID("speedhack-btn"_spr);
+    speedHackSprite->setPosition({ 0, 0 });
     
-    CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, pl, menu_selector(Interface::onFrameStepper));
-    btn->setAnchorPoint({ 0, 0 });
-    btn->setID("step-frame-btn");
-    CCSprite* sprite = btn->getChildByType<CCSprite>(0);
-    sprite->setPosition({ 0, 0 });
-    
-    menu->addChild(btn);
-    
-    spr = CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
-    
-    btn = CCMenuItemSpriteExtra::create(spr, pl, menu_selector(Interface::onFrameStepperOff));
-    btn->setID("disable-stepper-btn");
-    btn->setAnchorPoint({ 0, 0 });
-    sprite = btn->getChildByType<CCSprite>(0);
-    sprite->setPosition({ 0, 0 });
-    
-    menu->addChild(btn);
-    
-    spr = CCSprite::createWithSpriteFrameName("GJ_timeIcon_001.png");
-    
-    btn = CCMenuItemSpriteExtra::create(spr, pl, menu_selector(Interface::onSpeedhack));
-    btn->setAnchorPoint({ 0, 0 });
-    btn->setID("speedhack-btn");
-    sprite = btn->getChildByType<CCSprite>(0);
-    sprite->setPosition({ 0, 0 });
-    
-    menu->addChild(btn);
+    pl->m_uiLayer->addChild(speedHackBtn);
     
     Interface::updateButtons();
 }
@@ -114,30 +103,30 @@ void Interface::updateLabels() {
     if (!pl) return;
     
     if (g.state == state::none || !g.frameLabel)
-    static_cast<CCLabelBMFont*>(pl->getChildByID("frame-label"_spr))->setString("");
+        static_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr))->setString("");
     
-    CCLabelBMFont* label = typeinfo_cast<CCLabelBMFont*>(pl->getChildByID("state-label"_spr));
+    CCLabelBMFont* label = typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("state-label"_spr));
     
     if (!label) return;
     
     if (g.mod->getSavedValue<bool>("macro_hide_labels"))
-    return label->setString("");
+        return label->setString("");
     
     state state = g.state;
     std::string labelText = state == state::none ? "" : "Playing";
     if (state == state::recording)
-    labelText = "Recording";
+        labelText = "Recording";
     
     if (labelText == "Recording" && state == state::recording && g.mod->getSavedValue<bool>("macro_hide_recording_label"))
-    labelText = "";
+        labelText = "";
     
     if (labelText == "Playing" && state == state::playing && g.mod->getSavedValue<bool>("macro_hide_playing_label"))
-    labelText = "";
+        labelText = "";
     
 #ifndef GEODE_IS_IOS
     if (g.renderer.recording && g.mod->getSavedValue<bool>("render_hide_labels")) {
         labelText = "";
-        if (CCLabelBMFont* lbl = typeinfo_cast<CCLabelBMFont*>(pl->getChildByID("frame-label"_spr)))
+        if (CCLabelBMFont* lbl = typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr)))
         lbl->setString("");
     }
     #endif
@@ -148,10 +137,7 @@ void Interface::updateLabels() {
 void Interface::updateButtons() {
     PlayLayer* pl = PlayLayer::get();
     if (!pl) return;
-    
-    CCNode* menu = pl->getChildByID("button-menu"_spr);
-    if (!menu) return;
-    
+        
     auto& g = Global::get();
     
     #ifdef GEODE_IS_DESKTOP
@@ -160,9 +146,9 @@ void Interface::updateButtons() {
     bool isDesktop = false;
     #endif
     
-    CCNode* disableStepperBtn = menu->getChildByID("disable-stepper-btn");
-    CCNode* stepFrameBtn = menu->getChildByID("step-frame-btn");
-    CCNode* speedhackBtn = menu->getChildByID("speedhack-btn");
+    CCNode* disableStepperBtn = pl->m_uiLayer->getChildByID("disable-stepper-btn"_spr);
+    CCNode* stepFrameBtn = pl->m_uiLayer->getChildByID("step-frame-btn"_spr);
+    CCNode* speedhackBtn = pl->m_uiLayer->getChildByID("speedhack-btn"_spr);
     
     disableStepperBtn->setPosition(ccp(
         g.mod->getSavedValue<float>("button_off_pos_x"),

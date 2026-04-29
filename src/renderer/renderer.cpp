@@ -18,6 +18,7 @@
 #ifndef GEODE_IS_IOS
 
 static bool writePCMWav(const std::filesystem::path& outPath, std::span<const float> pcm, FMOD::System* system);
+bool m_cbsWasEnabled;
 
 class $modify(CCParticleSystem) {
     void initParticle(sCCParticle* p0) {
@@ -183,21 +184,16 @@ bool Renderer::shouldUseAPI() {
 
 bool Renderer::toggle() {
     auto& g = Global::get();
-
-    if (Loader::get()->isModLoaded("syzzi.click_between_frames")) {
+    auto gm = GameManager::sharedState();
+    auto cbf = Loader::get()->getLoadedMod("syzzi.click_between_frames");
+    if (cbf && !cbf->getSettingValue<bool>("soft-toggle")) {
         FLAlertLayer::create("Render", "Disable CBF in Geode to render a level.", "OK")->show();
         return false;
     }
 
-    if (GameManager::sharedState()->getGameVariable(GameVar::ClickBetweenSteps)) {
-        auto scene = CCScene::get();
-        if (scene && !scene->getChildByID("render-alert"_spr)) {
-            auto alert = FLAlertLayer::create(
-                "Render", "Disable <cr>Click Between Steps</c> to render a level.", "OK");
-            alert->setID("render-alert"_spr);
-            alert->show();
-        }
-        return false;
+    m_cbsWasEnabled = gm->getGameVariable(GameVar::ClickBetweenSteps);
+    if (m_cbsWasEnabled) {
+        gm->setGameVariable(GameVar::ClickBetweenSteps, false);
     }
 
     bool foundApi = shouldUseAPI();
@@ -215,7 +211,7 @@ bool Renderer::toggle() {
 #ifdef GEODE_IS_WINDOWS
         if (!foundApi && !foundExe) {
             geode::createQuickPopup("Error",
-                "<cl>FFmpeg</c> not found. Install eclipse.ffmpeg-api, or set the path "
+                "<cl>FFmpeg</c> not found. Either install FFmpeg API, or set the path "
                 "to ffmpeg.exe in mod settings.\nOpen download link?",
                 "Cancel", "Yes", [](auto, bool btn2) {
                     if (btn2) {
@@ -295,7 +291,7 @@ void Renderer::fixUIObjects() {
     auto pl = PlayLayer::get();
     if (!pl) return;
 
-    for (auto obj : geode::cocos::CCArrayExt<GameObject*>(pl->m_objects)) {
+    for (auto obj : CCArrayExt<GameObject*>(pl->m_objects)) {
         auto it = pl->m_uiObjectPositions.find(obj->m_uniqueID);
         if (it == pl->m_uiObjectPositions.end()) continue;
         obj->setStartPos(it->second);
@@ -384,18 +380,22 @@ void Renderer::start() {
 
     if (!mod->setSavedValue("first_render_", true)) {
         FLAlertLayer::create("Warning",
-            "If you have a macro for the level, <cl>let it run</cl> to allow the level to render.",
+            "If you have a macro for the level, <cl>let it run</c> to allow the level to render.",
             "OK")->show();
     }
 
     async::runtime().spawnBlocking<void>([this]() { recordThread(); });
 }
 
-void Renderer::stop(int /*frame*/) {
+void Renderer::stop() {
     if (!recording) return;
     recording = false;
 
     m_frameReady.set(true);
+
+     if (m_cbsWasEnabled) {
+        GameManager::sharedState()->setGameVariable(GameVar::ClickBetweenSteps, true);
+    }
 
     m_renderTexture.end();
     restoreWinSize();
@@ -609,7 +609,7 @@ void Renderer::recordThread() {
     log::info("Renderer: mixing audio, pcm samples={}, video duration={:.3f}s",
         pcmSpan.size(), capturedLastFrame);
 
-    geode::Result<> mixRes = geode::Err(std::string("not started"));
+    geode::Result<> mixRes = geode::Err("not started");
 
     if (usingApi) {
         mixRes = ffmpeg::events::AudioMixer::mixVideoRaw(videoPath, pcmSpan, tempPath);
@@ -637,7 +637,7 @@ void Renderer::recordThread() {
 
         log::info("Renderer (recorded audio): {}", cmd);
         auto proc = subprocess::Popen(cmd);
-        if (proc.close()) mixRes = geode::Err(std::string("Wrong Audio Args"));
+        if (proc.close()) mixRes = geode::Err("Wrong Audio Args");
         else              mixRes = geode::Ok();
 
         std::error_code ec;

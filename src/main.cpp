@@ -105,11 +105,11 @@ class $modify(PlayLayer) {
             }
             if (m_isPlatformer) {
                 if (m_player2->m_holdingButtons[2]) {
-                    handleButton(false, 2, false);
+                    handleButton(false, 2, true);
                     g.macro.inputs.push_back(input(frame, 2, true, false));
                 }
                 if (m_player2->m_holdingButtons[3]) {
-                    handleButton(false, 3, false);
+                    handleButton(false, 3, true);
                     g.macro.inputs.push_back(input(frame, 3, true, false));
                 }
             }
@@ -136,7 +136,7 @@ class $modify(PlayLayer) {
         g.ignoreRecordAction = true;
 
         PlayerObject* players[2] = { m_player1, m_player2 };
-        g.respawnHeldButtons[0] = true;
+        g.respawnHeldButtons[0] = players[0] ? players[0]->m_holdingButtons[1] : false;
         g.respawnHeldButtons[1] = players[0] ? players[0]->m_holdingButtons[2] : false;
         g.respawnHeldButtons[2] = players[0] ? players[0]->m_holdingButtons[3] : false;
         g.respawnHeldButtons[3] = players[1] ? players[1]->m_holdingButtons[1] : false;
@@ -192,8 +192,7 @@ class $modify(PlayLayer) {
 
         g.ignoreRecordAction = true;
         for (int i = 0; i < 4; i++) {
-            bool player2 = !(sidesButtons[i] > 2);
-            bool rightKey = sidesButtons[i] == 5 || sidesButtons[i] == 2;
+            bool player2 = sidesButtons[i] > 2;
             if (g.heldButtons[sidesButtons[i]])
                 handleButton(true, indexButton[sidesButtons[i]], player2);
         }
@@ -333,6 +332,27 @@ class $modify(BGLHook, GJBaseGameLayer) {
         g.macro.recordFrameFix(frame, m_player1, m_player2);
     }
 
+    bool isHoldActivatedRingMode(PlayerObject* player) {
+        if (!player) return false;
+        return player->m_isShip || player->m_isBird || player->m_isDart || player->m_isSwing;
+    }
+
+    void playerTouchedRing(PlayerObject* player, RingObject* ring) {
+        GJBaseGameLayer::playerTouchedRing(player, ring);
+
+        auto& g = Global::get();
+        if (!player || !ring || g.state == state::none) return;
+        if (!isHoldActivatedRingMode(player)) return;
+
+        bool player2 = m_gameState.m_isDualMode && player == m_player2;
+        int jumpIdx = player2 ? 3 : 0;
+
+        // Hold restore is a continued hold, not a new click, so activate the ring directly.
+        if (g.respawnHeldButtons[jumpIdx] && player->m_holdingButtons[1]) {
+            player->ringJump(ring, false);
+        }
+    }
+
     void handlePlaying(int frame) {
         auto& g = Global::get();
         if (m_levelEndAnimationStarted) return;
@@ -343,10 +363,6 @@ class $modify(BGLHook, GJBaseGameLayer) {
             return;
         }
         
-        if (!g.macro.xdBotMacro) {
-            frame = m_gameState.m_currentProgress / 2 - g.frameOffset;
-        }
-
         m_fields->macroInput = true;
 
         while (g.currentAction < g.macro.inputs.size() && frame >= g.macro.inputs[g.currentAction].frame) {
@@ -370,7 +386,7 @@ class $modify(BGLHook, GJBaseGameLayer) {
             }
         }
 
-        if ((!g.frameFixes && !g.inputFixes) || !PlayLayer::get()) return;
+        if (!(g.frameFixes || g.inputFixes) || !PlayLayer::get()) return;
 
         while (g.currentFrameFix < g.macro.frameFixes.size() && frame >= g.macro.frameFixes[g.currentFrameFix].frame) {
             auto& fix = g.macro.frameFixes[g.currentFrameFix];
@@ -378,34 +394,22 @@ class $modify(BGLHook, GJBaseGameLayer) {
             PlayerObject* p1 = m_player1;
             PlayerObject* p2 = m_player2;
 
-            if (fix.p1.pos.x != 0.f && fix.p1.pos.y != 0.f)
-                p1->setPosition(fix.p1.pos);
+            p1->setPosition(fix.p1.pos);
             if (fix.p1.rotate && fix.p1.rotation != 0.f)
                 p1->setRotation(fix.p1.rotation);
-            // Apply velocity from frame fix for improved accuracy
-            if (fix.p1.yVelocity != 0.0)
-                p1->m_yVelocity = fix.p1.yVelocity;
-            if (fix.p1.xVelocity != 0.0)
-                p1->m_platformerXVelocity = fix.p1.xVelocity;
-            if (fix.p1.isDashing)
-                p1->m_isDashing = fix.p1.isDashing;
-            if (fix.p1.isOnGround)
-                p1->m_isOnGround = fix.p1.isOnGround;
+            p1->m_yVelocity = fix.p1.yVelocity;
+            p1->m_platformerXVelocity = fix.p1.xVelocity;
+            p1->m_isDashing = fix.p1.isDashing;
+            p1->m_isOnGround = fix.p1.isOnGround;
 
             if (m_gameState.m_isDualMode) {
-                if (fix.p2.pos.x != 0.f && fix.p2.pos.y != 0.f)
-                    p2->setPosition(fix.p2.pos);
+                p2->setPosition(fix.p2.pos);
                 if (fix.p2.rotate && fix.p2.rotation != 0.f)
                     p2->setRotation(fix.p2.rotation);
-                // Apply velocity from frame fix for player 2
-                if (fix.p2.yVelocity != 0.0)
-                    p2->m_yVelocity = fix.p2.yVelocity;
-                if (fix.p2.xVelocity != 0.0)
-                    p2->m_platformerXVelocity = fix.p2.xVelocity;
-                if (fix.p2.isDashing)
-                    p2->m_isDashing = fix.p2.isDashing;
-                if (fix.p2.isOnGround)
-                    p2->m_isOnGround = fix.p2.isOnGround;
+                p2->m_yVelocity = fix.p2.yVelocity;
+                p2->m_platformerXVelocity = fix.p2.xVelocity;
+                p2->m_isDashing = fix.p2.isDashing;
+                p2->m_isOnGround = fix.p2.isOnGround;
             }
 
             g.currentFrameFix++;
@@ -461,20 +465,15 @@ class $modify(BGLHook, GJBaseGameLayer) {
 
         if (!g.ignoreRecordAction && !g.creatingTrajectory && !m_player1->m_isDead) {
             int idx = buttonIndex[player2 ? 1 : 0].at(button);
-            if (!g.respawnHeldButtons[idx]) {
-                g.macro.recordAction(frame, button, player2, hold);
-                if (g.p2mirror && m_gameState.m_isDualMode)
-                    g.macro.recordAction(frame, button, !player2,
-                        g.mod->getSavedValue<bool>("p2_input_mirror_inverted") ? !hold : hold);
-            } else {
+            if (g.respawnHeldButtons[idx]) {
+                if (hold) return;
                 g.respawnHeldButtons[idx] = false;
-                if (hold) {
-                    g.macro.recordAction(frame, button, player2, hold);
-                    if (g.p2mirror && m_gameState.m_isDualMode)
-                        g.macro.recordAction(frame, button, !player2,
-                            g.mod->getSavedValue<bool>("p2_input_mirror_inverted") ? !hold : hold);
-                }
             }
+
+            g.macro.recordAction(frame, button, player2, hold);
+            if (g.p2mirror && m_gameState.m_isDualMode)
+                g.macro.recordAction(frame, button, !player2,
+                    g.mod->getSavedValue<bool>("p2_input_mirror_inverted") ? !hold : hold);
         }
     }
 };

@@ -4,6 +4,7 @@
 #include "macro.hpp"
 #include "renderer/renderer.hpp"
 #include <eclipse.eclipse-menu/include/config.hpp>
+#include "practice_fixes/practice_fixes.hpp"
 
 class Global {
 

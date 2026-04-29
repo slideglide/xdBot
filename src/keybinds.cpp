@@ -5,41 +5,15 @@
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/GameEvent.hpp>
 #include <Geode/utils/Keyboard.hpp>
-#include <Geode/modify/CCKeyboardDispatcher.hpp>
-
-class $modify(CCKeyboardDispatcher) {
-    bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double time) {
-        
-        auto& g = Global::get();
-                
-        // if (key == enumKeyCodes::KEY_L && !isKeyRepeat && isKeyDown) {
-        // }
-        
-        #ifdef DEBUG_PRACTICE_FIXES
-        if (key == enumKeyCodes::KEY_F && !isKeyRepeat && isKeyDown && PlayLayer::get()) {
-           log::debug("POS DEBUG {}", PlayLayer::get()->m_player1->getPosition());
-           log::debug("POS2 DEBUG {}", PlayLayer::get()->m_player2->getPosition());
-        }
-        #endif
-        
-        
-        // if (key == enumKeyCodes::KEY_J && !isKeyRepeat && isKeyDown && PlayLayer::get()) {
-        //   std::string str = ZipUtils::decompressString(PlayLayer::get()->m_level->m_levelString.c_str(), true, 0);
-        //   log::debug("{}", str);
-        // }
-        
-        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, time);
-    }
-};
 
 $on_mod(Loaded) {
     KeyboardInputEvent().listen([](KeyboardInputData& data) {
         auto& g = Global::get();
         int keyInt = static_cast<int>(data.key);
-
+        
         bool isKeyRepeat = (data.action == KeyboardInputData::Action::Repeat);
         bool isKeyDown = (data.action == KeyboardInputData::Action::Press);
-
+        
         if (g.allKeybinds.contains(keyInt) && !isKeyRepeat) {
             for (size_t i = 0; i < 6; i++) {
                 if (std::find(g.keybinds[i].begin(), g.keybinds[i].end(), keyInt) != g.keybinds[i].end()) {
@@ -52,10 +26,13 @@ $on_mod(Loaded) {
     }).leak();
 }
 
-void handleKeybind(std::string const& id, bool down, bool repeat, double time) {
+void handleKeybind(std::string_view id, bool down, bool repeat, double time) {
     auto& g = Global::get();
     
-    if (!down || (LevelEditorLayer::get() && !g.mod->getSettingValue<bool>("editor_keybinds")) || g.mod->getSettingValue<bool>("disable_keybinds")) return;
+    if (!down || (LevelEditorLayer::get() && !g.mod->getSettingValue<bool>("editor_keybinds")) || 
+    g.mod->getSettingValue<bool>("disable_keybinds")) {
+        return;
+    }
     
     if (auto scene = CCScene::get()) {
         if (id == "open_menu_keybind" && g.layer && scene->getChildByIndex(-1) != g.layer) return;
@@ -63,93 +40,94 @@ void handleKeybind(std::string const& id, bool down, bool repeat, double time) {
     
     if (g.state != state::recording && g.mod->getSettingValue<bool>("recording_only_keybinds")) return;
     
-    if (id == "open_menu_keybind") {
-        if (g.layer) {
-            static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
-            return;
-        }
+    static std::unordered_map<std::string_view, geode::Function<void()>> handlers = [] {
+        std::unordered_map<std::string_view, geode::Function<void()>> map;
         
-        RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
-    }
-    
-    else if (id == "toggle_recording_keybind")
-    Macro::toggleRecording();
-    
-    else if (id == "toggle_playing_keybind")
-    Macro::togglePlaying();
-    
-    else if (id == "toggle_frame_stepper_keybind" && PlayLayer::get())
-    Global::toggleFrameStepper();
-    
-    else if (id == "step_frame_keybind")
-    Global::frameStep();
-    
-    else if (id == "toggle_speedhack_keybind")
-    Global::toggleSpeedhack();
-    
-    else if (id == "show_trajectory_keybind") {
-        g.mod->setSavedValue("macro_show_trajectory", !g.mod->getSavedValue<bool>("macro_show_trajectory"));
+        map["open_menu_keybind"] = []() {
+            auto& g = Global::get();
+            if (g.layer) {
+                static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
+            } else {
+                RecordLayer::openMenu(g.mod->getSettingValue<bool>("open_menu_instant"));
+            }
+        };
         
-        if (g.layer) {
-            if (static_cast<RecordLayer*>(g.layer)->trajectoryToggle)
-            static_cast<RecordLayer*>(g.layer)->trajectoryToggle->toggle(g.mod->getSavedValue<bool>("macro_show_trajectory"));
-        }
+        map["toggle_recording_keybind"] = []() { Macro::toggleRecording(); };
+        map["toggle_playing_keybind"]   = []() { Macro::togglePlaying(); };
         
-        g.showTrajectory = g.mod->getSavedValue<bool>("macro_show_trajectory");
-        if (!g.showTrajectory) ShowTrajectory::trajectoryOff();
-    }
-    
-    else if (id == "toggle_render_keybind" && PlayLayer::get()) {
-      #ifdef GEODE_IS_WINDOWS
-      bool result = Renderer::toggle();
-
-      if (result)
-        Notification::create("Started Rendering", NotificationIcon::Info)->show();
-
-      if (g.layer) {
-        if (static_cast<RecordLayer*>(g.layer)->renderToggle)
-          static_cast<RecordLayer*>(g.layer)->renderToggle->toggle(Global::get().renderer.recording);
-      }
-      #endif
-
-    }
-    
-    else if (id == "toggle_noclip_keybind") {
-        g.mod->setSavedValue("macro_noclip", !g.mod->getSavedValue<bool>("macro_noclip"));
+        map["toggle_frame_stepper_keybind"] = []() { 
+            if (PlayLayer::get()) Global::toggleFrameStepper(); 
+        };
         
-        if (g.layer) {
-            if (static_cast<RecordLayer*>(g.layer)->noclipToggle)
-            static_cast<RecordLayer*>(g.layer)->noclipToggle->toggle(g.mod->getSavedValue<bool>("macro_noclip"));
-        }
+        map["step_frame_keybind"] = []() { Global::frameStep(); };
+        
+        map["toggle_speedhack_keybind"] = []() { Global::toggleSpeedhack(); };
+        
+        map["show_trajectory_keybind"] = []() {
+            auto& g = Global::get();
+            bool newState = !g.mod->getSavedValue<bool>("macro_show_trajectory");
+            g.mod->setSavedValue("macro_show_trajectory", newState);
+            g.showTrajectory = newState;
+            
+            if (auto* layer = static_cast<RecordLayer*>(g.layer)) {
+                if (layer->trajectoryToggle) layer->trajectoryToggle->toggle(newState);
+            }
+            if (!newState) ShowTrajectory::trajectoryOff();
+        };
+        
+        map["toggle_render_keybind"] = []() {
+            if (PlayLayer::get()) {
+                auto& g = Global::get();
+                if (Renderer::toggle()) {
+                    Notification::create("Started Rendering", NotificationIcon::Info)->show();
+                }
+                if (auto* layer = static_cast<RecordLayer*>(g.layer)) {
+                    if (layer->renderToggle) layer->renderToggle->toggle(g.renderer.recording);
+                }
+            }
+        };
+        
+        map["toggle_noclip_keybind"] = []() {
+            auto& g = Global::get();
+            bool newState = !g.mod->getSavedValue<bool>("macro_noclip");
+            g.mod->setSavedValue("macro_noclip", newState);
+            
+            if (auto* layer = static_cast<RecordLayer*>(g.layer)) {
+                if (layer->noclipToggle) layer->noclipToggle->toggle(newState);
+            }
+        };
+        
+        return map;
+    }();
+    
+    if (auto it = handlers.find(id); it != handlers.end()) {
+        it->second();
     }
 }
 
 $execute{
-    listenForKeybindSettingPresses("open_menu_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("open_menu_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_recording_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("toggle_recording_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_playing_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("toggle_playing_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_speedhack_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("toggle_speedhack_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_frame_stepper_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("toggle_frame_stepper_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("step_frame_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("step_frame_keybind", down, repeat, time);
-    });
-    listenForKeybindSettingPresses("show_trajectory_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("show_trajectory_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_render_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-      handleKeybind("toggle_render_keybind", down, false, time);
-    });
-    listenForKeybindSettingPresses("toggle_noclip_keybind", [](Keybind const&, bool down, bool repeat, double time) {
-        handleKeybind("toggle_noclip_keybind", down, false, time);
-    });
+    struct KeybindEntry {
+        std::string_view id;
+        bool passRepeat;
+    };
+    
+    constexpr KeybindEntry keybinds[] = {
+        {"open_menu_keybind", false},
+        {"toggle_recording_keybind", false},
+        {"toggle_playing_keybind", false},
+        {"toggle_speedhack_keybind", false},
+        {"toggle_frame_stepper_keybind", false},
+        {"step_frame_keybind", true},
+        {"show_trajectory_keybind", false},
+        {"toggle_render_keybind", false},
+        {"toggle_noclip_keybind", false},
+    };
+    
+    for (const auto& entry : keybinds) {
+        listenForKeybindSettingPresses(std::string(entry.id), 
+        [id = entry.id, passRepeat = entry.passRepeat](Keybind const&, bool down, bool repeat, double time) {
+            handleKeybind(id, down, passRepeat ? repeat : false, time);
+        }
+    );
+}
 }

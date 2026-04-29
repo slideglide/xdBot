@@ -144,16 +144,16 @@ class SaveMacroLayer : public geode::Popup {
         
         switch (selectedFormat) {
             case SaveFormat::GDR2:
-            formatLabel->setString(fmt::format("{}: GDR2", prefix).c_str());
-            arrowLabel->setString("GDR2");
+                formatLabel->setString(fmt::format("{}: GDR2", prefix).c_str());
+                arrowLabel->setString("GDR2");
             break;
             case SaveFormat::GDR1:
-            formatLabel->setString(fmt::format("{}: GDR", prefix).c_str());
-            arrowLabel->setString("GDR");
+                formatLabel->setString(fmt::format("{}: GDR", prefix).c_str());
+                arrowLabel->setString("GDR");
             break;
             case SaveFormat::JSON:
-            formatLabel->setString(fmt::format("{}: JSON", prefix).c_str());
-            arrowLabel->setString("JSON");
+                formatLabel->setString(fmt::format("{}: JSON", prefix).c_str());
+                arrowLabel->setString("JSON");
             break;
         }
     }

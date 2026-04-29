@@ -52,8 +52,8 @@ void RenderSettingsLayer::onDefaults(CCObject*) {
             g.mod->setSavedValue("render_hide_endscreen",   false);
             g.mod->setSavedValue("render_hide_levelcomplete", false);
             
-            auto children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-            for (auto obj : CCArrayExt(children)) {
+            auto children = CCScene::get()->getChildrenExt();
+            for (auto obj : children) {
                 if (auto layer = typeinfo_cast<RecordLayer*>(obj)) {
                     layer->onClose(nullptr);
                     break;
