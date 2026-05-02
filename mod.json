@@ -9,7 +9,7 @@
 	"version": "2.6.0",
 	"id": "zilko.xdbot",
 	"name": "xdBot",
-	"developer": "Zilko",
+	"developers": ["Zilko", "slideglide"],
 	"description": "Best Free Bot fr",
 	"dependencies": {
 		"eclipse.eclipse-menu": {
@@ -243,7 +243,7 @@
             "resources/default_release_right.mp3"
         ]
     },
-	"links": { "source": "https://github.com/ZiLko/xdBot", "community": "https://discord.gg/w6yvdzVzBd" },
+	"links": { "source": "https://github.com/slideglide/xdBot", "community": "https://discord.gg/w6yvdzVzBd" },
 	"tags": ["gameplay", "utility", "cheat"]
 
 }

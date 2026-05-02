@@ -8,14 +8,13 @@ const std::vector<std::string> indexToID = {
 const std::map<std::string, int> IDtoIndex{
     {"button_off", 0}, {"button_advance_frame", 1}, {"button_speedhack", 2}};
 
-const std::map<std::string, std::string> IDtoName{
-    {"button_off", "Frame Stepper Off"},
-    {"button_advance_frame", "Advance Frame"},
-    {"button_speedhack", "Toggle Speedhack"}};
+const std::map<std::string, std::string> IDtoName{{"button_off", "Frame Stepper Off"},
+                                                  {"button_advance_frame", "Advance Frame"},
+                                                  {"button_speedhack", "Toggle Speedhack"}};
 
 struct MovingButton {
     size_t index = 0;
-    CCSprite *sprite = nullptr;
+    CCSprite* sprite = nullptr;
     cocos2d::CCPoint offset = ccp(0, 0);
 };
 
@@ -27,17 +26,17 @@ class ButtonEditLayer : public geode::Popup {
   public:
     STATIC_CREATE(ButtonEditLayer)
 
-    Mod *mod = nullptr;
-    CCMenu *menu = nullptr;
+    Mod* mod = nullptr;
+    CCMenu* menu = nullptr;
 
-    Slider *scaleSlider = nullptr;
-    Slider *opacitySlider = nullptr;
+    Slider* scaleSlider = nullptr;
+    Slider* opacitySlider = nullptr;
 
-    CCLabelBMFont *scaleLbl = nullptr;
-    CCLabelBMFont *opacityLbl = nullptr;
-    CCLabelBMFont *selectedLbl = nullptr;
+    CCLabelBMFont* scaleLbl = nullptr;
+    CCLabelBMFont* opacityLbl = nullptr;
+    CCLabelBMFont* selectedLbl = nullptr;
 
-    std::vector<CCSprite *> spriteButtons;
+    std::vector<CCSprite*> spriteButtons;
 
     MovingButton movingButton;
 
@@ -47,12 +46,9 @@ class ButtonEditLayer : public geode::Popup {
     std::map<std::string, float> scales;
     std::map<std::string, float> opacities;
 
-    bool ccTouchBegan(cocos2d::CCTouch *touch,
-                      cocos2d::CCEvent *event) override;
-    void ccTouchMoved(cocos2d::CCTouch *touch,
-                      cocos2d::CCEvent *event) override;
-    void ccTouchEnded(cocos2d::CCTouch *touch,
-                      cocos2d::CCEvent *event) override;
+    bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchMoved(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchEnded(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
 
     void updateSelectedLabels();
 
@@ -66,7 +62,6 @@ class ButtonEditLayer : public geode::Popup {
 
     void addSprites();
 
-    static bool isPointInButton(cocos2d::CCPoint clickPos,
-                                cocos2d::CCPoint btnPos,
-                                cocos2d::CCSize btnSize);
+    static bool
+    isPointInButton(cocos2d::CCPoint clickPos, cocos2d::CCPoint btnPos, cocos2d::CCSize btnSize);
 };

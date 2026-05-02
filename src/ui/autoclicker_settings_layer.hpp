@@ -3,39 +3,33 @@
 class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
 
   private:
-    TextInput *holdInput = nullptr;
-    TextInput *releaseInput = nullptr;
+    TextInput* holdInput = nullptr;
+    TextInput* releaseInput = nullptr;
 
-    CCLabelBMFont *holdLbl = nullptr;
-    CCLabelBMFont *releaseLbl = nullptr;
-    CCLabelBMFont *holdTitle = nullptr;
-    CCLabelBMFont *releaseTitle = nullptr;
+    CCLabelBMFont* holdLbl = nullptr;
+    CCLabelBMFont* releaseLbl = nullptr;
+    CCLabelBMFont* holdTitle = nullptr;
+    CCLabelBMFont* releaseTitle = nullptr;
 
-    TextInput *holdInput2 = nullptr;
-    TextInput *releaseInput2 = nullptr;
+    TextInput* holdInput2 = nullptr;
+    TextInput* releaseInput2 = nullptr;
 
-    CCLabelBMFont *holdLbl2 = nullptr;
-    CCLabelBMFont *releaseLbl2 = nullptr;
-    CCLabelBMFont *holdTitle2 = nullptr;
-    CCLabelBMFont *releaseTitle2 = nullptr;
+    CCLabelBMFont* holdLbl2 = nullptr;
+    CCLabelBMFont* releaseLbl2 = nullptr;
+    CCLabelBMFont* holdTitle2 = nullptr;
+    CCLabelBMFont* releaseTitle2 = nullptr;
 
-    CCMenuItemToggler *toggleP1 = nullptr;
-    CCMenuItemToggler *toggleP2 = nullptr;
+    CCMenuItemToggler* toggleP1 = nullptr;
+    CCMenuItemToggler* toggleP2 = nullptr;
 
     STATIC_CREATE(AutoclickerLayer)
 
-    void textChanged(CCTextInputNode *) override {
-        auto &g = Global::get();
-        g.holdFor = geode::utils::numFromString<int>(holdInput->getString())
-                        .unwrapOr(0);
-        g.releaseFor =
-            geode::utils::numFromString<int>(releaseInput->getString())
-                .unwrapOr(0);
-        g.holdFor2 = geode::utils::numFromString<int>(holdInput2->getString())
-                         .unwrapOr(0);
-        g.releaseFor2 =
-            geode::utils::numFromString<int>(releaseInput2->getString())
-                .unwrapOr(0);
+    void textChanged(CCTextInputNode*) override {
+        auto& g = Global::get();
+        g.holdFor = geode::utils::numFromString<int>(holdInput->getString()).unwrapOr(0);
+        g.releaseFor = geode::utils::numFromString<int>(releaseInput->getString()).unwrapOr(0);
+        g.holdFor2 = geode::utils::numFromString<int>(holdInput2->getString()).unwrapOr(0);
+        g.releaseFor2 = geode::utils::numFromString<int>(releaseInput2->getString()).unwrapOr(0);
 
         g.mod->setSavedValue("autoclicker_hold_for", g.holdFor);
         g.mod->setSavedValue("autoclicker_release_for", g.releaseFor);
@@ -45,11 +39,9 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         float dt = 1.f / Global::getTPS();
 
         holdLbl->setString(fmt::format("{:.3f}s", dt * g.holdFor).c_str());
-        releaseLbl->setString(
-            fmt::format("{:.3f}s", dt * g.releaseFor).c_str());
+        releaseLbl->setString(fmt::format("{:.3f}s", dt * g.releaseFor).c_str());
         holdLbl2->setString(fmt::format("{:.3f}s", dt * g.holdFor2).c_str());
-        releaseLbl2->setString(
-            fmt::format("{:.3f}s", dt * g.releaseFor2).c_str());
+        releaseLbl2->setString(fmt::format("{:.3f}s", dt * g.releaseFor2).c_str());
     }
 
     bool init() override {
@@ -61,7 +53,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
 
         float x = m_size.width - 72;
 
-        CCLabelBMFont *lbl = CCLabelBMFont::create("Player 1", "goldFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create("Player 1", "goldFont.fnt");
         lbl->setPosition({m_size.width / 2, 195});
         lbl->setScale(0.46f);
         m_mainLayer->addChild(lbl);
@@ -91,8 +83,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         holdInput = TextInput::create(50, "Frames", "chatFont.fnt");
         holdInput->setPosition({72, 150});
         holdInput->setString(
-            geode::utils::numToString(
-                Mod::get()->getSavedValue<int64_t>("autoclicker_hold_for"))
+            geode::utils::numToString(Mod::get()->getSavedValue<int64_t>("autoclicker_hold_for"))
                 .c_str());
         holdInput->getInputNode()->setDelegate(this);
         holdInput->getInputNode()->setAllowedChars("0123456789");
@@ -102,8 +93,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         releaseInput = TextInput::create(50, "Frames", "chatFont.fnt");
         releaseInput->setPosition({x, 150});
         releaseInput->setString(
-            geode::utils::numToString(
-                Mod::get()->getSavedValue<int64_t>("autoclicker_release_for"))
+            geode::utils::numToString(Mod::get()->getSavedValue<int64_t>("autoclicker_release_for"))
                 .c_str());
         releaseInput->getInputNode()->setDelegate(this);
         releaseInput->getInputNode()->setAllowedChars("0123456789");
@@ -142,8 +132,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         holdInput2 = TextInput::create(50, "Frames", "chatFont.fnt");
         holdInput2->setPosition({72, 70});
         holdInput2->setString(
-            geode::utils::numToString(
-                Mod::get()->getSavedValue<int64_t>("autoclicker_hold_for2"))
+            geode::utils::numToString(Mod::get()->getSavedValue<int64_t>("autoclicker_hold_for2"))
                 .c_str());
         holdInput2->getInputNode()->setDelegate(this);
         holdInput2->getInputNode()->setAllowedChars("0123456789");
@@ -152,37 +141,38 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
 
         releaseInput2 = TextInput::create(50, "Frames", "chatFont.fnt");
         releaseInput2->setPosition({x, 70});
-        releaseInput2->setString(
-            geode::utils::numToString(
-                Mod::get()->getSavedValue<int64_t>("autoclicker_release_for2"))
-                .c_str());
+        releaseInput2->setString(geode::utils::numToString(
+                                     Mod::get()->getSavedValue<int64_t>("autoclicker_release_for2"))
+                                     .c_str());
         releaseInput2->getInputNode()->setDelegate(this);
         releaseInput2->getInputNode()->setAllowedChars("0123456789");
         releaseInput2->getInputNode()->setMaxLabelLength(4);
         m_mainLayer->addChild(releaseInput2);
 
-        toggleP1 = CCMenuItemToggler::create(
-            CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-            CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-            menu_selector(AutoclickerLayer::onToggle));
+        toggleP1 =
+            CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                      CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                      this,
+                                      menu_selector(AutoclickerLayer::onToggle));
         toggleP1->setPosition({162, 195});
         toggleP1->setScale(0.5f);
         toggleP1->toggle(Global::get().autoclickerP1);
         m_buttonMenu->addChild(toggleP1);
 
-        toggleP2 = CCMenuItemToggler::create(
-            CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-            CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-            menu_selector(AutoclickerLayer::onToggle));
+        toggleP2 =
+            CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                      CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                      this,
+                                      menu_selector(AutoclickerLayer::onToggle));
         toggleP2->setPosition({162, 115});
         toggleP2->setScale(0.5f);
         toggleP2->toggle(Global::get().autoclickerP2);
         m_buttonMenu->addChild(toggleP2);
 
-        ButtonSprite *btnSpr = ButtonSprite::create("OK");
+        ButtonSprite* btnSpr = ButtonSprite::create("OK");
         btnSpr->setScale(0.7f);
-        CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
-            btnSpr, this, menu_selector(AutoclickerLayer::onClose));
+        CCMenuItemSpriteExtra* btn =
+            CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(AutoclickerLayer::onClose));
         btn->setPosition({m_size.width / 2, 24});
         m_buttonMenu->addChild(btn);
 
@@ -192,9 +182,9 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         return true;
     }
 
-    void onToggle(CCObject *) {
+    void onToggle(CCObject*) {
         Loader::get()->queueInMainThread([this] {
-            auto &g = Global::get();
+            auto& g = Global::get();
             g.autoclickerP1 = toggleP1->isToggled();
             g.autoclickerP2 = toggleP2->isToggled();
             g.mod->setSavedValue("autoclicker_p1", g.autoclickerP1);
@@ -204,14 +194,13 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
     }
 
     void updateInputs() {
-        auto &g = Global::get();
+        auto& g = Global::get();
 
         holdTitle->setOpacity(g.autoclickerP1 ? 255 : 100);
         holdLbl->setOpacity(g.autoclickerP1 ? 86 : 23);
         holdInput->getBGSprite()->setOpacity(g.autoclickerP1 ? 90 : 30);
         holdInput->setEnabled(g.autoclickerP1);
-        holdInput->getInputNode()->m_textLabel->setOpacity(
-            g.autoclickerP1 ? 255 : 100);
+        holdInput->getInputNode()->m_textLabel->setOpacity(g.autoclickerP1 ? 255 : 100);
         if (!g.autoclickerP1) {
             holdInput->getInputNode()->detachWithIME();
             holdInput->getInputNode()->onClickTrackNode(false);
@@ -222,8 +211,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         holdLbl2->setOpacity(g.autoclickerP2 ? 86 : 23);
         holdInput2->getBGSprite()->setOpacity(g.autoclickerP2 ? 90 : 30);
         holdInput2->setEnabled(g.autoclickerP2);
-        holdInput2->getInputNode()->m_textLabel->setOpacity(
-            g.autoclickerP2 ? 255 : 100);
+        holdInput2->getInputNode()->m_textLabel->setOpacity(g.autoclickerP2 ? 255 : 100);
         if (!g.autoclickerP2) {
             holdInput2->getInputNode()->detachWithIME();
             holdInput2->getInputNode()->onClickTrackNode(false);
@@ -234,8 +222,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         releaseLbl->setOpacity(g.autoclickerP1 ? 86 : 23);
         releaseInput->getBGSprite()->setOpacity(g.autoclickerP1 ? 90 : 30);
         releaseInput->setEnabled(g.autoclickerP1);
-        releaseInput->getInputNode()->m_textLabel->setOpacity(
-            g.autoclickerP1 ? 255 : 100);
+        releaseInput->getInputNode()->m_textLabel->setOpacity(g.autoclickerP1 ? 255 : 100);
         if (!g.autoclickerP1) {
             releaseInput->getInputNode()->detachWithIME();
             releaseInput->getInputNode()->onClickTrackNode(false);
@@ -246,8 +233,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
         releaseLbl2->setOpacity(g.autoclickerP2 ? 86 : 23);
         releaseInput2->getBGSprite()->setOpacity(g.autoclickerP2 ? 90 : 30);
         releaseInput2->setEnabled(g.autoclickerP2);
-        releaseInput2->getInputNode()->m_textLabel->setOpacity(
-            g.autoclickerP2 ? 255 : 100);
+        releaseInput2->getInputNode()->m_textLabel->setOpacity(g.autoclickerP2 ? 255 : 100);
         if (!g.autoclickerP2) {
             releaseInput2->getInputNode()->detachWithIME();
             releaseInput2->getInputNode()->onClickTrackNode(false);
@@ -256,5 +242,7 @@ class AutoclickerLayer : public geode::Popup, public TextInputDelegate {
     }
 
   public:
-    void open(CCObject *) { create()->show(); }
+    void open(CCObject*) {
+        create()->show();
+    }
 };

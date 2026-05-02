@@ -1,31 +1,30 @@
 #include "button_edit_layer.hpp"
 #include "game_ui.hpp"
 
-$execute{
-    auto & g = Global::get();
+$execute {
+    auto& g = Global::get();
 
-  if (!g.mod->setSavedValue("button_defaults5", true)) {
-    cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+    if (!g.mod->setSavedValue("button_defaults5", true)) {
+        cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 
-    g.mod->setSavedValue("button_off_pos_x", 62.f);
-    g.mod->setSavedValue("button_off_pos_y", winSize.height - 35.f);
-    g.mod->setSavedValue("button_off_scale", 1.f);
-    g.mod->setSavedValue("button_off_opacity", 1.f);
+        g.mod->setSavedValue("button_off_pos_x", 62.f);
+        g.mod->setSavedValue("button_off_pos_y", winSize.height - 35.f);
+        g.mod->setSavedValue("button_off_scale", 1.f);
+        g.mod->setSavedValue("button_off_opacity", 1.f);
 
-    g.mod->setSavedValue("button_advance_frame_pos_x", 100.f);
-    g.mod->setSavedValue("button_advance_frame_pos_y", winSize.height - 50.f);
-    g.mod->setSavedValue("button_advance_frame_scale", 0.9f);
-    g.mod->setSavedValue("button_advance_frame_opacity", 1.f);
+        g.mod->setSavedValue("button_advance_frame_pos_x", 100.f);
+        g.mod->setSavedValue("button_advance_frame_pos_y", winSize.height - 50.f);
+        g.mod->setSavedValue("button_advance_frame_scale", 0.9f);
+        g.mod->setSavedValue("button_advance_frame_opacity", 1.f);
 
-    g.mod->setSavedValue("button_speedhack_pos_x", winSize.width - 62.f);
-    g.mod->setSavedValue("button_speedhack_pos_y", winSize.height - 38.f);
-    g.mod->setSavedValue("button_speedhack_scale", 1.f);
-    g.mod->setSavedValue("button_speedhack_opacity", 1.f);
-  }
+        g.mod->setSavedValue("button_speedhack_pos_x", winSize.width - 62.f);
+        g.mod->setSavedValue("button_speedhack_pos_y", winSize.height - 38.f);
+        g.mod->setSavedValue("button_speedhack_scale", 1.f);
+        g.mod->setSavedValue("button_speedhack_opacity", 1.f);
+    }
 }
 
-bool ButtonEditLayer::ccTouchBegan(cocos2d::CCTouch *touch,
-                                   cocos2d::CCEvent *event) {
+bool ButtonEditLayer::ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
     if (!FLAlertLayer::ccTouchBegan(touch, event))
         return false;
 
@@ -38,8 +37,7 @@ bool ButtonEditLayer::ccTouchBegan(cocos2d::CCTouch *touch,
     for (size_t i = 0; i < spriteButtons.size(); i++) {
         cocos2d::CCPoint location = touch->getLocation();
         cocos2d::CCPoint btnPos = spriteButtons[i]->getPosition();
-        cocos2d::CCSize btnSize =
-            spriteButtons[i]->getContentSize() * spriteButtons[i]->getScale();
+        cocos2d::CCSize btnSize = spriteButtons[i]->getContentSize() * spriteButtons[i]->getScale();
 
         if (ButtonEditLayer::isPointInButton(location, btnPos, btnSize)) {
             movingButton = {i, spriteButtons[i], location - btnPos};
@@ -55,21 +53,23 @@ bool ButtonEditLayer::ccTouchBegan(cocos2d::CCTouch *touch,
 
 void ButtonEditLayer::ccTouchMoved(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
     FLAlertLayer::ccTouchMoved(touch, event);
-    if (!movingButton.sprite) return;
+    if (!movingButton.sprite)
+        return;
 
     cocos2d::CCPoint position = touch->getLocation() - movingButton.offset;
     movingButton.sprite->setPosition(position);
     positions[indexToID[movingButton.index]] = position;
 }
 
-void ButtonEditLayer::ccTouchEnded(cocos2d::CCTouch *touch,
-                                   cocos2d::CCEvent *event) {
+void ButtonEditLayer::ccTouchEnded(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
     FLAlertLayer::ccTouchEnded(touch, event);
 
     movingButton.sprite = nullptr;
 }
 
-bool ButtonEditLayer::isPointInButton(cocos2d::CCPoint clickPos, cocos2d::CCPoint pos, cocos2d::CCSize size) {
+bool ButtonEditLayer::isPointInButton(cocos2d::CCPoint clickPos,
+                                      cocos2d::CCPoint pos,
+                                      cocos2d::CCSize size) {
     bool xCoincides;
     bool yCoincides;
 
@@ -153,8 +153,8 @@ bool ButtonEditLayer::init() {
 
     ButtonSprite* spr = ButtonSprite::create("Save");
     spr->setScale(0.6f);
-    CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra* sender) {
+    CCMenuItemSpriteExtra* btn =
+        CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
             for (const std::string& id : indexToID) {
                 mod->setSavedValue(id + "_pos_x", positions.at(id).x);
                 mod->setSavedValue(id + "_pos_y", positions.at(id).y);
@@ -175,66 +175,67 @@ bool ButtonEditLayer::init() {
 
     spr = ButtonSprite::create("Restore");
     spr->setScale(0.55f);
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra* sender) {
-            for (int i = 0; i < spriteButtons.size(); i++)
-                spriteButtons[i]->removeFromParentAndCleanup(true);
-            spriteButtons.clear();
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        for (int i = 0; i < spriteButtons.size(); i++)
+            spriteButtons[i]->removeFromParentAndCleanup(true);
+        spriteButtons.clear();
 
-            auto winSize = CCDirector::sharedDirector()->getWinSize();
-            auto& g = Global::get();
+        auto winSize = CCDirector::sharedDirector()->getWinSize();
+        auto& g = Global::get();
 
-            g.mod->setSavedValue("button_off_pos_x", 62.f);
-            g.mod->setSavedValue("button_off_pos_y", winSize.height - 35.f);
-            g.mod->setSavedValue("button_off_scale", 1.f);
-            g.mod->setSavedValue("button_off_opacity", 1.f);
+        g.mod->setSavedValue("button_off_pos_x", 62.f);
+        g.mod->setSavedValue("button_off_pos_y", winSize.height - 35.f);
+        g.mod->setSavedValue("button_off_scale", 1.f);
+        g.mod->setSavedValue("button_off_opacity", 1.f);
 
-            g.mod->setSavedValue("button_advance_frame_pos_x", 100.f);
-            g.mod->setSavedValue("button_advance_frame_pos_y", winSize.height - 50.f);
-            g.mod->setSavedValue("button_advance_frame_scale", 0.9f);
-            g.mod->setSavedValue("button_advance_frame_opacity", 1.f);
+        g.mod->setSavedValue("button_advance_frame_pos_x", 100.f);
+        g.mod->setSavedValue("button_advance_frame_pos_y", winSize.height - 50.f);
+        g.mod->setSavedValue("button_advance_frame_scale", 0.9f);
+        g.mod->setSavedValue("button_advance_frame_opacity", 1.f);
 
-            g.mod->setSavedValue("button_speedhack_pos_x", winSize.width - 62.f);
-            g.mod->setSavedValue("button_speedhack_pos_y", winSize.height - 38.f);
-            g.mod->setSavedValue("button_speedhack_scale", 1.f);
-            g.mod->setSavedValue("button_speedhack_opacity", 1.f);
+        g.mod->setSavedValue("button_speedhack_pos_x", winSize.width - 62.f);
+        g.mod->setSavedValue("button_speedhack_pos_y", winSize.height - 38.f);
+        g.mod->setSavedValue("button_speedhack_scale", 1.f);
+        g.mod->setSavedValue("button_speedhack_opacity", 1.f);
 
-            addSprites();
+        addSprites();
 
-            auto winSize2 = CCDirector::sharedDirector()->getWinSize();
-            positions["button_off"] = ccp(62.f, winSize2.height - 35.f);
-            positions["button_advance_frame"] = ccp(100.f, winSize2.height - 50.f);
-            positions["button_speedhack"] = ccp(winSize2.width - 62.f, winSize2.height - 38.f);
+        auto winSize2 = CCDirector::sharedDirector()->getWinSize();
+        positions["button_off"] = ccp(62.f, winSize2.height - 35.f);
+        positions["button_advance_frame"] = ccp(100.f, winSize2.height - 50.f);
+        positions["button_speedhack"] = ccp(winSize2.width - 62.f, winSize2.height - 38.f);
 
-            scales["button_off"] = 1.f;
-            scales["button_advance_frame"] = 0.9f;
-            scales["button_speedhack"] = 1.f;
+        scales["button_off"] = 1.f;
+        scales["button_advance_frame"] = 0.9f;
+        scales["button_speedhack"] = 1.f;
 
-            opacities["button_off"] = 1.f;
-            opacities["button_advance_frame"] = 1.f;
-            opacities["button_speedhack"] = 1.f;
+        opacities["button_off"] = 1.f;
+        opacities["button_advance_frame"] = 1.f;
+        opacities["button_speedhack"] = 1.f;
 
-            if (scaleSlider) scaleSlider->setValue(0.9f);
-            if (opacitySlider) opacitySlider->setValue(1.f);
+        if (scaleSlider)
+            scaleSlider->setValue(0.9f);
+        if (opacitySlider)
+            opacitySlider->setValue(1.f);
 
-            updateSelected("button_advance_frame");
-        });
+        updateSelected("button_advance_frame");
+    });
     btn->setPosition({242, -144});
     menu->addChild(btn);
 
     ButtonSprite* spr1 = btn->getChildByType<ButtonSprite>(0);
     NineSlice* spr2 = spr1->getChildByType<NineSlice>(0);
     CCLabelBMFont* lbl = spr1->getChildByType<CCLabelBMFont>(0);
-    if (spr2) spr2->setOpacity(130);
-    if (lbl) lbl->setOpacity(130);
+    if (spr2)
+        spr2->setOpacity(130);
+    if (lbl)
+        lbl->setOpacity(130);
 
     addSprites();
 
     for (size_t i = 0; i < spriteButtons.size(); i++) {
-        cocos2d::CCPoint position = ccp(
-            mod->getSavedValue<float>(indexToID[i] + "_pos_x"),
-            mod->getSavedValue<float>(indexToID[i] + "_pos_y")
-        );
+        cocos2d::CCPoint position = ccp(mod->getSavedValue<float>(indexToID[i] + "_pos_x"),
+                                        mod->getSavedValue<float>(indexToID[i] + "_pos_y"));
         float scale = mod->getSavedValue<float>(indexToID[i] + "_scale");
         float opacity = mod->getSavedValue<float>(indexToID[i] + "_opacity");
 
@@ -298,10 +299,8 @@ void ButtonEditLayer::addSliders() {
 void ButtonEditLayer::addSprites() {
     CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
     spr->setAnchorPoint({0, 0});
-    spr->setPosition(ccp(
-        mod->getSavedValue<float>("button_off_pos_x"),
-        mod->getSavedValue<float>("button_off_pos_y")
-    ));
+    spr->setPosition(ccp(mod->getSavedValue<float>("button_off_pos_x"),
+                         mod->getSavedValue<float>("button_off_pos_y")));
     spr->setScale(mod->getSavedValue<float>("button_off_scale"));
     spr->setOpacity(static_cast<int>(mod->getSavedValue<float>("button_off_opacity") * 255));
     m_mainLayer->addChild(spr);
@@ -310,21 +309,18 @@ void ButtonEditLayer::addSprites() {
     spr = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
     spr->setAnchorPoint({0, 0});
     spr->setFlipX(true);
-    spr->setPosition(ccp(
-        mod->getSavedValue<float>("button_advance_frame_pos_x"),
-        mod->getSavedValue<float>("button_advance_frame_pos_y")
-    ));
+    spr->setPosition(ccp(mod->getSavedValue<float>("button_advance_frame_pos_x"),
+                         mod->getSavedValue<float>("button_advance_frame_pos_y")));
     spr->setScale(mod->getSavedValue<float>("button_advance_frame_scale"));
-    spr->setOpacity(static_cast<int>(mod->getSavedValue<float>("button_advance_frame_opacity") * 255));
+    spr->setOpacity(
+        static_cast<int>(mod->getSavedValue<float>("button_advance_frame_opacity") * 255));
     m_mainLayer->addChild(spr);
     spriteButtons.push_back(spr);
 
     spr = CCSprite::createWithSpriteFrameName("GJ_timeIcon_001.png");
     spr->setAnchorPoint({0, 0});
-    spr->setPosition(ccp(
-        mod->getSavedValue<float>("button_speedhack_pos_x"),
-        mod->getSavedValue<float>("button_speedhack_pos_y")
-    ));
+    spr->setPosition(ccp(mod->getSavedValue<float>("button_speedhack_pos_x"),
+                         mod->getSavedValue<float>("button_speedhack_pos_y")));
     spr->setScale(mod->getSavedValue<float>("button_speedhack_scale"));
     spr->setOpacity(static_cast<int>(mod->getSavedValue<float>("button_speedhack_opacity") * 255));
     m_mainLayer->addChild(spr);

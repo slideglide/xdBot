@@ -2,19 +2,8 @@
 #include "ui/game_ui.hpp"
 #include "ui/record_layer.hpp"
 
-#include <Geode/modify/CCTextInputNode.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <random>
-
-class $modify(CCTextInputNode) {
-
-    bool ccTouchBegan(cocos2d::CCTouch* v1, cocos2d::CCEvent* v2) {
-        if (this->getID() == "disabled-input"_spr)
-            return false;
-
-        return CCTextInputNode::ccTouchBegan(v1, v2);
-    }
-};
 
 struct IncompatibleSetting {
     std::string ID;
@@ -406,7 +395,7 @@ $execute {
         g.mod->setSavedValue("render_fade_out_video", geode::utils::numToString(2));
 
         g.mod->setSavedValue("macro_auto_stop_playing", false);
-        g.mod->setSavedValue("macro_tps", 240.f);
+        g.mod->setSavedValue<double>("macro_tps", 240.0);
         g.mod->setSavedValue("macro_tps_enabled", false);
 
         g.mod->setSavedValue("autoclicker_hold_for", 5);

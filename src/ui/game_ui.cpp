@@ -5,26 +5,22 @@
 class $modify(PlayLayer) {
 
     struct Fields {
-        CCLabelBMFont *frameLabel = nullptr;
+        CCLabelBMFont* frameLabel = nullptr;
     };
 
     void postUpdate(float dt) {
         PlayLayer::postUpdate(dt);
-        auto &g = Global::get();
+        auto& g = Global::get();
 
 #ifndef GEODE_IS_IOS
         if (g.state != state::none && g.frameLabel && !g.renderer.recording) {
             m_fields->frameLabel->setString(
-                ("Frame: " +
-                 geode::utils::numToString(Global::getCurrentFrame()))
-                    .c_str());
+                ("Frame: " + geode::utils::numToString(Global::getCurrentFrame())).c_str());
         }
 #else
         if (g.state != state::none && g.frameLabel) {
             m_fields->frameLabel->setString(
-                ("Frame: " +
-                 geode::utils::numToString(Global::getCurrentFrame()))
-                    .c_str());
+                ("Frame: " + geode::utils::numToString(Global::getCurrentFrame())).c_str());
         }
 #endif
     }
@@ -35,15 +31,14 @@ class $modify(PlayLayer) {
         Interface::addLabels(this);
         Interface::addButtons(this);
 
-        m_fields->frameLabel = static_cast<CCLabelBMFont *>(
-            m_uiLayer->getChildByID("frame_label"_spr));
+        m_fields->frameLabel =
+            static_cast<CCLabelBMFont*>(m_uiLayer->getChildByID("frame_label"_spr));
     }
 };
 
-void Interface::addLabels(PlayLayer *pl) {
-    CCLabelBMFont *lbl = CCLabelBMFont::create("", "chatFont.fnt");
-    lbl->setPosition(
-        {CCDirector::sharedDirector()->getWinSize().width - 6.5f, 12});
+void Interface::addLabels(PlayLayer* pl) {
+    CCLabelBMFont* lbl = CCLabelBMFont::create("", "chatFont.fnt");
+    lbl->setPosition({CCDirector::sharedDirector()->getWinSize().width - 6.5f, 12});
     lbl->setAnchorPoint({1, 0.5});
     lbl->setID("state-label"_spr);
     lbl->setZOrder(300);
@@ -61,7 +56,7 @@ void Interface::addLabels(PlayLayer *pl) {
     Interface::updateLabels();
 }
 
-void Interface::addButtons(PlayLayer *pl) {
+void Interface::addButtons(PlayLayer* pl) {
     CCMenu* menu = CCMenu::create();
     menu->setZOrder(300);
     menu->setPosition({0, 0});
@@ -101,19 +96,17 @@ void Interface::addButtons(PlayLayer *pl) {
 }
 
 void Interface::updateLabels() {
-    PlayLayer *pl = PlayLayer::get();
-    auto &g = Global::get();
+    PlayLayer* pl = PlayLayer::get();
+    auto& g = Global::get();
 
     if (!pl)
         return;
 
     if (g.state == state::none || !g.frameLabel)
-        static_cast<CCLabelBMFont *>(
-            pl->m_uiLayer->getChildByID("frame-label"_spr))
-            ->setString("");
+        static_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr))->setString("");
 
-    CCLabelBMFont *label = typeinfo_cast<CCLabelBMFont *>(
-        pl->m_uiLayer->getChildByID("state-label"_spr));
+    CCLabelBMFont* label =
+        typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("state-label"_spr));
 
     if (!label)
         return;
@@ -135,11 +128,10 @@ void Interface::updateLabels() {
         labelText = "";
 
 #ifndef GEODE_IS_IOS
-    if (g.renderer.recording &&
-        g.mod->getSavedValue<bool>("render_hide_labels")) {
+    if (g.renderer.recording && g.mod->getSavedValue<bool>("render_hide_labels")) {
         labelText = "";
-        if (CCLabelBMFont *lbl = typeinfo_cast<CCLabelBMFont *>(
-                pl->m_uiLayer->getChildByID("frame-label"_spr)))
+        if (CCLabelBMFont* lbl =
+                typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr)))
             lbl->setString("");
     }
 #endif
@@ -148,14 +140,15 @@ void Interface::updateLabels() {
 }
 
 void Interface::updateButtons() {
-    PlayLayer *pl = PlayLayer::get();
+    PlayLayer* pl = PlayLayer::get();
     if (!pl)
         return;
 
     CCNode* menu = pl->getChildByID("button-menu"_spr);
-    if (!menu) return;
+    if (!menu)
+        return;
 
-    auto &g = Global::get();
+    auto& g = Global::get();
 
 #ifdef GEODE_IS_DESKTOP
     bool isDesktop = true;
@@ -163,57 +156,52 @@ void Interface::updateButtons() {
     bool isDesktop = false;
 #endif
 
-    CCNode *disableStepperBtn = menu->getChildByID("disable-stepper-btn"_spr);
-    CCNode *stepFrameBtn = menu->getChildByID("step-frame-btn"_spr);
-    CCNode *speedhackBtn = menu->getChildByID("speedhack-btn"_spr);
+    CCNode* disableStepperBtn = menu->getChildByID("disable-stepper-btn"_spr);
+    CCNode* stepFrameBtn = menu->getChildByID("step-frame-btn"_spr);
+    CCNode* speedhackBtn = menu->getChildByID("speedhack-btn"_spr);
 
-    disableStepperBtn->setPosition(
-        ccp(g.mod->getSavedValue<float>("button_off_pos_x"),
-            g.mod->getSavedValue<float>("button_off_pos_y")));
+    disableStepperBtn->setPosition(ccp(g.mod->getSavedValue<float>("button_off_pos_x"),
+                                       g.mod->getSavedValue<float>("button_off_pos_y")));
 
     float scale = g.mod->getSavedValue<float>("button_off_scale");
 
-    CCSprite *sprite = disableStepperBtn->getChildByType<CCSprite>(0);
+    CCSprite* sprite = disableStepperBtn->getChildByType<CCSprite>(0);
     sprite->setScale(scale);
-    sprite->setOpacity(static_cast<int>(
-        g.mod->getSavedValue<float>("button_off_opacity") * 255));
+    sprite->setOpacity(static_cast<int>(g.mod->getSavedValue<float>("button_off_opacity") * 255));
     sprite->setAnchorPoint({0, 0});
 
     cocos2d::CCSize size = sprite->getContentSize();
     disableStepperBtn->setContentSize({size.width * scale, size.height * scale});
 
-    stepFrameBtn->setPosition(
-        ccp(g.mod->getSavedValue<float>("button_advance_frame_pos_x"),
-            g.mod->getSavedValue<float>("button_advance_frame_pos_y")));
+    stepFrameBtn->setPosition(ccp(g.mod->getSavedValue<float>("button_advance_frame_pos_x"),
+                                  g.mod->getSavedValue<float>("button_advance_frame_pos_y")));
 
     scale = g.mod->getSavedValue<float>("button_advance_frame_scale");
 
     sprite = stepFrameBtn->getChildByType<CCSprite>(0);
     sprite->setScale(scale);
-    sprite->setOpacity(static_cast<int>(
-        g.mod->getSavedValue<float>("button_advance_frame_opacity") * 255));
+    sprite->setOpacity(
+        static_cast<int>(g.mod->getSavedValue<float>("button_advance_frame_opacity") * 255));
     sprite->setAnchorPoint({0, 0});
 
     size = sprite->getContentSize();
     stepFrameBtn->setContentSize({size.width * scale, size.height * scale});
 
-    speedhackBtn->setPosition(
-        ccp(g.mod->getSavedValue<float>("button_speedhack_pos_x"),
-            g.mod->getSavedValue<float>("button_speedhack_pos_y")));
+    speedhackBtn->setPosition(ccp(g.mod->getSavedValue<float>("button_speedhack_pos_x"),
+                                  g.mod->getSavedValue<float>("button_speedhack_pos_y")));
 
     scale = g.mod->getSavedValue<float>("button_speedhack_scale");
 
     sprite = speedhackBtn->getChildByType<CCSprite>(0);
     sprite->setScale(scale);
-    sprite->setOpacity(static_cast<int>(
-        g.mod->getSavedValue<float>("button_speedhack_opacity") * 255));
+    sprite->setOpacity(
+        static_cast<int>(g.mod->getSavedValue<float>("button_speedhack_opacity") * 255));
     sprite->setAnchorPoint({0, 0});
 
     size = sprite->getContentSize();
     speedhackBtn->setContentSize({size.width * scale, size.height * scale});
 
-    if ((g.state != state::recording &&
-         !g.mod->getSavedValue<bool>("macro_always_show_buttons")) ||
+    if ((g.state != state::recording && !g.mod->getSavedValue<bool>("macro_always_show_buttons")) ||
         isDesktop) {
         disableStepperBtn->setVisible(false);
         stepFrameBtn->setVisible(false);
@@ -221,8 +209,7 @@ void Interface::updateButtons() {
         return;
     }
 
-    speedhackBtn->setVisible(
-        !g.mod->getSavedValue<bool>("macro_hide_speedhack"));
+    speedhackBtn->setVisible(!g.mod->getSavedValue<bool>("macro_hide_speedhack"));
 
     if (g.mod->getSavedValue<bool>("macro_hide_stepper")) {
         disableStepperBtn->setVisible(false);

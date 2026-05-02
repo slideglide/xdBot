@@ -9,14 +9,14 @@ class Interface {
 
   public:
     static void openButtonEditor() {
-        ButtonEditLayer *layer = ButtonEditLayer::create();
+        ButtonEditLayer* layer = ButtonEditLayer::create();
         layer->m_noElasticity = true;
         layer->show();
     }
 
-    static void addLabels(PlayLayer *pl);
+    static void addLabels(PlayLayer* pl);
 
-    static void addButtons(PlayLayer *pl);
+    static void addButtons(PlayLayer* pl);
 
     static void updateLabels();
 

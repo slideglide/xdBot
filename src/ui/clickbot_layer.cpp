@@ -1,17 +1,14 @@
 #include "clickbot_layer.hpp"
 
 void ClickbotLayer::updateLabels() {
-    auto &g = Global::get();
+    auto& g = Global::get();
 
     for (size_t i = 0; i < buttonNames.size(); i++) {
-        matjson::Value data =
-            g.mod->getSavedValue<matjson::Value>(buttonNames[i]);
+        matjson::Value data = g.mod->getSavedValue<matjson::Value>(buttonNames[i]);
 
-        ClickSetting settings =
-            matjson::Serialize<ClickSetting>::from_json(data);
+        ClickSetting settings = matjson::Serialize<ClickSetting>::from_json(data);
 
-        std::string filename =
-            geode::utils::string::pathToString(settings.path.filename());
+        std::string filename = geode::utils::string::pathToString(settings.path.filename());
 
         if (!std::filesystem::exists(settings.path))
             filename = "N/A";
@@ -28,9 +25,8 @@ bool ClickbotLayer::init() {
     setTitle("ClickBot");
     m_title->setPositionY(m_title->getPositionY() + 5);
 
-    cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() -
-                               m_mainLayer->getContentSize()) /
-                              2;
+    cocos2d::CCPoint offset =
+        (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
@@ -38,10 +34,10 @@ bool ClickbotLayer::init() {
 
     Utils::setBackgroundColor(m_bgSprite);
 
-    CCMenu *menu = CCMenu::create();
+    CCMenu* menu = CCMenu::create();
     m_mainLayer->addChild(menu);
 
-    NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
+    NineSlice* bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
     bg->setColor({0, 0, 0});
     bg->setOpacity(78);
     bg->setPosition(ccp(-79, -10));
@@ -49,7 +45,7 @@ bool ClickbotLayer::init() {
     bg->setContentSize({245, 203});
     menu->addChild(bg);
 
-    CCLabelBMFont *lbl = CCLabelBMFont::create("Clicks", "goldFont.fnt");
+    CCLabelBMFont* lbl = CCLabelBMFont::create("Clicks", "goldFont.fnt");
     lbl->setPosition(ccp(-80, 78));
     lbl->setScale(0.625);
     menu->addChild(lbl);
@@ -73,12 +69,11 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    CCSprite *spr =
-        CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+    CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     spr->setScale(0.375f);
 
-    CCMenuItemSpriteExtra *btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
+    CCMenuItemSpriteExtra* btn =
+        CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
             ClickbotLayer::openClickSettings(sender);
         });
     btn->setPosition(ccp(-94, 35));
@@ -105,10 +100,9 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
-            ClickbotLayer::openClickSettings(sender);
-        });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        ClickbotLayer::openClickSettings(sender);
+    });
     btn->setPosition(ccp(27, 35));
     btn->setID("release_click");
     menu->addChild(btn);
@@ -133,10 +127,9 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
-            ClickbotLayer::openClickSettings(sender);
-        });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        ClickbotLayer::openClickSettings(sender);
+    });
     btn->setPosition(ccp(-94, -22));
     btn->setID("hold_left");
     menu->addChild(btn);
@@ -161,10 +154,9 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
-            ClickbotLayer::openClickSettings(sender);
-        });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        ClickbotLayer::openClickSettings(sender);
+    });
     btn->setPosition(ccp(27, -22));
     btn->setID("release_left");
     menu->addChild(btn);
@@ -189,10 +181,9 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
-            ClickbotLayer::openClickSettings(sender);
-        });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        ClickbotLayer::openClickSettings(sender);
+    });
     btn->setPosition(ccp(-94, -79));
     btn->setID("hold_right");
     menu->addChild(btn);
@@ -217,10 +208,9 @@ bool ClickbotLayer::init() {
     menu->addChild(lbl);
     labels.push_back(lbl);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
-            ClickbotLayer::openClickSettings(sender);
-        });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
+        ClickbotLayer::openClickSettings(sender);
+    });
     btn->setPosition(ccp(27, -79));
     btn->setID("release_right");
     menu->addChild(btn);
@@ -240,7 +230,7 @@ bool ClickbotLayer::init() {
 
     int volume = Mod::get()->getSavedValue<int64_t>("clickbot_volume");
 
-    volumeSlider = SliderNode::create([this](SliderNode *sender, float value) {
+    volumeSlider = SliderNode::create([this](SliderNode* sender, float value) {
         Mod::get()->setSavedValue("clickbot_volume", (int64_t)value);
         volumeLabel->setString(fmt::format("Volume ({:.0f}%)", value).c_str());
     });
@@ -250,24 +240,21 @@ bool ClickbotLayer::init() {
     volumeSlider->setAnchorPoint({0.f, 0.f});
     volumeSlider->setScale(0.65f);
     volumeSlider->getThumb()->setScale(0.8f);
-    volumeSlider->setValue(
-        Mod::get()->getSavedValue<int64_t>("clickbot_volume"));
+    volumeSlider->setValue(Mod::get()->getSavedValue<int64_t>("clickbot_volume"));
     menu->addChild(volumeSlider);
 
     volumeLabel = CCLabelBMFont::create(
-        ("Master Volume (" + geode::utils::numToString(volume) + "%)").c_str(),
-        "goldFont.fnt");
+        ("Master Volume (" + geode::utils::numToString(volume) + "%)").c_str(), "goldFont.fnt");
     volumeLabel->setPosition(ccp(128, 35));
     volumeLabel->setScale(0.35f);
     menu->addChild(volumeLabel);
 
     float pitch = Mod::get()->getSavedValue<float>("clickbot_pitch");
 
-    pitchSlider = SliderNode::create([this](SliderNode *sender, float value) {
+    pitchSlider = SliderNode::create([this](SliderNode* sender, float value) {
         float pitch = value * 3.f;
         Global::updatePitch(pitch);
-        pitchLabel->setString(
-            fmt::format("Master Pitch ({:.1f})", pitch).c_str());
+        pitchLabel->setString(fmt::format("Master Pitch ({:.1f})", pitch).c_str());
     });
     pitchSlider->setPosition(ccp(128, 7));
     pitchSlider->setAnchorPoint({0.f, 0.f});
@@ -275,8 +262,8 @@ bool ClickbotLayer::init() {
     pitchSlider->setValue(pitch / 3.f);
     menu->addChild(pitchSlider);
 
-    pitchLabel = CCLabelBMFont::create(
-        fmt::format("Master Pitch ({:.1f})", pitch).c_str(), "goldFont.fnt");
+    pitchLabel =
+        CCLabelBMFont::create(fmt::format("Master Pitch ({:.1f})", pitch).c_str(), "goldFont.fnt");
     pitchLabel->setPosition(ccp(128, -7));
     pitchLabel->setScale(0.35f);
     menu->addChild(pitchLabel);
@@ -287,8 +274,8 @@ bool ClickbotLayer::init() {
 
     // CCMenuItemToggler* toggle = CCMenuItemToggler::create(spriteOff,
     // spriteOn, this, menu_selector(RecordLayer::toggleSetting));
-    CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(
-        0.55f, [this](CCMenuItemToggler *sender) {});
+    CCMenuItemToggler* toggle = CCMenuItemExt::createTogglerWithStandardSprites(
+        0.55f, [this](CCMenuItemToggler* sender) {});
     toggle->setPosition(ccp(73, -40));
     toggle->toggle(Mod::get()->getSavedValue<bool>("clickbot_playing_only"));
     toggle->setID("clickbot_playing_only");
@@ -300,10 +287,9 @@ bool ClickbotLayer::init() {
     lbl->setScale(0.3f);
     menu->addChild(lbl);
 
-    toggle = CCMenuItemExt::createTogglerWithStandardSprites(
-        0.55f, [this](CCMenuItemToggler *sender) {
-            Mod::get()->setSavedValue("clickbot_holding_only",
-                                      sender->isToggled());
+    toggle =
+        CCMenuItemExt::createTogglerWithStandardSprites(0.55f, [this](CCMenuItemToggler* sender) {
+            Mod::get()->setSavedValue("clickbot_holding_only", sender->isToggled());
         });
     toggle->setPosition(ccp(73, -70));
     toggle->toggle(Mod::get()->getSavedValue<bool>("clickbot_holding_only"));
@@ -321,9 +307,8 @@ bool ClickbotLayer::init() {
     return true;
 }
 
-ClickSettingsLayer *ClickSettingsLayer::create(std::string button,
-                                               geode::Popup *layer) {
-    ClickSettingsLayer *ret = new ClickSettingsLayer();
+ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup* layer) {
+    ClickSettingsLayer* ret = new ClickSettingsLayer();
     if (ret->init(button, layer)) {
         ret->autorelease();
         return ret;
@@ -333,19 +318,18 @@ ClickSettingsLayer *ClickSettingsLayer::create(std::string button,
     return nullptr;
 }
 
-bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
+bool ClickSettingsLayer::init(std::string button, geode::Popup* layer) {
     if (!Popup::init(250, 173, Utils::getTexture().c_str()))
         return false;
-    cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() -
-                               m_mainLayer->getContentSize()) /
-                              2;
+    cocos2d::CCPoint offset =
+        (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
 
     Utils::setBackgroundColor(m_bgSprite);
 
-    CCMenu *menu = CCMenu::create();
+    CCMenu* menu = CCMenu::create();
     m_mainLayer->addChild(menu);
 
     this->button = button;
@@ -353,13 +337,12 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
 
     matjson::Value data = Mod::get()->getSavedValue<matjson::Value>(button);
     settings = matjson::Serialize<ClickSetting>::from_json(data);
-    std::string filename =
-        geode::utils::string::pathToString(settings.path.filename());
+    std::string filename = geode::utils::string::pathToString(settings.path.filename());
 
     if (!std::filesystem::exists(settings.path))
         filename = "N/A";
 
-    NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
+    NineSlice* bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
     bg->setColor({0, 0, 0});
     bg->setScale(0.6f);
     bg->setOpacity(88);
@@ -373,11 +356,11 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     filenameLabel->updateLabel();
     menu->addChild(filenameLabel);
 
-    ButtonSprite *spr = ButtonSprite::create("Select");
+    ButtonSprite* spr = ButtonSprite::create("Select");
     spr->setScale(0.6f);
 
-    CCMenuItemSpriteExtra *btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this](CCMenuItemSpriteExtra *sender) {
+    CCMenuItemSpriteExtra* btn =
+        CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) {
             file::FilePickOptions::Filter textFilter;
             textFilter.description = "Macro Files";
             textFilter.files = {"*.mp3", "*.ogg"};
@@ -394,28 +377,23 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
                             std::filesystem::path path = pathOpt.value();
 
                             this->filenameLabel->setString(
-                                geode::utils::string::pathToString(
-                                    path.filename())
-                                    .c_str());
+                                geode::utils::string::pathToString(path.filename()).c_str());
                             this->settings.path = path;
                             this->saveSettings();
 
                             if (this->clickbotLayer) {
-                                static_cast<ClickbotLayer *>(
-                                    this->clickbotLayer)
-                                    ->updateLabels();
+                                static_cast<ClickbotLayer*>(this->clickbotLayer)->updateLabels();
                             }
                         }
                     } else {
-                        log::error("Failed to pick file: {}",
-                                   result.unwrapErr());
+                        log::error("Failed to pick file: {}", result.unwrapErr());
                     }
                 });
         });
     btn->setPosition(ccp(77, 52));
     menu->addChild(btn);
 
-    volumeSlider = SliderNode::create([this](SliderNode *, float value) {
+    volumeSlider = SliderNode::create([this](SliderNode*, float value) {
         settings.volume = value;
 
         volumeLabel->setString(fmt::format("Volume ({:.0f}%)", value).c_str());
@@ -426,44 +404,43 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     volumeSlider->setAnchorPoint({0.f, 0.f});
     volumeSlider->setScale(0.8f);
     volumeSlider->getThumb()->setScale(0.8f);
-    volumeSlider->setReleaseCallback(
-        [this](SliderNode *, float) { saveSettings(); });
+    volumeSlider->setReleaseCallback([this](SliderNode*, float) {
+        saveSettings();
+    });
     volumeSlider->setValue(settings.volume);
     menu->addChild(volumeSlider);
 
     volumeLabel = CCLabelBMFont::create(
-        ("Volume (" + geode::utils::numToString(settings.volume) + "%)")
-            .c_str(),
-        "goldFont.fnt");
+        ("Volume (" + geode::utils::numToString(settings.volume) + "%)").c_str(), "goldFont.fnt");
     volumeLabel->setPosition(ccp(-42, -9));
     volumeLabel->setScale(0.45f);
     menu->addChild(volumeLabel);
 
-    pitchSlider = SliderNode::create([this](SliderNode *sender, float value) {
+    pitchSlider = SliderNode::create([this](SliderNode* sender, float value) {
         settings.pitch = value;
-        pitchLabel->setString(
-            fmt::format("Pitch ({:.1f})", settings.pitch).c_str());
+        pitchLabel->setString(fmt::format("Pitch ({:.1f})", settings.pitch).c_str());
     });
 
     pitchSlider->setMin(0.f);
     pitchSlider->setMax(3.f);
     pitchSlider->setSnapStep(0.1f);
-    pitchSlider->setReleaseCallback(
-        [this](SliderNode *, float) { saveSettings(); });
+    pitchSlider->setReleaseCallback([this](SliderNode*, float) {
+        saveSettings();
+    });
     pitchSlider->setPosition(ccp(-42, -40));
     pitchSlider->setAnchorPoint({0.f, 0.f});
     pitchSlider->setScale(0.8f);
     pitchSlider->setValue(settings.pitch);
     menu->addChild(pitchSlider);
 
-    pitchLabel = CCLabelBMFont::create(
-        fmt::format("Pitch ({:.1f})", settings.pitch).c_str(), "goldFont.fnt");
+    pitchLabel = CCLabelBMFont::create(fmt::format("Pitch ({:.1f})", settings.pitch).c_str(),
+                                       "goldFont.fnt");
     pitchLabel->setPosition(ccp(-42, -56));
     pitchLabel->setScale(0.45f);
     menu->addChild(pitchLabel);
 
-    disableToggle = CCMenuItemExt::createTogglerWithStandardSprites(
-        1.f, [this](CCMenuItemToggler *toggle) {
+    disableToggle =
+        CCMenuItemExt::createTogglerWithStandardSprites(1.f, [this](CCMenuItemToggler* toggle) {
             settings.disabled = !toggle->isToggled();
 
             saveSettings();
@@ -473,7 +450,7 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     disableToggle->toggle(settings.disabled);
     menu->addChild(disableToggle);
 
-    CCLabelBMFont *lbl = CCLabelBMFont::create("Disable", "bigFont.fnt");
+    CCLabelBMFont* lbl = CCLabelBMFont::create("Disable", "bigFont.fnt");
     lbl->setPosition(ccp(76, -32));
     lbl->setScale(0.45f);
     menu->addChild(lbl);
@@ -481,26 +458,24 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     spr = ButtonSprite::create("Restore");
     spr->setScale(0.425f);
 
-    btn = CCMenuItemExt::createSpriteExtra(
-        spr, [this, button](CCMenuItemSpriteExtra *sender) {
-            pitchSlider->setValue(0.33333333f);
-            volumeSlider->setValue(0.33333333f);
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this, button](CCMenuItemSpriteExtra* sender) {
+        pitchSlider->setValue(0.33333333f);
+        volumeSlider->setValue(0.33333333f);
 
-            disableToggle->toggle(false);
+        disableToggle->toggle(false);
 
-            settings.disabled = false;
+        settings.disabled = false;
 
-            std::filesystem::path path = Mod::get()->getResourcesDir() /
-                                         fmt::format("default_{}.mp3", button);
+        std::filesystem::path path =
+            Mod::get()->getResourcesDir() / fmt::format("default_{}.mp3", button);
 
-            filenameLabel->setString(
-                geode::utils::string::pathToString(path.filename()).c_str());
+        filenameLabel->setString(geode::utils::string::pathToString(path.filename()).c_str());
 
-            settings.path = path;
-            saveSettings();
+        settings.path = path;
+        saveSettings();
 
-            static_cast<ClickbotLayer *>(clickbotLayer)->updateLabels();
-        });
+        static_cast<ClickbotLayer*>(clickbotLayer)->updateLabels();
+    });
     btn->setPosition({89, -69});
     menu->addChild(btn);
 

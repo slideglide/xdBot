@@ -3,17 +3,16 @@
 
 #include <Geode/modify/FLAlertLayer.hpp>
 
-MacroEditLayer *editLayer = nullptr;
+MacroEditLayer* editLayer = nullptr;
 
 class $modify(FLAlertLayer) {
 
 #ifdef GEODE_IS_MOBILE
 
-    virtual bool ccTouchBegan(cocos2d::CCTouch *touch,
-                              cocos2d::CCEvent *event) {
+    virtual bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
         if (!FLAlertLayer::ccTouchBegan(touch, event))
             return false;
-        MacroEditLayer *layer = typeinfo_cast<MacroEditLayer *>(this);
+        MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(this);
 
         if (!layer)
             return true;
@@ -23,10 +22,9 @@ class $modify(FLAlertLayer) {
         return true;
     }
 
-    virtual void ccTouchMoved(cocos2d::CCTouch *touch,
-                              cocos2d::CCEvent *event) {
+    virtual void ccTouchMoved(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
         FLAlertLayer::ccTouchMoved(touch, event);
-        MacroEditLayer *layer = typeinfo_cast<MacroEditLayer *>(this);
+        MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(this);
 
         if (!layer)
             return;
@@ -36,10 +34,9 @@ class $modify(FLAlertLayer) {
 
 #endif
 
-    virtual void ccTouchEnded(cocos2d::CCTouch *touch,
-                              cocos2d::CCEvent *event) {
+    virtual void ccTouchEnded(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
         FLAlertLayer::ccTouchEnded(touch, event);
-        MacroEditLayer *layer = typeinfo_cast<MacroEditLayer *>(this);
+        MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(this);
 
         if (!layer)
             return;
@@ -49,13 +46,17 @@ class $modify(FLAlertLayer) {
     }
 };
 
-MacroEditLayer::~MacroEditLayer() { editLayer = nullptr; };
+MacroEditLayer::~MacroEditLayer() {
+    editLayer = nullptr;
+};
 
-void MacroEditLayer::onClose(CCObject *) {
+void MacroEditLayer::onClose(CCObject*) {
     if (!saved) {
         geode::createQuickPopup("Exit",
                                 "<cr>Exit</c> without applying changes?",
-                                "Cancel", "Yes", [this](auto, bool btn2) {
+                                "Cancel",
+                                "Yes",
+                                [this](auto, bool btn2) {
                                     if (!btn2)
                                         return;
                                     editLayer = nullptr;
@@ -103,7 +104,7 @@ bool MacroEditLayer::init() {
         return false;
     Utils::setBackgroundColor(m_bgSprite);
 
-    CCMenu *menu = CCMenu::create();
+    CCMenu* menu = CCMenu::create();
     menu->setID("main-menu");
     m_mainLayer->addChild(menu);
 
@@ -111,7 +112,7 @@ bool MacroEditLayer::init() {
     selectedInputMenu->setID("selected-input-menu");
     m_mainLayer->addChild(selectedInputMenu);
 
-    CCLabelBMFont *lbl = CCLabelBMFont::create("Edit Macro", "goldFont.fnt");
+    CCLabelBMFont* lbl = CCLabelBMFont::create("Edit Macro", "goldFont.fnt");
     lbl->setPosition({117, 104});
     lbl->setScale(0.55f);
     menu->addChild(lbl);
@@ -177,10 +178,10 @@ bool MacroEditLayer::init() {
     selectedInputBg->setContentSize({151, 167});
     menu->addChild(selectedInputBg);
 
-    CCSprite *spr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+    CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
     spr->setScale(0.55f);
-    pageLeftBtn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchPage));
+    pageLeftBtn =
+        CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchPage));
     pageLeftBtn->setID("left");
     pageLeftBtn->setPositionX(-199);
     menu->addChild(pageLeftBtn);
@@ -188,43 +189,40 @@ bool MacroEditLayer::init() {
     spr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
     spr->setFlipX(true);
     spr->setScale(0.55f);
-    pageRightBtn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchPage));
+    pageRightBtn =
+        CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchPage));
     pageRightBtn->setPositionX(17);
     menu->addChild(pageRightBtn);
 
-    ButtonSprite *btnSpr = ButtonSprite::create("Apply");
+    ButtonSprite* btnSpr = ButtonSprite::create("Apply");
     btnSpr->setScale(0.5f);
-    saveBtn = CCMenuItemSpriteExtra::create(
-        btnSpr, this, menu_selector(MacroEditLayer::onSave));
+    saveBtn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(MacroEditLayer::onSave));
     saveBtn->setPosition({185, -99});
     menu->addChild(saveBtn);
 
     btnSpr = ButtonSprite::create("Merge");
     btnSpr->setScale(0.5f);
-    CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
-        btnSpr, this, menu_selector(MacroEditLayer::onMerge));
+    CCMenuItemSpriteExtra* btn =
+        CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(MacroEditLayer::onMerge));
     btn->setPosition({72, -99});
     menu->addChild(btn);
 
     btnSpr = ButtonSprite::create("Clear");
     btnSpr->setScale(0.5f);
-    btn = CCMenuItemSpriteExtra::create(btnSpr, this,
-                                        menu_selector(MacroEditLayer::onClear));
+    btn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(MacroEditLayer::onClear));
     btn->setPosition({128.5, -99});
     menu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("GJ_plusBtn_001.png");
     spr->setScale(0.45f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::onAddInput));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::onAddInput));
     btn->setPosition({23.5, -94});
     menu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("GJ_deleteSongBtn_001.png");
     spr->setScale(0.55f);
-    deleteBtn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::onRemoveInput));
+    deleteBtn =
+        CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::onRemoveInput));
     deleteBtn->setPosition({23.5, -64});
     menu->addChild(deleteBtn);
 
@@ -266,16 +264,14 @@ bool MacroEditLayer::init() {
 
     spr = CCSprite::createWithSpriteFrameName("edit_leftBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchFrame));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchFrame));
     btn->setPosition({xPos + 62, yPos});
     btn->setID("left");
     selectedInputMenu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("edit_rightBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchFrame));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchFrame));
     btn->setPosition({xPos + 120, yPos});
     selectedInputMenu->addChild(btn);
 
@@ -287,20 +283,18 @@ bool MacroEditLayer::init() {
 
     spr = CCSprite::createWithSpriteFrameName("edit_leftBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchButton));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchButton));
     btn->setPosition({xPos + 62, yPos - 35});
     btn->setID("left");
     selectedInputMenu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("edit_rightBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchButton));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchButton));
     btn->setPosition({xPos + 120, yPos - 35});
     selectedInputMenu->addChild(btn);
 
-    NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
+    NineSlice* bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
     bg->setColor({0, 0, 0});
     bg->setScale(0.3125f);
     bg->setOpacity(90);
@@ -322,15 +316,13 @@ bool MacroEditLayer::init() {
 
     spr = CCSprite::createWithSpriteFrameName("edit_leftBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchAction));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchAction));
     btn->setPosition({xPos + 62, yPos - 66});
     selectedInputMenu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("edit_rightBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchAction));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchAction));
     btn->setPosition({xPos + 120, yPos - 66});
     selectedInputMenu->addChild(btn);
 
@@ -356,15 +348,13 @@ bool MacroEditLayer::init() {
 
     spr = CCSprite::createWithSpriteFrameName("edit_leftBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchPlayer));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchPlayer));
     btn->setPosition({xPos + 62, yPos - 97});
     selectedInputMenu->addChild(btn);
 
     spr = CCSprite::createWithSpriteFrameName("edit_rightBtn_001.png");
     spr->setScale(0.55f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(MacroEditLayer::switchPlayer));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MacroEditLayer::switchPlayer));
     btn->setPosition({xPos + 120, yPos - 97});
     selectedInputMenu->addChild(btn);
 
@@ -383,8 +373,7 @@ bool MacroEditLayer::init() {
     selectedInputMenu->addChild(playerLabel);
 
     for (int i = 0; i < 7; i++) {
-        CCLabelBMFont *lbl =
-            CCLabelBMFont::create("_____________________", "chatFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create("_____________________", "chatFont.fnt");
         lbl->setPosition(ccp(-91, 93.5 - (i * 29)));
         lbl->setColor(ccc3(0, 0, 0));
         lbl->setOpacity(80);
@@ -404,9 +393,8 @@ bool MacroEditLayer::init() {
 
     editLayer = this;
 
-    cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() -
-                               m_mainLayer->getContentSize()) /
-                              2;
+    cocos2d::CCPoint offset =
+        (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
@@ -448,8 +436,7 @@ void MacroEditLayer::loadPage(int page) {
 
     disableArrows = disableArrows || (empty && !inputs.empty());
 
-    pageRightBtn->getChildByType<CCSprite>(0)->setOpacity(disableArrows ? 130
-                                                                        : 255);
+    pageRightBtn->getChildByType<CCSprite>(0)->setOpacity(disableArrows ? 130 : 255);
     pageRightBtn->setEnabled(!disableArrows);
 
     for (int i = 0; i < 7; i++)
@@ -475,7 +462,7 @@ void MacroEditLayer::loadPage(int page) {
 
         InputText inp = getInputText(pageInputs[i]);
 
-        CCLabelBMFont *lbl = CCLabelBMFont::create("Frame", "chatFont.fnt");
+        CCLabelBMFont* lbl = CCLabelBMFont::create("Frame", "chatFont.fnt");
         lbl->setScale(0.525f);
         lbl->setOpacity(134);
         lbl->setPosition({-153, height1});
@@ -535,16 +522,15 @@ void MacroEditLayer::loadPage(int page) {
 
 InputText MacroEditLayer::getInputText(input input) {
     InputText ret = {geode::utils::numToString(input.frame),
-                     btnNames.contains(input.button)
-                         ? btnNames.at(input.button)
-                         : geode::utils::numToString(input.button),
+                     btnNames.contains(input.button) ? btnNames.at(input.button)
+                                                     : geode::utils::numToString(input.button),
                      input.player2 ? "Two" : "One",
                      input.down ? "Hold" : "Release"};
 
     return ret;
 }
 
-void MacroEditLayer::textChanged(CCTextInputNode *input) {
+void MacroEditLayer::textChanged(CCTextInputNode* input) {
     if (!input || !editLayer)
         return;
 
@@ -627,8 +613,7 @@ void MacroEditLayer::updateLabels() {
 }
 
 void MacroEditLayer::selectInput(int input) {
-    if (hoveredInput == -1 || hoveredInput == selectedInput ||
-        selectedInput == input)
+    if (hoveredInput == -1 || hoveredInput == selectedInput || selectedInput == input)
         return;
 
     if (hoveredInput == -2)
@@ -670,14 +655,14 @@ void MacroEditLayer::update(float dt) {
 #endif
 }
 
-int MacroEditLayer::getSum(CCObject *obj) {
-    if (std::string_view(static_cast<CCNode *>(obj)->getID()) == "left")
+int MacroEditLayer::getSum(CCObject* obj) {
+    if (std::string_view(static_cast<CCNode*>(obj)->getID()) == "left")
         return -1;
 
     return 1;
 }
 
-void MacroEditLayer::switchPage(CCObject *obj) {
+void MacroEditLayer::switchPage(CCObject* obj) {
     int sum = getSum(obj);
 
     currentPage += sum;
@@ -701,7 +686,7 @@ void MacroEditLayer::switchPage(CCObject *obj) {
         selectInput(5);
 }
 
-void MacroEditLayer::switchFrame(CCObject *obj) {
+void MacroEditLayer::switchFrame(CCObject* obj) {
     auto input = inputs[selectedInputIndex];
 
     int sum = getSum(obj);
@@ -725,8 +710,7 @@ void MacroEditLayer::changeSelectedInputFrame(int frame, bool isArrow) {
         int currentFrame = inputs[i].frame;
         int nextFrame = i != inputs.size() - 1 ? inputs[i + 1].frame : -1;
 
-        if ((selectedInputIndex == 0 && input.frame < currentFrame) ||
-            frame <= inputs[0].frame) {
+        if ((selectedInputIndex == 0 && input.frame < currentFrame) || frame <= inputs[0].frame) {
             inputs.insert(inputs.begin(), input);
 
             addedAt = 0;
@@ -753,8 +737,7 @@ void MacroEditLayer::changeSelectedInputFrame(int frame, bool isArrow) {
             break;
         }
 
-        if ((input.frame > currentFrame && input.frame <= nextFrame) ||
-            nextFrame == -1) {
+        if ((input.frame > currentFrame && input.frame <= nextFrame) || nextFrame == -1) {
 
             inputs.insert(inputs.begin() + i + 1, input);
 
@@ -775,10 +758,10 @@ void MacroEditLayer::changeSelectedInputFrame(int frame, bool isArrow) {
     updateSaved();
 }
 
-void MacroEditLayer::switchButton(CCObject *obj) {
+void MacroEditLayer::switchButton(CCObject* obj) {
     int sum = getSum(obj);
 
-    auto &input = inputs[selectedInputIndex];
+    auto& input = inputs[selectedInputIndex];
 
     input.button += sum;
 
@@ -792,8 +775,8 @@ void MacroEditLayer::switchButton(CCObject *obj) {
     updateSaved();
 }
 
-void MacroEditLayer::switchAction(CCObject *obj) {
-    auto &input = inputs[selectedInputIndex];
+void MacroEditLayer::switchAction(CCObject* obj) {
+    auto& input = inputs[selectedInputIndex];
 
     input.down = !input.down;
 
@@ -802,8 +785,8 @@ void MacroEditLayer::switchAction(CCObject *obj) {
     updateSaved();
 }
 
-void MacroEditLayer::switchPlayer(CCObject *obj) {
-    auto &input = inputs[selectedInputIndex];
+void MacroEditLayer::switchPlayer(CCObject* obj) {
+    auto& input = inputs[selectedInputIndex];
 
     input.player2 = !input.player2;
 
@@ -816,16 +799,16 @@ void MacroEditLayer::flashSelected() {
     if (!selectedBg->isVisible())
         return;
 
-    CCTintTo *tintTo = CCTintTo::create(0.05f, 247, 255, 140);
-    CCTintTo *tintFrom = CCTintTo::create(0.35f, 232, 255, 0);
+    CCTintTo* tintTo = CCTintTo::create(0.05f, 247, 255, 140);
+    CCTintTo* tintFrom = CCTintTo::create(0.35f, 232, 255, 0);
 
-    CCFadeTo *fadeTo = CCFadeTo::create(0.05f, 100);
-    CCFadeTo *fadeFrom = CCFadeTo::create(0.35f, 44);
+    CCFadeTo* fadeTo = CCFadeTo::create(0.05f, 100);
+    CCFadeTo* fadeFrom = CCFadeTo::create(0.35f, 44);
 
-    CCSequence *colorSeq = CCSequence::create(tintTo, tintFrom, nullptr);
-    CCSequence *opacitySeq = CCSequence::create(fadeTo, fadeFrom, nullptr);
+    CCSequence* colorSeq = CCSequence::create(tintTo, tintFrom, nullptr);
+    CCSequence* opacitySeq = CCSequence::create(fadeTo, fadeFrom, nullptr);
 
-    CCSpawn *spawn = CCSpawn::create(colorSeq, opacitySeq, nullptr);
+    CCSpawn* spawn = CCSpawn::create(colorSeq, opacitySeq, nullptr);
 
     selectedBg->runAction(spawn);
 
@@ -835,7 +818,7 @@ void MacroEditLayer::flashSelected() {
     selectedInputBg->runAction(CCSequence::create(tintTo, tintFrom, nullptr));
 }
 
-void MacroEditLayer::onAddInput(CCObject *) {
+void MacroEditLayer::onAddInput(CCObject*) {
     if (inputs.empty()) {
         inputs.push_back({1, 1, false, true});
         loadPage(1);
@@ -882,7 +865,7 @@ void MacroEditLayer::onAddInput(CCObject *) {
     updateSaved();
 }
 
-void MacroEditLayer::onRemoveInput(CCObject *) {
+void MacroEditLayer::onRemoveInput(CCObject*) {
     if (inputs.empty() || pageInputs.empty() || selectedInput == -1)
         return;
 
@@ -897,71 +880,71 @@ void MacroEditLayer::onRemoveInput(CCObject *) {
     }
 
     if (inputs.empty()) {
-        CCTintTo *tintTo = CCTintTo::create(0.05f, 20, 20, 20);
-        CCTintTo *tintFrom = CCTintTo::create(0.35f, 0, 0, 0);
+        CCTintTo* tintTo = CCTintTo::create(0.05f, 20, 20, 20);
+        CCTintTo* tintFrom = CCTintTo::create(0.35f, 0, 0, 0);
 
-        selectedInputBg->runAction(
-            CCSequence::create(tintTo, tintFrom, nullptr));
+        selectedInputBg->runAction(CCSequence::create(tintTo, tintFrom, nullptr));
         listBg->runAction(CCSequence::create(tintTo, tintFrom, nullptr));
     }
 
     updateSaved();
 }
 
-void MacroEditLayer::onSave(CCObject *) {
-    std::string extension =
-        Global::get().macro.frameFixes.empty() || inputs.empty()
-            ? "."
-            : " \n<cr>All Frame Fixes will be removed</c>.";
+void MacroEditLayer::onSave(CCObject*) {
+    std::string extension = Global::get().macro.frameFixes.empty() || inputs.empty()
+                                ? "."
+                                : " \n<cr>All Frame Fixes will be removed</c>.";
 
-    geode::createQuickPopup(
-        "Apply", "Apply <cl>changes</c> to current macro?" + extension,
-        "Cancel", "Yes", [this](auto, bool btn2) {
-            if (!btn2)
-                return;
+    geode::createQuickPopup("Apply",
+                            "Apply <cl>changes</c> to current macro?" + extension,
+                            "Cancel",
+                            "Yes",
+                            [this](auto, bool btn2) {
+                                if (!btn2)
+                                    return;
 
-            auto &g = Global::get();
-            g.macro.frameFixes.clear();
-            g.macro.inputs = this->inputs;
+                                auto& g = Global::get();
+                                g.macro.frameFixes.clear();
+                                g.macro.inputs = this->inputs;
 
-            this->saved = true;
+                                this->saved = true;
 
-            onClose(nullptr);
+                                onClose(nullptr);
 
-            auto children = CCScene::get()->getChildrenExt<CCNode *>();
+                                auto children = CCScene::get()->getChildrenExt<CCNode*>();
 
-            for (auto child : children) {
-                if (RecordLayer *layer = typeinfo_cast<RecordLayer *>(child)) {
-                    layer->onClose(nullptr);
-                    break;
-                }
-            }
+                                for (auto child : children) {
+                                    if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(child)) {
+                                        layer->onClose(nullptr);
+                                        break;
+                                    }
+                                }
 
-            RecordLayer::openMenu(true);
-            MacroEditLayer::open(true);
+                                RecordLayer::openMenu(true);
+                                MacroEditLayer::open(true);
 
-            Loader::get()->queueInMainThread([] {
-                auto children = CCScene::get()->getChildrenExt<CCNode *>();
+                                Loader::get()->queueInMainThread([] {
+                                    auto children = CCScene::get()->getChildrenExt<CCNode*>();
 
-                for (auto child : children) {
-                    if (MacroEditLayer *layer =
-                            typeinfo_cast<MacroEditLayer *>(child)) {
-                        editLayer = layer;
-                        break;
-                    }
-                }
-            });
+                                    for (auto child : children) {
+                                        if (MacroEditLayer* layer =
+                                                typeinfo_cast<MacroEditLayer*>(child)) {
+                                            editLayer = layer;
+                                            break;
+                                        }
+                                    }
+                                });
 
-            Notification::create("Applied", NotificationIcon::Success)->show();
-        });
+                                Notification::create("Applied", NotificationIcon::Success)->show();
+                            });
 }
 
 void MacroEditLayer::toggleSaveButton(bool toggle) {
-    ButtonSprite *btnSpr = saveBtn->getChildByType<ButtonSprite>(0);
+    ButtonSprite* btnSpr = saveBtn->getChildByType<ButtonSprite>(0);
     if (!btnSpr)
         return;
-    NineSlice *spr = btnSpr->getChildByType<NineSlice>(0);
-    CCLabelBMFont *lbl = btnSpr->getChildByType<CCLabelBMFont>(0);
+    NineSlice* spr = btnSpr->getChildByType<NineSlice>(0);
+    CCLabelBMFont* lbl = btnSpr->getChildByType<CCLabelBMFont>(0);
 
     saveBtn->setEnabled(toggle);
     if (spr)
@@ -980,16 +963,17 @@ void MacroEditLayer::updateSaved() {
     inputCountLbl->setString(fmt::format("Inputs: {}", inputs.size()).c_str());
 }
 
-void MacroEditLayer::onClear(CCObject *) {
-    auto &g = Global::get();
+void MacroEditLayer::onClear(CCObject*) {
+    auto& g = Global::get();
     if (inputs.empty())
         return;
 
     geode::createQuickPopup("Clear",
-                            "Clear <cy>" +
-                                geode::utils::numToString(inputs.size()) +
+                            "Clear <cy>" + geode::utils::numToString(inputs.size()) +
                                 "</c> macro actions?",
-                            "Cancel", "Yes", [this](auto, bool btn2) {
+                            "Cancel",
+                            "Yes",
+                            [this](auto, bool btn2) {
                                 if (btn2) {
                                     inputs.clear();
                                     loadPage(1);
@@ -998,17 +982,17 @@ void MacroEditLayer::onClear(CCObject *) {
                             });
 }
 
-void MacroEditLayer::onMerge(CCObject *) {
-    geode::Popup *layer = nullptr;
+void MacroEditLayer::onMerge(CCObject*) {
+    geode::Popup* layer = nullptr;
 
     if (Global::get().layer) {
-        layer = typeinfo_cast<geode::Popup *>(Global::get().layer);
+        layer = typeinfo_cast<geode::Popup*>(Global::get().layer);
     } else {
-        auto children = CCScene::get()->getChildrenExt<CCNode *>();
+        auto children = CCScene::get()->getChildrenExt<CCNode*>();
 
         for (auto child : children) {
-            if (typeinfo_cast<RecordLayer *>(child)) {
-                layer = typeinfo_cast<geode::Popup *>(child);
+            if (typeinfo_cast<RecordLayer*>(child)) {
+                layer = typeinfo_cast<geode::Popup*>(child);
                 break;
             }
         }
@@ -1022,8 +1006,7 @@ void MacroEditLayer::onMerge(CCObject *) {
     LoadMacroLayer::open(layer, this, false);
 }
 
-void MacroEditLayer::mergeMacro(std::vector<input> mergeInputs, bool players[2],
-                                bool overwrite) {
+void MacroEditLayer::mergeMacro(std::vector<input> mergeInputs, bool players[2], bool overwrite) {
     if (mergeInputs.empty())
         return;
 
@@ -1061,10 +1044,9 @@ void MacroEditLayer::mergeMacro(std::vector<input> mergeInputs, bool players[2],
             }
         }
 
-        auto condition = [startFrame, endFrame, players](const input &element) {
+        auto condition = [startFrame, endFrame, players](const input& element) {
             int p = static_cast<int>(element.player2);
-            return element.frame >= startFrame[p] &&
-                   element.frame <= endFrame[p] && players[p];
+            return element.frame >= startFrame[p] && element.frame <= endFrame[p] && players[p];
         };
 
         auto newEnd = std::remove_if(inputs.begin(), inputs.end(), condition);
@@ -1074,8 +1056,11 @@ void MacroEditLayer::mergeMacro(std::vector<input> mergeInputs, bool players[2],
 
     std::vector<input> mergedVector;
     mergedVector.resize(inputs.size() + actualInputs.size());
-    std::merge(actualInputs.begin(), actualInputs.end(), inputs.begin(),
-               inputs.end(), mergedVector.begin());
+    std::merge(actualInputs.begin(),
+               actualInputs.end(),
+               inputs.begin(),
+               inputs.end(),
+               mergedVector.begin());
 
     inputs = mergedVector;
 

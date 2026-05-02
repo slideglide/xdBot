@@ -42,15 +42,15 @@ class RecordLayer : public geode::Popup, public TextInputDelegate {
     CCMenuItemSpriteExtra *FPSLeft = nullptr;
     CCMenuItemSpriteExtra *FPSRight = nullptr;
 
-    CCTextInputNode *widthInput = nullptr;
-    CCTextInputNode *heightInput = nullptr;
-    CCTextInputNode *bitrateInput = nullptr;
-    CCTextInputNode *fpsInput = nullptr;
-    CCTextInputNode *codecInput = nullptr;
-    CCTextInputNode *seedInput = nullptr;
-    CCTextInputNode *speedhackInput = nullptr;
-    CCTextInputNode *respawnInput = nullptr;
-    CCTextInputNode *tpsInput = nullptr;
+    geode::TextInput *widthInput = nullptr;
+    geode::TextInput *heightInput = nullptr;
+    geode::TextInput *bitrateInput = nullptr;
+    geode::TextInput *fpsInput = nullptr;
+    geode::TextInput *codecInput = nullptr;
+    geode::TextInput *seedInput = nullptr;
+    geode::TextInput *speedhackInput = nullptr;
+    geode::TextInput *respawnInput = nullptr;
+    geode::TextInput *tpsInput = nullptr;
 
     std::vector<CCNode *> nodes;
     std::vector<CCSprite *> dots;
@@ -65,16 +65,6 @@ class RecordLayer : public geode::Popup, public TextInputDelegate {
     bool init() override;
 
     ~RecordLayer() override {
-        DESELECT_INPUT(widthInput)
-        DESELECT_INPUT(heightInput)
-        DESELECT_INPUT(bitrateInput)
-        DESELECT_INPUT(fpsInput)
-        DESELECT_INPUT(codecInput)
-        DESELECT_INPUT(seedInput)
-        DESELECT_INPUT(speedhackInput)
-        DESELECT_INPUT(respawnInput)
-        DESELECT_INPUT(tpsInput)
-        cocos2d::CCTouchDispatcher::get()->unregisterForcePrio(this);
         Global::get().layer = nullptr;
     }
 
