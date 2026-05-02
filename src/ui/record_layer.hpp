@@ -1,158 +1,144 @@
 #pragma once
 
-#include <Geode/ui/GeodeUI.hpp>
 #include "../includes.hpp"
+#include <Geode/ui/GeodeUI.hpp>
 
 #include "load_macro_layer.hpp"
+#include "macro_info_layer.hpp"
 #include "render_settings_layer.hpp"
 #include "save_macro_layer.hpp"
-#include "macro_info_layer.hpp"
 
-enum InputType {
-	None,
-	Settings,
-	Autosave,
-	Speedhack,
-	Seed,
-	Respawn,
-	Tps
-};
+enum InputType { None, Settings, Autosave, Speedhack, Seed, Respawn, Tps };
 
 struct RecordSetting {
-	std::string name;
-	std::string id;
-	InputType input;
-	float labelScale = 0.325f;
-	cocos2d::SEL_MenuHandler callback = nullptr;
-	bool disabled = false;
+    std::string name;
+    std::string id;
+    InputType input;
+    float labelScale = 0.325f;
+    cocos2d::SEL_MenuHandler callback = nullptr;
+    bool disabled = false;
 };
 
-const float ySettingPositions[6]{
-	76.5f, 47.5f, 18.5f, -11.5f, -40.5f, -69.5f
-};
+const float ySettingPositions[6]{76.5f, 47.5f, 18.5f, -11.5f, -40.5f, -69.5f};
 
 class RecordLayer : public geode::Popup, public TextInputDelegate {
-public:
-	CCMenuItemToggler* recording = nullptr;
-	CCMenuItemToggler* playing = nullptr;
-	CCMenuItemToggler* speedhackToggle = nullptr;
-	CCMenuItemToggler* trajectoryToggle = nullptr;
-	CCMenuItemToggler* noclipToggle = nullptr;
-	CCMenuItemToggler* frameStepperToggle = nullptr;
-	CCMenuItemToggler* renderToggle = nullptr;
-	CCMenuItemToggler* tpsToggle = nullptr;
+  public:
+    CCMenuItemToggler *recording = nullptr;
+    CCMenuItemToggler *playing = nullptr;
+    CCMenuItemToggler *speedhackToggle = nullptr;
+    CCMenuItemToggler *trajectoryToggle = nullptr;
+    CCMenuItemToggler *noclipToggle = nullptr;
+    CCMenuItemToggler *frameStepperToggle = nullptr;
+    CCMenuItemToggler *renderToggle = nullptr;
+    CCMenuItemToggler *tpsToggle = nullptr;
 
-	CCLabelBMFont* actionsLabel = nullptr;
-	CCLabelBMFont* fpsLabel = nullptr;
-	CCLabelBMFont* warningLabel = nullptr;
+    CCLabelBMFont *actionsLabel = nullptr;
+    CCLabelBMFont *fpsLabel = nullptr;
+    CCLabelBMFont *warningLabel = nullptr;
 
-	CCSprite* warningSprite = nullptr;
-	NineSlice* tpsBg = nullptr;
+    CCSprite *warningSprite = nullptr;
+    NineSlice *tpsBg = nullptr;
 
-	CCMenuItemSpriteExtra* FPSLeft = nullptr;
-	CCMenuItemSpriteExtra* FPSRight = nullptr;
+    CCMenuItemSpriteExtra *FPSLeft = nullptr;
+    CCMenuItemSpriteExtra *FPSRight = nullptr;
 
-	CCTextInputNode* widthInput = nullptr;
-	CCTextInputNode* heightInput = nullptr;
-	CCTextInputNode* bitrateInput = nullptr;
-	CCTextInputNode* fpsInput = nullptr;
-	CCTextInputNode* codecInput = nullptr;
-	CCTextInputNode* seedInput = nullptr;
-	CCTextInputNode* speedhackInput = nullptr;
-	CCTextInputNode* respawnInput = nullptr;
-	CCTextInputNode* tpsInput = nullptr;
+    CCTextInputNode *widthInput = nullptr;
+    CCTextInputNode *heightInput = nullptr;
+    CCTextInputNode *bitrateInput = nullptr;
+    CCTextInputNode *fpsInput = nullptr;
+    CCTextInputNode *codecInput = nullptr;
+    CCTextInputNode *seedInput = nullptr;
+    CCTextInputNode *speedhackInput = nullptr;
+    CCTextInputNode *respawnInput = nullptr;
+    CCTextInputNode *tpsInput = nullptr;
 
-	std::vector<CCNode*> nodes;
-	std::vector<CCSprite*> dots;
+    std::vector<CCNode *> nodes;
+    std::vector<CCSprite *> dots;
 
-	CCMenu* menu = nullptr;
+    CCMenu *menu = nullptr;
 
-	Mod* mod = nullptr;
+    Mod *mod = nullptr;
 
-	bool cursorWasHidden = false;
+    bool cursorWasHidden = false;
 
-protected:
+  protected:
+    bool init() override;
 
-	bool init() override;
+    ~RecordLayer() override {
+        DESELECT_INPUT(widthInput)
+        DESELECT_INPUT(heightInput)
+        DESELECT_INPUT(bitrateInput)
+        DESELECT_INPUT(fpsInput)
+        DESELECT_INPUT(codecInput)
+        DESELECT_INPUT(seedInput)
+        DESELECT_INPUT(speedhackInput)
+        DESELECT_INPUT(respawnInput)
+        DESELECT_INPUT(tpsInput)
+        cocos2d::CCTouchDispatcher::get()->unregisterForcePrio(this);
+        Global::get().layer = nullptr;
+    }
 
-	~RecordLayer() override {
-		DESELECT_INPUT(widthInput)
-		DESELECT_INPUT(heightInput)
-		DESELECT_INPUT(bitrateInput)
-		DESELECT_INPUT(fpsInput)
-		DESELECT_INPUT(codecInput)
-		DESELECT_INPUT(seedInput)
-		DESELECT_INPUT(speedhackInput)
-		DESELECT_INPUT(respawnInput)
-		DESELECT_INPUT(tpsInput)
-		cocos2d::CCTouchDispatcher::get()->unregisterForcePrio(this);
-	    Global::get().layer = nullptr;
-	}
+  public:
+    static std::string getTPSString();
 
-public:
+    STATIC_CREATE(RecordLayer)
 
-	static std::string getTPSString();
-	
-	STATIC_CREATE(RecordLayer)
-	
-	virtual void onClose(cocos2d::CCObject*) override;
+    virtual void onClose(cocos2d::CCObject *) override;
 
-	void textChanged(CCTextInputNode* node) override;
+    void textChanged(CCTextInputNode *node) override;
 
-	void checkSpeedhack();
+    void checkSpeedhack();
 
-	static RecordLayer* openMenu(bool instant = false);
+    static RecordLayer *openMenu(bool instant = false);
 
-	void openMenu2(CCObject*) {
-		RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
-	}
+    void openMenu2(CCObject *) {
+        RecordLayer::openMenu(
+            Mod::get()->getSettingValue<bool>("open_menu_instant"));
+    }
 
-	void moreSettings(CCObject*) {
-		geode::openSettingsPopup(mod, false);
-	}
+    void moreSettings(CCObject *) { geode::openSettingsPopup(mod, false); }
 
-	void updateDots();
+    void updateDots();
 
-	void openLoadMacro(CCObject*);
+    void openLoadMacro(CCObject *);
 
-	void openSaveMacro(CCObject*);
+    void openSaveMacro(CCObject *);
 
-	void showCodecPopup(CCObject*);
+    void showCodecPopup(CCObject *);
 
-	void toggleRecording(CCObject*);
+    void toggleRecording(CCObject *);
 
-	void togglePlaying(CCObject*);
+    void togglePlaying(CCObject *);
 
-	void toggleRender(CCObject* btn);
-	
-	void toggleRender2(CCObject* btn);
+    void toggleRender(CCObject *btn);
 
-	void openPresets(CCObject*);
+    void toggleRender2(CCObject *btn);
 
-	void onAutosaves(CCObject*);
+    void openPresets(CCObject *);
 
-	void goToSettingsPage(int page);
+    void onAutosaves(CCObject *);
 
-	void loadSetting(RecordSetting sett, float yPos);
+    void goToSettingsPage(int page);
 
-	void setToggleMember(CCMenuItemToggler* toggle, std::string id);
+    void loadSetting(RecordSetting sett, float yPos);
 
-	void onEditMacro(CCObject*);
+    void setToggleMember(CCMenuItemToggler *toggle, std::string id);
 
-	void macroInfo(CCObject*);
+    void onEditMacro(CCObject *);
 
-	void updatePage(CCObject* obj);
+    void macroInfo(CCObject *);
 
-	void toggleSetting(CCObject* obj);
+    void updatePage(CCObject *obj);
 
-	void openKeybinds(CCObject*);
+    void toggleSetting(CCObject *obj);
 
-	void toggleFPS(bool on);
+    void openKeybinds(CCObject *);
 
-	void onDiscord(CCObject*);
+    void toggleFPS(bool on);
 
-	void updateTPS();
+    void onDiscord(CCObject *);
 
-	void showKeybindsWarning();
+    void updateTPS();
 
+    void showKeybindsWarning();
 };

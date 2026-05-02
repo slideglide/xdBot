@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gdr/gdr.hpp"
+#include "practice_fixes/checkpoint.hpp"
 #include "utils/utils.hpp"
-#include "practice_fixes/practice_fixes.hpp"
 
 #include <gdr/gdr.hpp>
 #include <gdr_convert.hpp>
@@ -13,22 +13,13 @@ using namespace geode::prelude;
 
 const std::vector<float> safeValues = {
     1.0f / 240, 1.0f / 120, 1.0f / 80, 1.0f / 60, 1.0f / 48,
-    1.0f / 40, 1.0f / 30, 1.0f / 24, 1.0f / 20, 1.0f / 16,
-    1.0f / 15, 1.0f / 12, 1.0f / 10, 1.0f / 8, 1.0f / 6,
-    1.0f / 5, 1.0f / 4, 1.0f / 3, 1.0f / 2
-};
+    1.0f / 40,  1.0f / 30,  1.0f / 24, 1.0f / 20, 1.0f / 16,
+    1.0f / 15,  1.0f / 12,  1.0f / 10, 1.0f / 8,  1.0f / 6,
+    1.0f / 5,   1.0f / 4,   1.0f / 3,  1.0f / 2};
 
-enum state {
-    none,
-    recording,
-    playing
-};
+enum state { none, recording, playing };
 
-enum class SaveFormat {
-    GDR2,
-    GDR1,
-    JSON
-};
+enum class SaveFormat { GDR2, GDR1, JSON };
 
 struct input : gdr::Input<> {
     input() = default;
@@ -36,16 +27,12 @@ struct input : gdr::Input<> {
     input(uint64_t frame, uint8_t button, bool player2, bool down)
         : Input(frame, button, player2, down) {}
 
-    bool operator==(const input& other) const {
-        return frame == other.frame &&
-               player2 == other.player2 &&
-               button == other.button &&
-               down == other.down;
+    bool operator==(const input &other) const {
+        return frame == other.frame && player2 == other.player2 &&
+               button == other.button && down == other.down;
     }
 
-    bool operator<(const input& other) const {
-        return frame < other.frame;
-    }
+    bool operator<(const input &other) const { return frame < other.frame; }
 };
 
 struct legacy_input : gdr_legacy::Input {
@@ -61,12 +48,9 @@ struct LegacyMacro : gdr_legacy::Replay<LegacyMacro, legacy_input> {
 
 struct Macro : gdr::Replay<Macro, input> {
 
-    Macro() : Replay("xdBot", 1) {
-        botInfo.name = "xdBot";
-    }
+    Macro() : Replay("xdBot", 1) { botInfo.name = "xdBot"; }
 
-public:
-
+  public:
     bool canChangeFPS = true;
     uintptr_t seed = 0;
     bool xdBotMacro = true;
@@ -78,16 +62,14 @@ public:
         return botInfo.name == "xdBot";
     }
 
-    void parseExtension(binary_reader& reader) override;
-    void saveExtension(binary_writer& writer) const override;
+    void parseExtension(binary_reader &reader) override;
+    void saveExtension(binary_writer &writer) const override;
 
-    std::string getBotVersionString() const {
-        return getModVersionString();
-    }
+    std::string getBotVersionString() const { return getModVersionString(); }
 
     LegacyMacro toLegacy() const;
 
-    static Macro fromLegacy(const LegacyMacro& legacy);
+    static Macro fromLegacy(const LegacyMacro &legacy);
 
     gdr::Result<std::vector<uint8_t>> exportGDR2();
 
@@ -95,27 +77,26 @@ public:
 
     std::vector<uint8_t> exportJSON();
 
-    static Macro importData(std::vector<uint8_t>& data);
+    static Macro importData(std::vector<uint8_t> &data);
 
     static void recordAction(int frame, int button, bool player2, bool hold);
 
-    static void recordFrameFix(int frame, PlayerObject* p1, PlayerObject* p2);
+    static void recordFrameFix(int frame, PlayerObject *p1, PlayerObject *p2);
 
-    static int save(std::string author, std::string desc, std::string path, SaveFormat format = SaveFormat::GDR2);
+    static int save(std::string author, std::string desc, std::string path,
+                    SaveFormat format = SaveFormat::GDR2);
 
-    static void autoSave(GJGameLevel* level, int number);
+    static void autoSave(GJGameLevel *level, int number);
 
-    static void tryAutosave(GJGameLevel* level, CheckpointObject* cp);
+    static void tryAutosave(GJGameLevel *level, CheckpointObject *cp);
 
-    static void updateInfo(PlayLayer* pl);
+    static void updateInfo(PlayLayer *pl);
 
     static void updateTPS();
 
     static bool loadXDFile(std::filesystem::path path);
 
     static Macro XDtoGDR(std::filesystem::path path);
-
-    static void resetVariables();
 
     static void resetState(bool cp = false);
 
@@ -126,7 +107,6 @@ public:
     static bool shouldStep();
 
     static bool flipControls();
-
 };
 
 struct button {

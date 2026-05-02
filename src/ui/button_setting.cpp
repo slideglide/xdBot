@@ -1,79 +1,75 @@
 #include "../includes.hpp"
 #include "record_layer.hpp"
 
-#include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/Mod.hpp>
+#include <Geode/loader/SettingV3.hpp>
 
 class MyButtonSettingV3 : public SettingV3 {
-public:
-    static Result<std::shared_ptr<SettingV3>> parse(std::string const& key, std::string const& modID, matjson::Value const& json) {
+  public:
+    static Result<std::shared_ptr<SettingV3>>
+    parse(std::string const &key, std::string const &modID,
+          matjson::Value const &json) {
         auto res = std::make_shared<MyButtonSettingV3>();
         auto root = checkJson(json, "MyButtonSettingV3");
 
         res->init(key, modID, root);
         res->parseNameAndDescription(root);
         res->parseEnableIf(root);
-        
+
         root.checkUnknownKeys();
         return root.ok(std::static_pointer_cast<SettingV3>(res));
     }
 
-    bool load(matjson::Value const& json) override {
-        return true;
-    }
-    bool save(matjson::Value& json) const override {
-        return true;
-    }
+    bool load(matjson::Value const &json) override { return true; }
+    bool save(matjson::Value &json) const override { return true; }
 
-    bool isDefaultValue() const override {
-        return true;
-    }
+    bool isDefaultValue() const override { return true; }
     void reset() override {}
 
-    SettingNodeV3* createNode(float width) override;
+    SettingNodeV3 *createNode(float width) override;
 };
 
 class MyButtonSettingNodeV3 : public SettingNodeV3 {
-protected:
-
+  protected:
     bool init(std::shared_ptr<MyButtonSettingV3> setting, float width) {
         if (!SettingNodeV3::init(setting, width))
             return false;
 
-        // CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
+        // CCSprite* sprite =
+        // CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
         // sprite->setScale(0.325f);
-        CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtraWithFrameName(
-            "GJ_playBtn2_001.png",
-            0.325f,
-            [this](auto sender) {
-                onButton(sender);
-            }
-        );
+        CCMenuItemSpriteExtra *btn =
+            CCMenuItemExt::createSpriteExtraWithFrameName(
+                "GJ_playBtn2_001.png", 0.325f,
+                [this](auto sender) { onButton(sender); });
         getButtonMenu()->addChildAtPosition(btn, Anchor::Center);
         getButtonMenu()->updateLayout();
 
         updateState(nullptr);
-        
+
         return true;
     }
-    
-    void updateState(CCNode* invoker) override {
+
+    void updateState(CCNode *invoker) override {
         SettingNodeV3::updateState(invoker);
     }
 
-    void onButton(CCObject*) {
-        CCArray* children = CCScene::get()->getChildren();
-        if (FLAlertLayer* layer = typeinfo_cast<FLAlertLayer*>(children->lastObject()))
+    void onButton(CCObject *) {
+        CCArray *children = CCScene::get()->getChildren();
+        if (FLAlertLayer *layer =
+                typeinfo_cast<FLAlertLayer *>(children->lastObject()))
             layer->keyBackClicked();
 
-        RecordLayer::openMenu(Mod::get()->getSettingValue<bool>("open_menu_instant"));
+        RecordLayer::openMenu(
+            Mod::get()->getSettingValue<bool>("open_menu_instant"));
     }
 
     void onCommit() override {}
     void onResetToDefault() override {}
 
-public:
-    static MyButtonSettingNodeV3* create(std::shared_ptr<MyButtonSettingV3> setting, float width) {
+  public:
+    static MyButtonSettingNodeV3 *
+    create(std::shared_ptr<MyButtonSettingV3> setting, float width) {
         auto ret = new MyButtonSettingNodeV3();
         if (ret && ret->init(setting, width)) {
             ret->autorelease();
@@ -82,24 +78,20 @@ public:
         delete ret;
         return nullptr;
     }
-    bool hasUncommittedChanges() const override {
-        return false;
-    }
-    bool hasNonDefaultValue() const override {
-        return false;
-    }
+    bool hasUncommittedChanges() const override { return false; }
+    bool hasNonDefaultValue() const override { return false; }
     std::shared_ptr<MyButtonSettingV3> getSetting() const {
-        return std::static_pointer_cast<MyButtonSettingV3>(SettingNodeV3::getSetting());
+        return std::static_pointer_cast<MyButtonSettingV3>(
+            SettingNodeV3::getSetting());
     }
 };
 
-SettingNodeV3* MyButtonSettingV3::createNode(float width) {
+SettingNodeV3 *MyButtonSettingV3::createNode(float width) {
     return MyButtonSettingNodeV3::create(
-        std::static_pointer_cast<MyButtonSettingV3>(shared_from_this()),
-        width
-    );
+        std::static_pointer_cast<MyButtonSettingV3>(shared_from_this()), width);
 }
 
 $execute {
-    (void)Mod::get()->registerCustomSettingType("button", &MyButtonSettingV3::parse);
+    (void)Mod::get()->registerCustomSettingType("button",
+                                                &MyButtonSettingV3::parse);
 }

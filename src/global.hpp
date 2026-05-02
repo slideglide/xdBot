@@ -1,31 +1,31 @@
 #pragma once
 
-#include <Geode/Geode.hpp>
 #include "macro.hpp"
-#include "renderer/renderer.hpp"
-#include <eclipse.eclipse-menu/include/config.hpp>
 #include "practice_fixes/practice_fixes.hpp"
+#include "renderer/renderer.hpp"
+#include <Geode/Geode.hpp>
+#include <eclipse.eclipse-menu/include/config.hpp>
 
 class Global {
 
-    #define DESELECT_INPUT(node) \
-    if (node) { \
-        node->onClickTrackNode(false); \
-        node->setDelegate(nullptr); \
+#define DESELECT_INPUT(node)                                                   \
+    if (node) {                                                                \
+        node->onClickTrackNode(false);                                         \
+        node->setDelegate(nullptr);                                            \
     }
 
     Global() {}
 
-public:
-
-    static auto& get() {
+  public:
+    static auto &get() {
         static Global instance;
         return instance;
     }
 
-    // @brief Determine whether an incompatible mod or an incompatible setting in a mod is enabled
+    // @brief Determine whether an incompatible mod or an incompatible setting
+    // in a mod is enabled
     static bool hasIncompatibleMods();
-    
+
     // @brief Determine whether an incompatible Geometry Dash setting is enabled
     static bool enabledIncompatibleGDSettings();
 
@@ -50,17 +50,17 @@ public:
     // @brief Toggle, well, frame stepper
     static void toggleFrameStepper();
 
-    Mod* mod = geode::Mod::get();
-    geode::Popup* layer = nullptr;
+    Mod *mod = geode::Mod::get();
+    geode::Popup *layer = nullptr;
 
     Macro macro;
-    #ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_IOS
     Renderer renderer;
-    #endif
+#endif
     state state = none;
-    
+
     geode::utils::random::Generator gen;
-    std::unordered_map<CheckpointObject*, CheckpointData> checkpoints;
+    std::unordered_map<CheckpointObject *, CheckpointData> checkpoints;
     std::unordered_set<int> allKeybinds;
     std::unordered_set<int> playedFrames;
     std::vector<int> keybinds[6];
@@ -101,31 +101,34 @@ public:
     bool stopPlaying = false;
     bool tpsEnabled = false;
     float tps = 240.f;
-    
+
     geode::Function<void(bool)> onTpsEnabledChanged;
     geode::Function<void(double)> onTpsChanged;
-    
+
     void setTpsEnabled(bool enabled) {
         tpsEnabled = enabled;
         mod->setSavedValue("macro_tps_enabled", enabled);
-        
+
         if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
             eclipse::config::setInternal("global.tpsbypass.toggle", enabled);
         } else {
-            if (onTpsEnabledChanged) onTpsEnabledChanged(enabled);
+            if (onTpsEnabledChanged)
+                onTpsEnabledChanged(enabled);
         }
     }
-    
+
     void setTps(float newTps) {
         tps = newTps;
         mod->setSavedValue("macro_tps", static_cast<double>(newTps));
         if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
-            eclipse::config::setInternal("global.tpsbypass", static_cast<double>(newTps));
+            eclipse::config::setInternal("global.tpsbypass",
+                                         static_cast<double>(newTps));
         } else {
-            if (onTpsChanged) onTpsChanged(static_cast<double>(newTps));
+            if (onTpsChanged)
+                onTpsChanged(static_cast<double>(newTps));
         }
     }
-    
+
     bool previousTpsEnabled = false;
     float previousTps = 0.f;
     bool autoclicker = false;
@@ -141,23 +144,11 @@ public:
     float autosaveCheck = 2.f;
     bool autosaveEnabled = false;
 
-    bool ignoreStopDashing[2] = { false, false };
-    bool addSideHoldingMembers[2] = { false, false };
-    bool wasHolding[6] = { false, false, false, false, false, false };
-    bool heldButtons[6] = { false, false, false, false, false, false };
-    bool respawnHeldButtons[6] = { false, false, false, false, false, false };
-
-    int delayedFrameRelease[2][2] = { { -1, -1 }, { -1, -1 } };
-    int delayedFrameReleaseMain[2] = { -1, -1 };
-    int delayedFrameInput[2] = { -1, -1 };
-    int ignoreFrame = -1;
     int respawnFrame = -1;
-    int ignoreJumpButton = -1;
     int frameOffset = 0;
     int previousFrame = 0;
-    
+
     int m_frameCount = 0;
-    bool m_isHalfTick = false;
 
     size_t currentAction = 0;
     size_t currentFrameFix = 0;

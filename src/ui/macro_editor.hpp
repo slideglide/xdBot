@@ -2,7 +2,9 @@
 
 #include "../includes.hpp"
 
-const std::unordered_map<int, std::string> btnNames = { {1, "Jump"}, {2, "Left"}, {3, "Right"},{4, "Jump"}, {5, "Left"}, {6, "Right"} };
+const std::unordered_map<int, std::string> btnNames = {
+    {1, "Jump"}, {2, "Left"}, {3, "Right"},
+    {4, "Jump"}, {5, "Left"}, {6, "Right"}};
 
 struct InputText {
     std::string frame;
@@ -13,51 +15,47 @@ struct InputText {
 
 class MacroEditLayer : public geode::Popup, public TextInputDelegate {
 
-private:
-    
+  private:
     bool init() override;
 
-    void onClose(CCObject*) override;
+    void onClose(CCObject *) override;
 
-    void keyBackClicked() override {
-        onClose(nullptr);
-    }
+    void keyBackClicked() override { onClose(nullptr); }
 
-    void textChanged(CCTextInputNode* input) override;
+    void textChanged(CCTextInputNode *input) override;
 
     ~MacroEditLayer() override;
-    
-public:
 
+  public:
     STATIC_CREATE(MacroEditLayer)
-    
-    TextInput* pageInput = nullptr;
-    TextInput* frameInput = nullptr;
-    CCLabelBMFont* actionLabel = nullptr;
-    CCLabelBMFont* buttonLabel = nullptr;
-    CCLabelBMFont* playerLabel = nullptr;
-    CCLabelBMFont* noInputsLabel1 = nullptr;
-    CCLabelBMFont* noInputsLabel2 = nullptr;
-    CCLabelBMFont* notSavedLabel = nullptr;
-    CCLabelBMFont* inputCountLbl = nullptr;
 
-    std::vector<CCLabelBMFont*> separators;
+    TextInput *pageInput = nullptr;
+    TextInput *frameInput = nullptr;
+    CCLabelBMFont *actionLabel = nullptr;
+    CCLabelBMFont *buttonLabel = nullptr;
+    CCLabelBMFont *playerLabel = nullptr;
+    CCLabelBMFont *noInputsLabel1 = nullptr;
+    CCLabelBMFont *noInputsLabel2 = nullptr;
+    CCLabelBMFont *notSavedLabel = nullptr;
+    CCLabelBMFont *inputCountLbl = nullptr;
+
+    std::vector<CCLabelBMFont *> separators;
     std::vector<input> ogInputs;
     std::vector<input> inputs;
     std::vector<input> pageInputs;
 
-    CCMenu* pageMenu = nullptr;
-    CCMenu* selectedInputMenu = nullptr;
+    CCMenu *pageMenu = nullptr;
+    CCMenu *selectedInputMenu = nullptr;
 
-    CCMenuItemSpriteExtra* saveBtn = nullptr;
-    CCMenuItemSpriteExtra* deleteBtn = nullptr;
-    CCMenuItemSpriteExtra* pageLeftBtn = nullptr;
-    CCMenuItemSpriteExtra* pageRightBtn = nullptr;
+    CCMenuItemSpriteExtra *saveBtn = nullptr;
+    CCMenuItemSpriteExtra *deleteBtn = nullptr;
+    CCMenuItemSpriteExtra *pageLeftBtn = nullptr;
+    CCMenuItemSpriteExtra *pageRightBtn = nullptr;
 
-    NineSlice* hoveredBg = nullptr;
-    NineSlice* selectedBg = nullptr;
-    NineSlice* selectedInputBg = nullptr;
-    NineSlice* listBg = nullptr;
+    NineSlice *hoveredBg = nullptr;
+    NineSlice *selectedBg = nullptr;
+    NineSlice *selectedInputBg = nullptr;
+    NineSlice *listBg = nullptr;
 
     int selectedInput = -1;
     int selectedInputIndex = -1;
@@ -78,51 +76,51 @@ public:
     void selectInput(int input);
 
     void reSelectInput();
-    
+
     void update(float dt) override;
 
     void updatePageInputs(int page);
 
     void updateLabels();
 
-    void switchPage(CCObject* obj);
-    
-    void switchFrame(CCObject* obj);
+    void switchPage(CCObject *obj);
 
-    void switchButton(CCObject* obj);
+    void switchFrame(CCObject *obj);
 
-    void switchAction(CCObject* obj);
+    void switchButton(CCObject *obj);
 
-    void switchPlayer(CCObject* obj);
+    void switchAction(CCObject *obj);
+
+    void switchPlayer(CCObject *obj);
 
     void flashSelected();
 
-    void onAddInput(CCObject*);
+    void onAddInput(CCObject *);
 
-    void onRemoveInput(CCObject*);
+    void onRemoveInput(CCObject *);
 
     void changeSelectedInputFrame(int frame, bool isArrow = true);
 
-    void onSave(CCObject*);
+    void onSave(CCObject *);
 
-    void onClear(CCObject*);
+    void onClear(CCObject *);
 
-    void onMerge(CCObject*);
+    void onMerge(CCObject *);
 
-    void mergeMacro(std::vector<input> mergeInputs, bool players[2], bool overwrite);
+    void mergeMacro(std::vector<input> mergeInputs, bool players[2],
+                    bool overwrite);
 
     void updateSaved();
 
     void toggleSaveButton(bool toggle);
 
-    static int getSum(CCObject* obj);
+    static int getSum(CCObject *obj);
 
     static InputText getInputText(input input);
 
     static void open(bool instant = false) {
-        MacroEditLayer* layer = create();
+        MacroEditLayer *layer = create();
         layer->m_noElasticity = instant;
         layer->show();
     }
-
 };

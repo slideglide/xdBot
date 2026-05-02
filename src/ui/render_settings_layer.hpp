@@ -4,41 +4,37 @@
 
 class RenderSettingsLayer : public geode::Popup, public TextInputDelegate {
 
-public:
+  public:
+    Slider *sfxSlider = nullptr;
+    Slider *musicSlider = nullptr;
+    TextInput *fadeInInput = nullptr;
+    TextInput *fadeOutInput = nullptr;
+    TextInput *extensionInput = nullptr;
 
-    Slider* sfxSlider = nullptr;
-    Slider* musicSlider = nullptr;
-    TextInput* fadeInInput = nullptr;
-    TextInput* fadeOutInput = nullptr;
-    TextInput* extensionInput = nullptr;
+    CCTextInputNode *argsInput = nullptr;
+    CCTextInputNode *audioArgsInput = nullptr;
+    CCTextInputNode *secondsInput = nullptr;
+    CCTextInputNode *videoArgsInput = nullptr;
 
-    CCTextInputNode* argsInput = nullptr;
-    CCTextInputNode* audioArgsInput = nullptr;
-    CCTextInputNode* secondsInput = nullptr;
-    CCTextInputNode* videoArgsInput = nullptr;
+    Mod *mod = nullptr;
 
-    Mod* mod = nullptr;
-
-private:
-
+  private:
     bool init() override;
 
-public:
-
-    ~RenderSettingsLayer() override {
-        DESELECT_INPUT(argsInput)
-        DESELECT_INPUT(audioArgsInput)
-        DESELECT_INPUT(secondsInput)
-        DESELECT_INPUT(videoArgsInput)
-    }
+  public:
+    ~RenderSettingsLayer() override{
+        DESELECT_INPUT(argsInput) DESELECT_INPUT(audioArgsInput)
+            DESELECT_INPUT(secondsInput) DESELECT_INPUT(videoArgsInput)}
 
     STATIC_CREATE(RenderSettingsLayer)
 
-    void open(CCObject*) { create()->show(); }
-    void close(CCObject*) { keyBackClicked(); }
+        void open(CCObject *) {
+        create()->show();
+    }
+    void close(CCObject *) { keyBackClicked(); }
 
-    void textChanged(CCTextInputNode* node) override;
-    void onSlider(CCObject*);
-    void onDefaults(CCObject*);
-    void showInfoPopup(CCObject*);
+    void textChanged(CCTextInputNode *node) override;
+    void onSlider(CCObject *);
+    void onDefaults(CCObject *);
+    void showInfoPopup(CCObject *);
 };

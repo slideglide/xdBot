@@ -7,16 +7,17 @@
 #include <Geode/modify/GameObject.hpp>
 #include <Geode/modify/EffectGameObject.hpp>
 #include <Geode/modify/HardStreak.hpp>
-#include <Geode/modify/RingObject.hpp>
-#include <Geode/modify/EnhancedGameObject.hpp>
+#include <Geode/modify/CCKeyboardDispatcher.hpp>
 
 ShowTrajectory& t = ShowTrajectory::get();
 
 $execute {
+
     t.color1 = ccc4FFromccc3B(Mod::get()->getSavedValue<cocos2d::ccColor3B>("trajectory_color1"));
     t.color2 = ccc4FFromccc3B(Mod::get()->getSavedValue<cocos2d::ccColor3B>("trajectory_color2"));
     t.length = geode::utils::numFromString<int>(Mod::get()->getSavedValue<std::string>("trajectory_length")).unwrapOr(0);
     t.updateMergedColor();
+
 };
 
 void ShowTrajectory::trajectoryOff() {
@@ -26,57 +27,20 @@ void ShowTrajectory::trajectoryOff() {
     }
 }
 
-static void applyGamemode(PlayerObject* fake, PlayerObject* real) {
-    // Determine target mode from real player
-    const bool targetDart   = real->m_isDart;
-    const bool targetBall   = real->m_isBall;
-    const bool targetShip   = real->m_isShip;
-    const bool targetBird   = real->m_isBird;
-    const bool targetRobot  = real->m_isRobot;
-    const bool targetSpider = real->m_isSpider;
-    const bool targetSwing  = real->m_isSwing;
-
-    fake->m_isUpsideDown = real->m_isUpsideDown;
-    fake->m_isSideways   = real->m_isSideways;
-
-    // Disable any currently active mode on fake player first
-    // This runs the cleanup path (resets width/height/frames/etc.)
-    if (fake->m_isDart   && !targetDart)   { fake->toggleDartMode(false, true);   }
-    if (fake->m_isBall   && !targetBall)   { fake->toggleRollMode(false, true);   }
-    if (fake->m_isShip   && !targetShip)   { fake->toggleFlyMode(false, true);    }
-    if (fake->m_isBird   && !targetBird)   { fake->toggleBirdMode(false, true);   }
-    if (fake->m_isRobot  && !targetRobot)  { fake->toggleRobotMode(false, true);  }
-    if (fake->m_isSpider && !targetSpider) { fake->toggleSpiderMode(false, true); }
-    if (fake->m_isSwing  && !targetSwing)  { fake->toggleSwingMode(false, true);  }
-
-    // Now enable target mode (early-exit won't fire since flags were just cleared)
-    if (targetDart)   { fake->toggleDartMode(true, true);   return; }
-    if (targetBall)   { fake->toggleRollMode(true, true);   return; }
-    if (targetShip)   { fake->toggleFlyMode(true, true);    return; }
-    if (targetBird)   { fake->toggleBirdMode(true, true);   return; }
-    if (targetRobot)  { fake->toggleRobotMode(true, true);  return; }
-    if (targetSpider) { fake->toggleSpiderMode(true, true); return; }
-    if (targetSwing)  { fake->toggleSwingMode(true, true);  return; }
-
-    // Cube — restore hitbox dimensions that wave/spider may have changed
-    fake->m_unkAngle1 = 20.0;  // cube default
-    fake->m_width  = (fake->m_vehicleSize == 1.0f) ? 20.0f : 12.0f;
-    fake->m_height = (fake->m_vehicleSize == 1.0f) ? 20.0f : 12.0f;
-    fake->updatePlayerScale();
-}
-
 void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
     if (!t.fakePlayer1 || !t.fakePlayer2) return;
 
     auto& g = Global::get();
+
     g.safeMode = true;
+
     t.creatingTrajectory = true;
     g.creatingTrajectory = true;
 
     t.trajectoryNode()->setVisible(true);
     t.trajectoryNode()->clear();
 
-    if (pl->m_player1) {
+    if (t.fakePlayer1 && pl->m_player1) {
         createTrajectory(pl, t.fakePlayer1, pl->m_player1, true);
         createTrajectory(pl, t.fakePlayer2, pl->m_player1, false);
 
@@ -99,124 +63,14 @@ void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
     t.creatingTrajectory = false;
     g.creatingTrajectory = false;
 }
-
+float rot = 0.f;
 void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, PlayerObject* realPlayer, bool hold, bool inverted) {
+
     bool player2 = pl->m_player2 == realPlayer;
-
-    GJGameState savedState = pl->m_gameState;
-
-    t.objSnapshot.clear();
-    float baseX = realPlayer->getPositionX();
-    float maxAhead = t.length * 15.f;
-    if (pl->m_objects) {
-        for (unsigned i = 0; i < pl->m_objects->count(); i++) {
-            auto* ego = typeinfo_cast<EffectGameObject*>(pl->m_objects->objectAtIndex(i));
-            if (!ego) continue;
-            float ox = ego->getPositionX();
-            if (ox < baseX - 200.f || ox > baseX + maxAhead) continue;
-            auto* ring = typeinfo_cast<RingObject*>(ego);
-            t.objSnapshot.push_back({
-                ego, ring,
-                ego->m_isActivated,
-                ego->m_activated,
-                ego->m_activatedByPlayer1,
-                ego->m_activatedByPlayer2,
-                ring ? ring->m_claimTouch : false
-            });
-        }
-    }
-
-    auto restoreObjs = [&]() {
-        for (auto& s : t.objSnapshot) {
-            s.obj->m_isActivated        = s.isActivated;
-            s.obj->m_activated          = s.activated;
-            s.obj->m_activatedByPlayer1 = s.activatedByP1;
-            s.obj->m_activatedByPlayer2 = s.activatedByP2;
-            if (s.ring) s.ring->m_claimTouch = s.claimTouch;
-        }
-    };
-
-    PlayerObject** slot = (player2) ? &pl->m_player2 : &pl->m_player1;
-    *slot = fakePlayer;
-
-    const bool prevDart   = fakePlayer->m_isDart;
-    const bool prevBall   = fakePlayer->m_isBall;
-    const bool prevShip   = fakePlayer->m_isShip;
-    const bool prevBird   = fakePlayer->m_isBird;
-    const bool prevRobot  = fakePlayer->m_isRobot;
-    const bool prevSpider = fakePlayer->m_isSpider;
-    const bool prevSwing  = fakePlayer->m_isSwing;
 
     PlayerPracticeFixes::transfer(realPlayer, fakePlayer, true);
 
-    fakePlayer->m_isUpsideDown = realPlayer->m_isUpsideDown;
-    fakePlayer->m_isSideways   = realPlayer->m_isSideways;
-    fakePlayer->m_vehicleSize  = realPlayer->m_vehicleSize;
-
-    const bool targetDart   = realPlayer->m_isDart;
-    const bool targetBall   = realPlayer->m_isBall;
-    const bool targetShip   = realPlayer->m_isShip;
-    const bool targetBird   = realPlayer->m_isBird;
-    const bool targetRobot  = realPlayer->m_isRobot;
-    const bool targetSpider = realPlayer->m_isSpider;
-    const bool targetSwing  = realPlayer->m_isSwing;
-
-    fakePlayer->m_isDart   = prevDart;
-    fakePlayer->m_isBall   = prevBall;
-    fakePlayer->m_isShip   = prevShip;
-    fakePlayer->m_isBird   = prevBird;
-    fakePlayer->m_isRobot  = prevRobot;
-    fakePlayer->m_isSpider = prevSpider;
-    fakePlayer->m_isSwing  = prevSwing;
-
-    if (prevDart   && !targetDart)   { fakePlayer->toggleDartMode(false, true);   fakePlayer->resetPlayerIcon(); }
-    if (prevBall   && !targetBall)   { fakePlayer->toggleRollMode(false, true);   }
-    if (prevShip   && !targetShip)   { fakePlayer->toggleFlyMode(false, true);    fakePlayer->resetPlayerIcon(); }
-    if (prevBird   && !targetBird)   { fakePlayer->toggleBirdMode(false, true);   fakePlayer->resetPlayerIcon(); }
-    if (prevRobot  && !targetRobot)  { fakePlayer->toggleRobotMode(false, true);  }
-    if (prevSpider && !targetSpider) { fakePlayer->toggleSpiderMode(false, true); fakePlayer->resetPlayerIcon(); }
-    if (prevSwing  && !targetSwing)  { fakePlayer->toggleSwingMode(false, true);  fakePlayer->resetPlayerIcon(); }
-
-    if (targetDart)        { fakePlayer->toggleDartMode(true, true);   }
-    else if (targetBall)   { fakePlayer->toggleRollMode(true, true);   }
-    else if (targetShip)   { fakePlayer->toggleFlyMode(true, true);    }
-    else if (targetBird)   { fakePlayer->toggleBirdMode(true, true);   }
-    else if (targetRobot)  { fakePlayer->toggleRobotMode(true, true);  }
-    else if (targetSpider) { fakePlayer->toggleSpiderMode(true, true); }
-    else if (targetSwing)  { fakePlayer->toggleSwingMode(true, true);  }
-    else {
-        fakePlayer->m_isDart   = false;
-        fakePlayer->m_isBall   = false;
-        fakePlayer->m_isShip   = false;
-        fakePlayer->m_isBird   = false;
-        fakePlayer->m_isRobot  = false;
-        fakePlayer->m_isSpider = false;
-        fakePlayer->m_isSwing  = false;
-        fakePlayer->resetPlayerIcon();
-    }
-
-    fakePlayer->m_collisionLogTop->removeAllObjects();
-    fakePlayer->m_collisionLogBottom->removeAllObjects();
-    fakePlayer->m_collisionLogLeft->removeAllObjects();
-    fakePlayer->m_collisionLogRight->removeAllObjects();
-
-    fakePlayer->m_ringRelatedSet.clear();
-    fakePlayer->m_touchedRings.clear();
-    fakePlayer->m_touchedRing = false;
-    fakePlayer->m_touchedCustomRing = false;
-    fakePlayer->m_touchedGravityPortal = false;
-    fakePlayer->m_ringJumpRelated = false;
-    fakePlayer->m_padRingRelated = false;
-    if (fakePlayer->m_touchingRings) fakePlayer->m_touchingRings->removeAllObjects();
-
-    fakePlayer->setVisible(false);
     t.cancelTrajectory = false;
-
-    hold ? fakePlayer->pushButton(PlayerButton::Jump) : fakePlayer->releaseButton(PlayerButton::Jump);
-    if (pl->m_isPlatformer)
-        (inverted ? !realPlayer->m_isGoingLeft : realPlayer->m_isGoingLeft)
-            ? fakePlayer->pushButton(PlayerButton::Left)
-            : fakePlayer->pushButton(PlayerButton::Right);
 
     for (int i = 0; i < t.length; i++) {
         CCPoint prevPos = fakePlayer->getPosition();
@@ -241,6 +95,12 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
             break;
         }
 
+        if (i == 0) {
+            hold ? fakePlayer->pushButton(static_cast<PlayerButton>(1)) : fakePlayer->releaseButton(static_cast<PlayerButton>(1));
+            if (pl->m_levelSettings->m_platformerMode)
+                (inverted ? !realPlayer->m_isGoingLeft : realPlayer->m_isGoingLeft) ? fakePlayer->pushButton(static_cast<PlayerButton>(2)) : fakePlayer->pushButton(static_cast<PlayerButton>(3));
+        }
+
         fakePlayer->update(t.delta);
         fakePlayer->updateRotation(t.delta);
         fakePlayer->updatePlayerScale();
@@ -248,7 +108,7 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
         cocos2d::ccColor4F color = hold ? t.color1 : t.color2;
 
         if (!hold) {
-            if ((player2 && t.player2Trajectory[i] == prevPos) || (!player2 && t.player1Trajectory[i] == prevPos))
+            if ((player2 && t.player2Trajectory[i] == prevPos) || !player2 && t.player1Trajectory[i] == prevPos)
                 color = t.color3;
         }
 
@@ -258,10 +118,6 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
         t.trajectoryNode()->drawSegment(prevPos, fakePlayer->getPosition(), 0.6f, color);
     }
 
-    *slot = realPlayer;
-
-    pl->m_gameState = savedState;
-    restoreObjs();
 }
 
 void ShowTrajectory::drawPlayerHitbox(PlayerObject* player, CCDrawNode* drawNode) {
@@ -315,8 +171,12 @@ std::vector<cocos2d::CCPoint> ShowTrajectory::getVertices(PlayerObject* player, 
     for (auto& vertex : vertices) {
         float x = vertex.x - center.x;
         float y = vertex.y - center.y;
-        vertex.x = center.x + (x * cos(angle)) - (y * sin(angle));
-        vertex.y = center.y + (x * sin(angle)) + (y * cos(angle));
+
+        float xNew = center.x + (x * cos(angle)) - (y * sin(angle));
+        float yNew = center.y + (x * sin(angle)) + (y * cos(angle));
+
+        vertex.x = xNew;
+        vertex.y = yNew;
     }
 
     return vertices;
@@ -324,17 +184,21 @@ std::vector<cocos2d::CCPoint> ShowTrajectory::getVertices(PlayerObject* player, 
 
 void ShowTrajectory::updateMergedColor() {
     cocos2d::ccColor4F newColor = { 0.f, 0.f, 0.f, 1.f };
+
     newColor.r = (color1.r + color2.r) / 2;
     newColor.b = (color1.b + color2.b) / 2;
     newColor.g = (color1.g + color2.g) / 2;
+
     newColor.r = std::min(1.f, newColor.r + 0.45f);
     newColor.g = std::min(1.f, newColor.g + 0.45f);
     newColor.b = std::min(1.f, newColor.b + 0.45f);
+
     color3 = newColor;
 }
 
 void ShowTrajectory::handlePortal(PlayerObject* player, int id) {
     if (!portalIDs.contains(id)) return;
+
     switch (id) {
     case 101:
         player->togglePlayerScale(true, true);
@@ -344,19 +208,33 @@ void ShowTrajectory::handlePortal(PlayerObject* player, int id) {
         player->togglePlayerScale(false, true);
         player->updatePlayerScale();
         break;
+        // case 11:
+            // player->flipGravity(true, true); break;
+        // case 10:
+            // player->flipGravity(false, true); break;
+    case 200: player->m_playerSpeed = 0.7f; break;
+    case 201: player->m_playerSpeed = 0.9f; break;
+    case 202: player->m_playerSpeed = 1.1f; break;
+    case 203: player->m_playerSpeed = 1.3f; break;
+    case 1334: player->m_playerSpeed = 1.6f; break;
     }
 }
 
 cocos2d::CCDrawNode* ShowTrajectory::trajectoryNode() {
+
     static TrajectoryNode* instance = nullptr;
+
     if (!instance) {
         instance = TrajectoryNode::create();
         instance->retain();
-        cocos2d::_ccBlendFunc blendFunc;
+
+        cocos2d::_ccBlendFunc  blendFunc;
         blendFunc.src = GL_SRC_ALPHA;
         blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
+
         instance->setBlendFunc(blendFunc);
     }
+
     return instance;
 }
 
@@ -364,9 +242,13 @@ class $modify(PlayLayer) {
 
     void postUpdate(float dt) {
         PlayLayer::postUpdate(dt);
+
         if (!t.trajectoryNode() || t.creatingTrajectory) return;
-        if (Global::get().showTrajectory)
+
+        if (Global::get().showTrajectory) {
             ShowTrajectory::updateTrajectory(this);
+        }
+
     }
 
     void setupHasCompleted() {
@@ -392,21 +274,25 @@ class $modify(PlayLayer) {
         m_objectLayer->addChild(t.trajectoryNode(), 500);
     }
 
-    void destroyPlayer(PlayerObject* player, GameObject* gameObject) {
-        if (player == t.fakePlayer1 || player == t.fakePlayer2) {
+    void destroyPlayer(PlayerObject * player, GameObject * gameObject) {
+        if (t.creatingTrajectory || (player == t.fakePlayer1 || player == t.fakePlayer2)) {
             t.deathRotation = player->getRotation();
             t.cancelTrajectory = true;
             return;
         }
+
         PlayLayer::destroyPlayer(player, gameObject);
     }
 
     void onQuit() {
-        if (t.trajectoryNode()) t.trajectoryNode()->clear();
+        if (t.trajectoryNode())
+            t.trajectoryNode()->clear();
+
         t.fakePlayer1 = nullptr;
         t.fakePlayer2 = nullptr;
         t.cancelTrajectory = false;
         t.creatingTrajectory = false;
+
         PlayLayer::onQuit();
     }
 
@@ -414,86 +300,101 @@ class $modify(PlayLayer) {
         if (!t.creatingTrajectory)
             PlayLayer::playEndAnimationToPos(p0);
     }
+
 };
 
 class $modify(PauseLayer) {
     void goEdit() {
-        if (t.trajectoryNode()) t.trajectoryNode()->clear();
+        if (t.trajectoryNode())
+            t.trajectoryNode()->clear();
+
         t.fakePlayer1 = nullptr;
         t.fakePlayer2 = nullptr;
         t.cancelTrajectory = false;
         t.creatingTrajectory = false;
+
         PauseLayer::goEdit();
     }
 };
 
 class $modify(GJBaseGameLayer) {
 
-    void collisionCheckObjects(PlayerObject* p0, gd::vector<GameObject*>* objects, int p2, float p3) {
+    void collisionCheckObjects(PlayerObject * p0, gd::vector<GameObject*>*objects, int p2, float p3) {
         if (t.creatingTrajectory) {
             std::vector<GameObject*> disabledObjects;
+
             for (const auto& obj : *objects) {
                 if (!obj) continue;
+
                 if ((!objectTypes.contains(static_cast<int>(obj->m_objectType)) && !portalIDs.contains(obj->m_objectID)) || collectibleIDs.contains(obj->m_objectID)) {
-                    if (obj->m_isDisabled || obj->m_isDisabled2) continue;
+                    if (obj->m_isDisabled || obj->m_isDisabled2) continue;  
+
                     disabledObjects.push_back(obj);
                     obj->m_isDisabled = true;
                     obj->m_isDisabled2 = true;
                 }
             }
+
             GJBaseGameLayer::collisionCheckObjects(p0, objects, p2, p3);
+
             for (const auto& obj : disabledObjects) {
                 if (!obj) continue;
+
                 obj->m_isDisabled = false;
                 obj->m_isDisabled2 = false;
             }
+
+            disabledObjects.clear();
+
             return;
         }
+
         GJBaseGameLayer::collisionCheckObjects(p0, objects, p2, p3);
     }
 
-    bool canBeActivatedByPlayer(PlayerObject* p0, EffectGameObject* p1) {
+    bool canBeActivatedByPlayer(PlayerObject * p0, EffectGameObject * p1) {
         if (t.creatingTrajectory) {
-            if (p0 == t.fakePlayer1 || p0 == t.fakePlayer2) {
-                if (portalIDs.contains(p1->m_objectID)) {
-                    ShowTrajectory::handlePortal(p0, p1->m_objectID);
-                    return false;
-                }
-                return GJBaseGameLayer::canBeActivatedByPlayer(p0, p1);
-            }
+
+            ShowTrajectory::handlePortal(p0, p1->m_objectID);
+
             return false;
         }
+
         return GJBaseGameLayer::canBeActivatedByPlayer(p0, p1);
     }
 
-    void playerTouchedRing(PlayerObject* p0, RingObject* p1) {
-        if (t.creatingTrajectory) {
-            if (p0 == t.fakePlayer1 || p0 == t.fakePlayer2)
-                GJBaseGameLayer::playerTouchedRing(p0, p1);
-            return;
-        }
-        GJBaseGameLayer::playerTouchedRing(p0, p1);
+    void playerTouchedRing(PlayerObject * p0, RingObject * p1) {
+        if (!t.creatingTrajectory)
+            GJBaseGameLayer::playerTouchedRing(p0, p1);
     }
-    
-    void playerTouchedTrigger(PlayerObject* p0, EffectGameObject* p1) {
+
+    void playerTouchedTrigger(PlayerObject * p0, EffectGameObject * p1) {
         if (!t.creatingTrajectory)
             GJBaseGameLayer::playerTouchedTrigger(p0, p1);
+        else
+            ShowTrajectory::handlePortal(p0, p1->m_objectID);
     }
 
-    void activateSFXTrigger(SFXTriggerGameObject* p0) {
+    void activateSFXTrigger(SFXTriggerGameObject * p0) {
         if (!t.creatingTrajectory)
             GJBaseGameLayer::activateSFXTrigger(p0);
-    }
 
-    void activateSongEditTrigger(SongTriggerGameObject* p0) {
+    }
+    void activateSongEditTrigger(SongTriggerGameObject * p0) {
         if (!t.creatingTrajectory)
             GJBaseGameLayer::activateSongEditTrigger(p0);
+
     }
+    // void activateSongTrigger(SongTriggerGameObject * p0) {
+    //     if (!t.creatingTrajectory)
+    //         GJBaseGameLayer::activateSongTrigger(p0);
+    // }
 
     void gameEventTriggered(GJGameEvent p0, int p1, int p2) {
         if (!t.creatingTrajectory)
             GJBaseGameLayer::gameEventTriggered(p0, p1, p2);
     }
+
 };
 
 class $modify(PlayerObject) {
@@ -502,29 +403,7 @@ class $modify(PlayerObject) {
         PlayerObject::update(dt);
         t.delta = dt;
     }
-    
-    void toggleBirdMode(bool enable, bool noEffects) {
-        PlayerObject::toggleBirdMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleFlyMode(bool enable, bool noEffects) {
-        PlayerObject::toggleFlyMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleRollMode(bool enable, bool noEffects) {
-        PlayerObject::toggleRollMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleDartMode(bool enable, bool noEffects) {
-        PlayerObject::toggleDartMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleRobotMode(bool enable, bool noEffects) {
-        PlayerObject::toggleRobotMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleSpiderMode(bool enable, bool noEffects) {
-        PlayerObject::toggleSpiderMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    void toggleSwingMode(bool enable, bool noEffects) {
-        PlayerObject::toggleSwingMode(enable, t.creatingTrajectory ? true : noEffects);
-    }
-    
+
     void playSpiderDashEffect(cocos2d::CCPoint p0, cocos2d::CCPoint p1) {
         if (!t.creatingTrajectory)
             PlayerObject::playSpiderDashEffect(p0, p1);
@@ -535,51 +414,15 @@ class $modify(PlayerObject) {
             PlayerObject::incrementJumps();
     }
 
-    void ringJump(RingObject* p0, bool p1) {
-        if (t.creatingTrajectory) {
-            if (this == t.fakePlayer1 || this == t.fakePlayer2)
-                PlayerObject::ringJump(p0, p1);
-            return;
-        }
-        PlayerObject::ringJump(p0, p1);
+    void ringJump(RingObject * p0, bool p1) {
+        if (!t.creatingTrajectory)
+            PlayerObject::ringJump(p0, p1);
     }
-};
 
-class $modify(EnhancedGameObject) {
-    bool hasBeenActivated() {
-        if (t.creatingTrajectory) return false;
-        return EnhancedGameObject::hasBeenActivated();
-    }
-    bool hasBeenActivatedByPlayer(PlayerObject* player) {
-        if (t.creatingTrajectory) return false;
-        return EnhancedGameObject::hasBeenActivatedByPlayer(player);
-    }
-};
-
-class $modify(RingObject) {
-    void triggerActivated(float xPosition) {
-        if (t.creatingTrajectory) return;
-        RingObject::triggerActivated(xPosition);
-    }
-    void activateObject() {
-        if (t.creatingTrajectory) return;
-        RingObject::activateObject();
-    }
-    bool hasBeenActivated() {
-        if (t.creatingTrajectory) return false;
-        return RingObject::hasBeenActivated();
-    }
-    void powerOnObject(int state) {
-        if (t.creatingTrajectory) return;
-        RingObject::powerOnObject(state);
-    }
-    void spawnCircle() {
-        if (t.creatingTrajectory) return;
-        RingObject::spawnCircle();
-    }
 };
 
 class $modify(HardStreak) {
+
     void addPoint(cocos2d::CCPoint p0) {
         if (!t.creatingTrajectory)
             HardStreak::addPoint(p0);
@@ -587,6 +430,7 @@ class $modify(HardStreak) {
 };
 
 class $modify(GameObject) {
+
     void playShineEffect() {
         if (!t.creatingTrajectory)
             GameObject::playShineEffect();
@@ -594,7 +438,8 @@ class $modify(GameObject) {
 };
 
 class $modify(EffectGameObject) {
-    void triggerObject(GJBaseGameLayer* p0, int p1, const gd::vector<int>* p2) {
+
+    void triggerObject(GJBaseGameLayer * p0, int p1, const gd::vector<int>*p2) {
         if (!t.creatingTrajectory)
             EffectGameObject::triggerObject(p0, p1, p2);
     }

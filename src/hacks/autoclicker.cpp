@@ -14,8 +14,6 @@ class $modify(GJBaseGameLayer) {
     #ifndef GEODE_IS_MACOS
     void processCommands(float dt, bool isHalfTick, bool isLastTick) {
         GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
-
-        if (isHalfTick) return;
         
         auto& g = Global::get();
         

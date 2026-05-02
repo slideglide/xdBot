@@ -13,8 +13,7 @@ class PracticeFix {
         PlayLayer* pl = PlayLayer::get();
         if (!pl || !pl->m_isPracticeMode) return false;
         
-        // Enable practice fixes in Vanilla too - capture/restore player state in practice mode
-        return true;
+        return false;
     }
 };
 

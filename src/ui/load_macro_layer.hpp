@@ -2,93 +2,98 @@
 
 #include "../includes.hpp"
 #include "record_layer.hpp"
-#include <locale>
-#include <string>
 #include <ctime>
+#include <locale>
 #include <optional>
+#include <string>
 
 class MacroCell : public CCNode {
-	std::string name;
-	std::filesystem::path path;
-	std::time_t date;
+    std::string name;
+    std::filesystem::path path;
+    std::time_t date;
 
-	geode::Popup* menuLayer = nullptr;
-	geode::Popup* mergeLayer = nullptr;
-	CCLayer* loadLayer = nullptr;
+    geode::Popup *menuLayer = nullptr;
+    geode::Popup *mergeLayer = nullptr;
+    CCLayer *loadLayer = nullptr;
 
-	bool isMerge = false;
-	
-public:
+    bool isMerge = false;
 
-	CCMenu* menu = nullptr;
-	CCMenuItemToggler* toggler = nullptr;
+  public:
+    CCMenu *menu = nullptr;
+    CCMenuItemToggler *toggler = nullptr;
 
-	static MacroCell* create(std::filesystem::path path, std::string name, std::time_t date, geode::Popup* menuLayer, geode::Popup* mergeLayer, CCLayer* loadLayer);
+    static MacroCell *create(std::filesystem::path path, std::string name,
+                             std::time_t date, geode::Popup *menuLayer,
+                             geode::Popup *mergeLayer, CCLayer *loadLayer);
 
-	bool init(std::filesystem::path path, std::string name, std::time_t date, geode::Popup* menuLayer, geode::Popup* mergeLayer, CCLayer* loadLayer);
+    bool init(std::filesystem::path path, std::string name, std::time_t date,
+              geode::Popup *menuLayer, geode::Popup *mergeLayer,
+              CCLayer *loadLayer);
 
-	void onLoad(CCObject*);
+    void onLoad(CCObject *);
 
-	void handleLoad();
+    void handleLoad();
 
-	void onDelete(CCObject*);
+    void onDelete(CCObject *);
 
-	void deleteMacro(bool reload);
+    void deleteMacro(bool reload);
 
-	void onSelect(CCObject*);
+    void onSelect(CCObject *);
 
-	void selectMacro(bool single);
+    void selectMacro(bool single);
 };
 
 class LoadMacroLayer : public geode::Popup, TextInputDelegate {
-public:
+  public:
+    geode::Popup *menuLayer = nullptr;
+    geode::Popup *mergeLayer = nullptr;
+    CCMenu *menu = nullptr;
 
-	geode::Popup* menuLayer = nullptr;
-	geode::Popup* mergeLayer = nullptr;
-	CCMenu* menu = nullptr;
+    CCMenuItemToggler *selectAllToggle = nullptr;
+    CCMenuItemToggler *sortToggle = nullptr;
 
-	CCMenuItemToggler* selectAllToggle = nullptr;
-	CCMenuItemToggler* sortToggle = nullptr;
+    CCMenuItemToggler *p1Toggle = nullptr;
+    CCMenuItemToggler *p2Toggle = nullptr;
+    CCMenuItemToggler *owToggle = nullptr;
 
-	CCMenuItemToggler* p1Toggle = nullptr;
-	CCMenuItemToggler* p2Toggle = nullptr;
-	CCMenuItemToggler* owToggle = nullptr;
+    CCMenuItemSpriteExtra *searchOff = nullptr;
+    TextInput *searchInput = nullptr;
 
-	CCMenuItemSpriteExtra* searchOff = nullptr;
-	TextInput* searchInput = nullptr;
+    CCLabelBMFont *macroCountLbl = nullptr;
 
-	CCLabelBMFont* macroCountLbl = nullptr;
+    std::vector<MacroCell *> selectedMacros;
+    std::vector<MacroCell *> allMacros;
+    std::string search = "";
 
-	std::vector<MacroCell*> selectedMacros;
-	std::vector<MacroCell*> allMacros;
-	std::string search = "";
+    bool isAutosaves = false;
+    bool isMerge = false;
+    bool invertSort = false;
+    bool isPickingFile = false;
 
-	bool isAutosaves = false;
-	bool isMerge = false;
-	bool invertSort = false;
-	bool isPickingFile = false;
+    async::TaskHolder<Result<std::optional<std::filesystem::path>>>
+        m_importTask;
 
-	async::TaskHolder<Result<std::optional<std::filesystem::path>>> m_importTask;
+    static LoadMacroLayer *create(geode::Popup *layer, geode::Popup *layer2,
+                                  bool autosaves);
 
-	static LoadMacroLayer* create(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
+    bool init(geode::Popup *layer, geode::Popup *layer2, bool autosaves);
 
-	bool init(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
+    static void open(geode::Popup *layer, geode::Popup *layer2,
+                     bool autosaves = false);
 
-	static void open(geode::Popup* layer, geode::Popup* layer2, bool autosaves = false);
+    void textChanged(CCTextInputNode *p) override;
 
-	void textChanged(CCTextInputNode* p) override;
+    void clearSearch(CCObject *);
 
-	void clearSearch(CCObject*);
+    void addList(bool refresh = false, float prevScroll = 0.f);
 
-	void addList(bool refresh = false, float prevScroll = 0.f);
+    void reloadList(int amount = 1);
 
-	void reloadList(int amount = 1);
+    void deleteSelected(CCObject *);
 
-	void deleteSelected(CCObject*);
+    void onSelectAll(CCObject *);
 
-	void onSelectAll(CCObject*);
+    void onImportMacro(CCObject *);
 
-	void onImportMacro(CCObject*);
-
-	void updateSort(CCObject*);
+    void updateSort(CCObject *);
 };

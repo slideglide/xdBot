@@ -5,28 +5,29 @@
 
 class RenderPresetsLayer : public geode::Popup {
 
-public:
+  public:
+    STATIC_CREATE(RenderPresetsLayer)
 
-	STATIC_CREATE(RenderPresetsLayer)
-
-private:
-
+  private:
     bool init() override {
-        if (!Popup::init(243, 231, Utils::getTexture().c_str())) return false;
+        if (!Popup::init(243, 231, Utils::getTexture().c_str()))
+            return false;
         setTitle("Render Presets");
 
-        NineSlice* bg = NineSlice::create("square02b_001.png", { 0, 0, 80, 80 });
-        bg->setColor({ 0,0,0 });
+        NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
+        bg->setColor({0, 0, 0});
         bg->setOpacity(75);
         bg->setPosition({m_size.width / 2, 116.5});
-        bg->setContentSize({ 213, 151 });
+        bg->setContentSize({213, 151});
         m_mainLayer->addChild(bg);
 
         for (int i = 0; i < 5; i++) {
             float height = 170.f - 26.5f * i;
             std::string id = "render_slot_" + geode::utils::numToString(i + 1);
 
-            CCLabelBMFont* lbl = CCLabelBMFont::create(("Slot " + geode::utils::numToString(i + 1)).c_str(), "bigFont.fnt");
+            CCLabelBMFont *lbl = CCLabelBMFont::create(
+                ("Slot " + geode::utils::numToString(i + 1)).c_str(),
+                "bigFont.fnt");
             lbl->setPosition({63, height + 5.f});
             lbl->setScale(0.425f);
             m_mainLayer->addChild(lbl);
@@ -37,9 +38,10 @@ private:
             lbl->setOpacity(105);
             m_mainLayer->addChild(lbl);
 
-            ButtonSprite* spr = ButtonSprite::create("Load");
+            ButtonSprite *spr = ButtonSprite::create("Load");
             spr->setScale(0.6f);
-            CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(RenderPresetsLayer::onLoad));
+            CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
+                spr, this, menu_selector(RenderPresetsLayer::onLoad));
             btn->setPosition({123, height});
             btn->setID(id.c_str());
             m_buttonMenu->addChild(btn);
@@ -49,41 +51,48 @@ private:
                 btn->setEnabled(false);
                 auto ns = spr->getChildByType<NineSlice>(0);
                 auto label = spr->getChildByType<CCLabelBMFont>(0);
-                if (ns) ns->setOpacity(120);
-                if (label) label->setOpacity(120);
+                if (ns)
+                    ns->setOpacity(120);
+                if (label)
+                    label->setOpacity(120);
             } else {
                 btn->setEnabled(true);
-                matjson::Value json = Mod::get()->getSavedValue<matjson::Value>(id);
-                lbl->setString((json["width"].asString().unwrapOrDefault() + " x " + json["height"].asString().unwrapOrDefault()).c_str());
+                matjson::Value json =
+                    Mod::get()->getSavedValue<matjson::Value>(id);
+                lbl->setString((json["width"].asString().unwrapOrDefault() +
+                                " x " +
+                                json["height"].asString().unwrapOrDefault())
+                                   .c_str());
             }
 
             spr = ButtonSprite::create("Save");
             spr->setScale(0.6f);
-            btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(RenderPresetsLayer::onSave));
+            btn = CCMenuItemSpriteExtra::create(
+                spr, this, menu_selector(RenderPresetsLayer::onSave));
             btn->setPosition({183, height});
             btn->setID(id.c_str());
             m_buttonMenu->addChild(btn);
         }
 
-        ButtonSprite* btnSpr = ButtonSprite::create("OK");
+        ButtonSprite *btnSpr = ButtonSprite::create("OK");
         btnSpr->setScale(0.75f);
-        CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(btnSpr, this, menu_selector(RenderPresetsLayer::onClose));
+        CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
+            btnSpr, this, menu_selector(RenderPresetsLayer::onClose));
         btn->setPosition({m_size.width / 2, 22});
         m_buttonMenu->addChild(btn);
 
-        CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
+        CCSprite *spr =
+            CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
         spr->setScale(0.525f);
 
-        CCSprite* spr2 = CCSprite::createWithSpriteFrameName("folderIcon_001.png");
+        CCSprite *spr2 =
+            CCSprite::createWithSpriteFrameName("folderIcon_001.png");
         spr2->setPosition(spr->getContentSize() / 2);
         spr2->setScale(0.7f);
 
         spr->addChild(spr2);
         btn = CCMenuItemSpriteExtra::create(
-            spr,
-            this,
-            menu_selector(RenderPresetsLayer::openRendersFolder)
-        );
+            spr, this, menu_selector(RenderPresetsLayer::openRendersFolder));
         btn->setPosition({18, 18});
         m_buttonMenu->addChild(btn);
 
@@ -94,65 +103,87 @@ private:
         onClose(nullptr);
 
         Loader::get()->queueInMainThread([] {
-            CCScene* scene = CCScene::get();
-            if (RecordLayer* layer = scene->getChildByType<RecordLayer>(0))
+            CCScene *scene = CCScene::get();
+            if (RecordLayer *layer = scene->getChildByType<RecordLayer>(0))
                 layer->onClose(nullptr);
             RecordLayer::openMenu(true);
-            
+
             Loader::get()->queueInMainThread([] {
-                RenderPresetsLayer* layer = RenderPresetsLayer::create();
+                RenderPresetsLayer *layer = RenderPresetsLayer::create();
                 layer->m_noElasticity = true;
                 layer->show();
             });
         });
     }
 
-    void openRendersFolder(CCObject*) {
-        std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>("render_folder");
+    void openRendersFolder(CCObject *) {
+        std::filesystem::path path =
+            Mod::get()->getSettingValue<std::filesystem::path>("render_folder");
 
         if (std::filesystem::exists(path))
             file::openFolder(path);
         else if (geode::utils::file::createDirectoryAll(path).isOk())
             file::openFolder(path);
         else
-            FLAlertLayer::create("Error", "There was an error getting the folder. ID: 4", "OK")->show();
+            FLAlertLayer::create(
+                "Error", "There was an error getting the folder. ID: 4", "OK")
+                ->show();
     }
 
-    void onLoad(CCObject* obj) {
-        std::string id = static_cast<CCNode*>(obj)->getID();
+    void onLoad(CCObject *obj) {
+        std::string id = static_cast<CCNode *>(obj)->getID();
 
-        Mod* m = Mod::get();
-        if (!m->hasSavedValue(id)) return;
+        Mod *m = Mod::get();
+        if (!m->hasSavedValue(id))
+            return;
 
         matjson::Value json = m->getSavedValue<matjson::Value>(id);
 
-        m->setSavedValue("render_width2", json["width"].asString().unwrapOrDefault());
-        m->setSavedValue("render_height", json["height"].asString().unwrapOrDefault());
-        m->setSavedValue("render_bitrate", json["bitrate"].asString().unwrapOrDefault());
-        m->setSavedValue("render_fps", json["fps"].asString().unwrapOrDefault());
-        m->setSavedValue("render_codec", json["codec"].asString().unwrapOrDefault());
-        m->setSavedValue("render_args", json["args"].asString().unwrapOrDefault());
-        m->setSavedValue("render_video_args", json["video_args"].asString().unwrapOrDefault());
-        m->setSavedValue("render_audio_args", json["audio_args"].asString().unwrapOrDefault());
-        m->setSavedValue("seconds_after", json["seconds_after"].asString().unwrapOrDefault());
-        m->setSavedValue("render_fade_in_time", json["fade_in_time"].asString().unwrapOrDefault());
-        m->setSavedValue("render_fade_out_time", json["fade_out_time"].asString().unwrapOrDefault());
+        m->setSavedValue("render_width2",
+                         json["width"].asString().unwrapOrDefault());
+        m->setSavedValue("render_height",
+                         json["height"].asString().unwrapOrDefault());
+        m->setSavedValue("render_bitrate",
+                         json["bitrate"].asString().unwrapOrDefault());
+        m->setSavedValue("render_fps",
+                         json["fps"].asString().unwrapOrDefault());
+        m->setSavedValue("render_codec",
+                         json["codec"].asString().unwrapOrDefault());
+        m->setSavedValue("render_args",
+                         json["args"].asString().unwrapOrDefault());
+        m->setSavedValue("render_video_args",
+                         json["video_args"].asString().unwrapOrDefault());
+        m->setSavedValue("render_audio_args",
+                         json["audio_args"].asString().unwrapOrDefault());
+        m->setSavedValue("seconds_after",
+                         json["seconds_after"].asString().unwrapOrDefault());
+        m->setSavedValue("render_fade_in_time",
+                         json["fade_in_time"].asString().unwrapOrDefault());
+        m->setSavedValue("render_fade_out_time",
+                         json["fade_out_time"].asString().unwrapOrDefault());
 
-        m->setSavedValue("render_only_song", json["only_song"].asBool().unwrapOrDefault());
-        m->setSavedValue("render_hide_endscreen", json["hide_endscreen"].asBool().unwrapOrDefault());
-        m->setSavedValue("render_hide_levelcomplete", json["hide_levelcomplete"].asBool().unwrapOrDefault());
-        m->setSavedValue("render_fade_in", json["fade_in"].asBool().unwrapOrDefault());
-        m->setSavedValue("render_fade_out", json["fade_out"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_only_song",
+                         json["only_song"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_hide_endscreen",
+                         json["hide_endscreen"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_hide_levelcomplete",
+                         json["hide_levelcomplete"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_fade_in",
+                         json["fade_in"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_fade_out",
+                         json["fade_out"].asBool().unwrapOrDefault());
 
-        m->setSavedValue("render_sfx_volume", json["sfx_volume"].asDouble().unwrapOrDefault());
-        m->setSavedValue("render_music_volume", json["music_volume"].asDouble().unwrapOrDefault());
+        m->setSavedValue("render_sfx_volume",
+                         json["sfx_volume"].asDouble().unwrapOrDefault());
+        m->setSavedValue("render_music_volume",
+                         json["music_volume"].asDouble().unwrapOrDefault());
 
         update();
     }
 
-    void onSave(CCObject* obj) {
-        std::string id = static_cast<CCNode*>(obj)->getID();
-        Mod* m = Mod::get();
+    void onSave(CCObject *obj) {
+        std::string id = static_cast<CCNode *>(obj)->getID();
+        Mod *m = Mod::get();
         matjson::Value json;
 
         json["width"] = m->getSavedValue<std::string>("render_width2");
@@ -164,12 +195,16 @@ private:
         json["video_args"] = m->getSavedValue<std::string>("render_video_args");
         json["audio_args"] = m->getSavedValue<std::string>("render_audio_args");
         json["seconds_after"] = m->getSavedValue<std::string>("seconds_after");
-        json["fade_in_time"] = m->getSavedValue<std::string>("render_fade_in_time");
-        json["fade_out_time"] = m->getSavedValue<std::string>("render_fade_out_time");
+        json["fade_in_time"] =
+            m->getSavedValue<std::string>("render_fade_in_time");
+        json["fade_out_time"] =
+            m->getSavedValue<std::string>("render_fade_out_time");
 
         json["only_song"] = m->getSavedValue<bool>("render_only_song");
-        json["hide_endscreen"] = m->getSavedValue<bool>("render_hide_endscreen");
-        json["hide_levelcomplete"] = m->getSavedValue<bool>("render_hide_levelcomplete");
+        json["hide_endscreen"] =
+            m->getSavedValue<bool>("render_hide_endscreen");
+        json["hide_levelcomplete"] =
+            m->getSavedValue<bool>("render_hide_levelcomplete");
         json["fade_in"] = m->getSavedValue<bool>("render_fade_in");
         json["fade_out"] = m->getSavedValue<bool>("render_fade_out");
 

@@ -24,6 +24,7 @@ struct SupplementalPlayerState {
     bool m_isBallRotating = false;
     bool m_isBallRotating2 = false;
     bool m_jumpBuffered = false;
+    bool m_jumpHeld     = false;
     bool m_stateRingJump = false;
     bool m_touchedPad = false;
     bool m_isMoving = false;
@@ -177,7 +178,6 @@ struct SupplementalPlayerState {
     bool m_maybeReverseAccel = false;
     int m_groundObjectMaterial = 0;
     bool m_isOutOfBounds = false;
-    // Game mode flags (missing - caused inaccuracy)
     bool m_isRobot = false;
     bool m_isSpider = false;
     bool m_isBall = false;
@@ -400,29 +400,15 @@ struct SupplementalPlayerState {
 
     void apply(PlayerObject* p) const {
         if (!p) return;
-        // Round yVelocity to 3 decimal places to match RobTop's checkpoint load behavior
-        // (see functions.txt lines 3181-3187)
-        {
-            double dVar20 = m_yVelocity;
-            double dVar21 = (double)(int)dVar20;
-            if (dVar20 != dVar21) {
-                dVar20 = (double)round((dVar20 - dVar21) * 1000.0);
-                dVar20 = dVar20 / 1000.0 + dVar21;
-            }
-            p->m_yVelocity = dVar20;
-        }
         p->m_platformerXVelocity            = m_platformerXVelocity;
         p->m_isOnGround                     = m_isOnGround;
         p->m_lastPortalPos                  = m_lastPortalPos;
         p->m_lastActivatedPortal            = m_lastActivatedPortal;
         p->m_lastGroundedPos                = m_lastGroundedPos;
-        p->m_isDashing                      = m_isDashing;
-        p->m_dashRing                       = m_dashRing;
         p->m_lastLandTime                   = m_lastLandTime;
         p->m_isAccelerating                 = m_isAccelerating;
         p->m_affectedByForces               = m_affectedByForces;
         p->m_rotationSpeed                  = m_rotationSpeed;
-        p->m_isRotating                     = m_isRotating;
         p->m_isBallRotating                 = m_isBallRotating;
         p->m_isBallRotating2                = m_isBallRotating2;
         p->m_jumpBuffered                   = m_jumpBuffered;
@@ -589,25 +575,13 @@ struct SupplementalPlayerState {
         p->m_isHidden                 = m_isHidden;
         p->m_lastFlipTime              = m_lastFlipTime;
 
-        // Dash state - saved by GD's checkpoint
-        p->m_isDashing               = m_isDashing;
-        p->m_dashX                   = m_dashX;
-        p->m_dashY                   = m_dashY;
-        p->m_dashAngle               = m_dashAngle;
-        p->m_dashStartTime           = m_dashStartTime;
-        p->m_dashRing                = m_dashRing;
-
         #ifndef GEODE_IS_ANDROID
         p->m_rotateObjectsRelated           = m_rotateObjectsRelated;
         p->m_potentialSlopeMap              = m_potentialSlopeMap;
         p->m_ringRelatedSet                 = m_ringRelatedSet;
-        p->m_touchedRings                   = m_touchedRings;
         p->m_jumpPadRelated                 = m_jumpPadRelated;
         p->m_playerFollowFloats             = m_playerFollowFloats;
         p->m_currentRobotAnimation          = m_currentRobotAnimation;
-        p->m_touchingRings->removeAllObjects();
-        for (CCObject* obj : m_touchingRings)
-            p->m_touchingRings->addObject(obj);
         #endif
     }
 };
@@ -620,9 +594,6 @@ struct SupplementalPlayLayerState {
     float m_unk3380 = 0.0f;
     int m_unk32d0 = 0;
     int m_unk32ec = 0;
-    // Added for improved checkpoint accuracy
-    double m_currentProgress = 0.0;
-    double m_levelTime = 0.0;
     int m_commandIndex = 0;
     bool m_isPaused = false;
 
@@ -641,9 +612,6 @@ struct SupplementalPlayLayerState {
         m_unk3380               = pl->m_unk3380;
         m_unk32d0               = pl->m_unk32d0;
         m_unk32ec               = pl->m_unk32ec;
-        // Added for improved checkpoint accuracy
-        m_currentProgress      = pl->m_gameState.m_currentProgress;
-        m_levelTime          = pl->m_gameState.m_levelTime;
         m_commandIndex        = pl->m_gameState.m_commandIndex;
         m_isPaused           = pl->m_isPaused;
 
@@ -661,9 +629,6 @@ struct SupplementalPlayLayerState {
         pl->m_unk3380               = m_unk3380;
         pl->m_unk32d0               = m_unk32d0;
         pl->m_unk32ec               = m_unk32ec;
-        // Added for improved checkpoint accuracy
-        pl->m_gameState.m_currentProgress = m_currentProgress;
-        pl->m_gameState.m_levelTime = m_levelTime;
         pl->m_gameState.m_commandIndex = m_commandIndex;
         pl->m_isPaused             = m_isPaused;
 
