@@ -171,14 +171,6 @@ bool Global::enabledIncompatibleGDSettings() {
     }
 
     if (!cbsOverridden) {
-        if (LevelInfoLayer* lil = LevelInfoLayer::get()) {
-            if (lil->m_level->m_cbsOverride == 1) {
-                cbsOverridden = true;
-            }
-        }
-    }
-
-    if (!cbsOverridden) {
         if (CCScene* scene = CCScene::get()) {
             for (auto obj : scene->getChildrenExt<CCObject*>()) {
                 if (PlayLayer* pl = typeinfo_cast<PlayLayer*>(obj)) {
