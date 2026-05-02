@@ -102,31 +102,31 @@ class Global {
     bool tpsEnabled = false;
     float tps = 240.f;
 
-    geode::Function<void(bool)> onTpsEnabledChanged;
-    geode::Function<void(double)> onTpsChanged;
+    std::vector<geode::Function<void(bool)>> onTpsEnabledChanged;
+std::vector<geode::Function<void(double)>> onTpsChanged;
 
-    void setTpsEnabled(bool enabled) {
-        tpsEnabled = enabled;
-        mod->setSavedValue("macro_tps_enabled", enabled);
+void setTpsEnabled(bool enabled) {
+    tpsEnabled = enabled;
+    mod->setSavedValue("macro_tps_enabled", enabled);
 
-        if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
-            eclipse::config::setInternal("global.tpsbypass.toggle", enabled);
-        } else {
-            if (onTpsEnabledChanged)
-                onTpsEnabledChanged(enabled);
-        }
+    if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
+        eclipse::config::setInternal("global.tpsbypass.toggle", enabled);
+    } else {
+        for (auto& cb : onTpsEnabledChanged)
+            cb(enabled);
     }
+}
 
-    void setTps(float newTps) {
-        tps = newTps;
-        mod->setSavedValue("macro_tps", static_cast<double>(newTps));
-        if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
-            eclipse::config::setInternal("global.tpsbypass", static_cast<double>(newTps));
-        } else {
-            if (onTpsChanged)
-                onTpsChanged(static_cast<double>(newTps));
-        }
+void setTps(float newTps) {
+    tps = newTps;
+    mod->setSavedValue("macro_tps", static_cast<double>(newTps));
+    if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
+        eclipse::config::setInternal("global.tpsbypass", static_cast<double>(newTps));
+    } else {
+        for (auto& cb : onTpsChanged)
+            cb(static_cast<double>(newTps));
     }
+}
 
     bool previousTpsEnabled = false;
     float previousTps = 0.f;

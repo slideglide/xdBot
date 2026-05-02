@@ -164,30 +164,30 @@ bool Global::enabledIncompatibleGDSettings() {
 #ifdef GEODE_IS_MOBILE
     bool cbsOverridden = false;
 
-    if (auto pl = PlayLayer::get()) {
+    if (PlayLayer* pl = PlayLayer::get()) {
         if (pl->m_level->m_cbsOverride == 1) {
             cbsOverridden = true;
         }
     }
 
     if (!cbsOverridden) {
-        if (auto layer = LevelInfoLayer::get()) {
-            if (layer->m_level->m_cbsOverride == 1) {
+        if (LevelInfoLayer* lil = LevelInfoLayer::get()) {
+            if (lil->m_level->m_cbsOverride == 1) {
                 cbsOverridden = true;
             }
         }
     }
 
     if (!cbsOverridden) {
-        if (auto scene = CCScene::get()) {
+        if (CCScene* scene = CCScene::get()) {
             for (auto obj : scene->getChildrenExt<CCObject*>()) {
-                if (auto pl = typeinfo_cast<PlayLayer*>(obj)) {
+                if (PlayLayer* pl = typeinfo_cast<PlayLayer*>(obj)) {
                     if (pl->m_level->m_cbsOverride == 1) {
                         cbsOverridden = true;
                         break;
                     }
                 }
-                if (auto lil = typeinfo_cast<LevelInfoLayer*>(obj)) {
+                if (LevelInfoLayer* lil = typeinfo_cast<LevelInfoLayer*>(obj)) {
                     if (lil->m_level->m_cbsOverride == 1) {
                         cbsOverridden = true;
                         break;
