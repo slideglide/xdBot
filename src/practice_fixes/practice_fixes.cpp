@@ -51,6 +51,8 @@ class $modify(FixPlayLayer, PlayLayer) {
         bool wasRecordingOrPlaying = (g.state == state::recording || g.state == state::playing);
         bool shouldFix = PracticeFix::shouldEnable();
 
+        Macro::tryAutosave(m_level, checkpoint);
+
         if (shouldFix) {
             if (m_player1)
                 m_player1->m_isDashing = false;
