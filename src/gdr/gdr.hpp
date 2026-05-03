@@ -103,7 +103,7 @@ template <typename S = void, typename T = Input> class Replay {
     float gameVersion;
     float version = 1.0;
 
-    float framerate = 240.f;
+    double framerate = 240.0;
 
     int seed = 0;
     int coins = 0;
@@ -117,7 +117,7 @@ template <typename S = void, typename T = Input> class Replay {
     std::vector<FrameFix> frameFixes;
 
     uint32_t frameForTime(double time) {
-        return static_cast<uint32_t>(time * (double)framerate);
+        return static_cast<uint32_t>(time * framerate);
     }
 
     virtual void parseExtension(matjson::Value const &obj) {}
@@ -168,7 +168,7 @@ template <typename S = void, typename T = Input> class Replay {
         if (auto v = replayJson["level"]["name"].asString())
             replay.levelInfo.name = v.unwrap();
         if (auto v = replayJson["framerate"].asDouble())
-            replay.framerate = static_cast<float>(v.unwrap());
+            replay.framerate = v.unwrap();
 
         std::string_view ver = replay.botInfo.version;
         bool rotation = ver.find("beta.") == std::string_view::npos &&

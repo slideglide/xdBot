@@ -31,19 +31,36 @@ class $modify(PlayLayer) {
         Interface::addLabels(this);
         Interface::addButtons(this);
 
-        m_fields->frameLabel =
-            static_cast<CCLabelBMFont*>(m_uiLayer->getChildByID("frame_label"_spr));
+        CCMenu* uiMenu = static_cast<CCMenu*>(this->getChildByID("ui-menu"_spr));
+        if (uiMenu) {
+            m_fields->frameLabel =
+                static_cast<CCLabelBMFont*>(uiMenu->getChildByID("frame-label"_spr));
+        }
     }
 };
 
 void Interface::addLabels(PlayLayer* pl) {
+    CCMenu* uiMenu = static_cast<CCMenu*>(pl->getChildByID("ui-menu"_spr));
+    
+    if (!uiMenu) {
+        uiMenu = CCMenu::create();
+        uiMenu->setPosition({0, 0});
+        uiMenu->setZOrder(300);
+        uiMenu->setID("ui-menu"_spr);
+        uiMenu->setContentSize(CCDirector::sharedDirector()->getWinSize());
+        uiMenu->setTouchEnabled(false);
+        pl->addChild(uiMenu);
+    }
+
+    CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+
     CCLabelBMFont* lbl = CCLabelBMFont::create("", "chatFont.fnt");
-    lbl->setPosition({CCDirector::sharedDirector()->getWinSize().width - 6.5f, 12});
+    lbl->setPosition({winSize.width - 6.5f, 12});
     lbl->setAnchorPoint({1, 0.5});
     lbl->setID("state-label"_spr);
     lbl->setZOrder(300);
     lbl->setScale(0.625f);
-    pl->m_uiLayer->addChild(lbl);
+    uiMenu->addChild(lbl);
 
     lbl = CCLabelBMFont::create("", "chatFont.fnt");
     lbl->setPosition({6.5f, 12});
@@ -51,17 +68,22 @@ void Interface::addLabels(PlayLayer* pl) {
     lbl->setID("frame-label"_spr);
     lbl->setZOrder(300);
     lbl->setScale(0.625f);
-    pl->m_uiLayer->addChild(lbl);
+    uiMenu->addChild(lbl);
 
     Interface::updateLabels();
 }
 
 void Interface::addButtons(PlayLayer* pl) {
-    CCMenu* menu = CCMenu::create();
-    menu->setZOrder(300);
-    menu->setPosition({0, 0});
-    menu->setID("button-menu"_spr);
-    pl->addChild(menu);
+    CCMenu* uiMenu = static_cast<CCMenu*>(pl->getChildByID("ui-menu"_spr));
+    
+    if (!uiMenu) {
+        uiMenu = CCMenu::create();
+        uiMenu->setPosition({0, 0});
+        uiMenu->setZOrder(300);
+        uiMenu->setID("ui-menu"_spr);
+        uiMenu->setContentSize(CCDirector::sharedDirector()->getWinSize());
+        pl->addChild(uiMenu);
+    }
 
     auto stepBtn = Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [](auto) {
         if (!Global::get().frameStepper)
@@ -73,7 +95,7 @@ void Interface::addButtons(PlayLayer* pl) {
     static_cast<CCSprite*>(stepBtn->getDisplayNode())->setPosition({0, 0});
     stepBtn->setAnchorPoint({0, 0});
     stepBtn->setID("step-frame-btn"_spr);
-    menu->addChild(stepBtn);
+    uiMenu->addChild(stepBtn);
 
     auto disableStepperBtn = Button::createWithSpriteFrameName("GJ_deleteIcon_001.png", [](auto) {
         if (Global::get().frameStepper)
@@ -82,7 +104,7 @@ void Interface::addButtons(PlayLayer* pl) {
     static_cast<CCSprite*>(disableStepperBtn->getDisplayNode())->setPosition({0, 0});
     disableStepperBtn->setAnchorPoint({0, 0});
     disableStepperBtn->setID("disable-stepper-btn"_spr);
-    menu->addChild(disableStepperBtn);
+    uiMenu->addChild(disableStepperBtn);
 
     auto speedHackBtn = Button::createWithSpriteFrameName("GJ_timeIcon_001.png", [](auto) {
         Global::toggleSpeedhack();
@@ -90,7 +112,7 @@ void Interface::addButtons(PlayLayer* pl) {
     static_cast<CCSprite*>(speedHackBtn->getDisplayNode())->setPosition({0, 0});
     speedHackBtn->setAnchorPoint({0, 0});
     speedHackBtn->setID("speedhack-btn"_spr);
-    menu->addChild(speedHackBtn);
+    uiMenu->addChild(speedHackBtn);
 
     Interface::updateButtons();
 }
@@ -102,11 +124,15 @@ void Interface::updateLabels() {
     if (!pl)
         return;
 
+    CCMenu* uiMenu = static_cast<CCMenu*>(pl->getChildByID("ui-menu"_spr));
+    if (!uiMenu)
+        return;
+
     if (g.state == state::none || !g.frameLabel)
-        static_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr))->setString("");
+        static_cast<CCLabelBMFont*>(uiMenu->getChildByID("frame-label"_spr))->setString("");
 
     CCLabelBMFont* label =
-        typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("state-label"_spr));
+        typeinfo_cast<CCLabelBMFont*>(uiMenu->getChildByID("state-label"_spr));
 
     if (!label)
         return;
@@ -131,7 +157,7 @@ void Interface::updateLabels() {
     if (g.renderer.recording && g.mod->getSavedValue<bool>("render_hide_labels")) {
         labelText = "";
         if (CCLabelBMFont* lbl =
-                typeinfo_cast<CCLabelBMFont*>(pl->m_uiLayer->getChildByID("frame-label"_spr)))
+                typeinfo_cast<CCLabelBMFont*>(uiMenu->getChildByID("frame-label"_spr)))
             lbl->setString("");
     }
 #endif
@@ -144,8 +170,8 @@ void Interface::updateButtons() {
     if (!pl)
         return;
 
-    CCNode* menu = pl->getChildByID("button-menu"_spr);
-    if (!menu)
+    CCMenu* uiMenu = static_cast<CCMenu*>(pl->getChildByID("ui-menu"_spr));
+    if (!uiMenu)
         return;
 
     auto& g = Global::get();
@@ -156,9 +182,12 @@ void Interface::updateButtons() {
     bool isDesktop = false;
 #endif
 
-    CCNode* disableStepperBtn = menu->getChildByID("disable-stepper-btn"_spr);
-    CCNode* stepFrameBtn = menu->getChildByID("step-frame-btn"_spr);
-    CCNode* speedhackBtn = menu->getChildByID("speedhack-btn"_spr);
+    CCNode* disableStepperBtn = uiMenu->getChildByID("disable-stepper-btn"_spr);
+    CCNode* stepFrameBtn = uiMenu->getChildByID("step-frame-btn"_spr);
+    CCNode* speedhackBtn = uiMenu->getChildByID("speedhack-btn"_spr);
+
+    if (!disableStepperBtn || !stepFrameBtn || !speedhackBtn)
+        return;
 
     disableStepperBtn->setPosition(ccp(g.mod->getSavedValue<float>("button_off_pos_x"),
                                        g.mod->getSavedValue<float>("button_off_pos_y")));

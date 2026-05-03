@@ -473,7 +473,7 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
     if (cells->count() == 0) {
         CCLabelBMFont* lbl =
             CCLabelBMFont::create(isAutosaves ? "No Autosaves" : "No Macros", "bigFont.fnt");
-        lbl->setPosition(winSize / 2);
+        lbl->setPosition(ccp(0, -10));
         lbl->setScale(0.5f);
         lbl->setOpacity(100);
         lbl->setID("no-macros-label");

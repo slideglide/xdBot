@@ -89,7 +89,7 @@ class Global {
     bool lockDelta = false;
     bool stopPlaying = false;
     bool tpsEnabled = false;
-    float tps = 240.f;
+    double tps = 240.0;
 
     std::vector<geode::Function<void(bool)>> onTpsEnabledChanged;
     std::vector<geode::Function<void(double)>> onTpsChanged;
@@ -106,14 +106,14 @@ class Global {
         }
     }
 
-    void setTps(float newTps) {
+    void setTps(double newTps) {
         tps = newTps;
-        mod->setSavedValue("macro_tps", static_cast<double>(newTps));
+        mod->setSavedValue<double>("macro_tps", newTps);
         if (Loader::get()->getLoadedMod("eclipse.eclipse-menu")) {
-            eclipse::config::setInternal("global.tpsbypass", static_cast<double>(newTps));
+            eclipse::config::setInternal("global.tpsbypass", newTps);
         } else {
             for (auto& cb : onTpsChanged)
-                cb(static_cast<double>(newTps));
+                cb(newTps);
         }
     }
 
@@ -135,7 +135,6 @@ class Global {
     int respawnFrame = -1;
     int frameOffset = 0;
     int previousFrame = 0;
-
     int m_frameCount = 0;
 
     size_t currentAction = 0;

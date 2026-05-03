@@ -4,14 +4,14 @@
 #include <Geode/modify/SliderTouchLogic.hpp>
 
 class $modify(SliderTouchLogic) {
-    bool ccTouchBegan(cocos2d::CCTouch *v1, cocos2d::CCEvent *v2) {
+    bool ccTouchBegan(cocos2d::CCTouch* v1, cocos2d::CCEvent* v2) {
         if (std::string_view(m_slider->getID()) == "disabled-slider"_spr)
             return false;
         return SliderTouchLogic::ccTouchBegan(v1, v2);
     }
 };
 
-void RenderSettingsLayer::textChanged(CCTextInputNode *node) {
+void RenderSettingsLayer::textChanged(CCTextInputNode* node) {
 
     if (secondsInput->getString() != "" && node == secondsInput) {
         std::string value = secondsInput->getString();
@@ -19,55 +19,47 @@ void RenderSettingsLayer::textChanged(CCTextInputNode *node) {
             secondsInput->setString("0.");
         else if (std::count(value.begin(), value.end(), '.') == 2)
             return secondsInput->setString(
-                mod->getSavedValue<std::string>("render_seconds_after")
-                    .c_str());
+                mod->getSavedValue<std::string>("render_seconds_after").c_str());
     }
 
-    mod->setSavedValue("render_seconds_after",
-                       std::string(secondsInput->getString()));
+    mod->setSavedValue("render_seconds_after", std::string(secondsInput->getString()));
     mod->setSavedValue("render_args", std::string(argsInput->getString()));
-    mod->setSavedValue("render_audio_args",
-                       std::string(audioArgsInput->getString()));
-    mod->setSavedValue("render_video_args",
-                       std::string(videoArgsInput->getString()));
-    mod->setSavedValue("render_fade_in_time",
-                       std::string(fadeInInput->getString()));
-    mod->setSavedValue("render_fade_out_time",
-                       std::string(fadeOutInput->getString()));
-    mod->setSavedValue("render_file_extension",
-                       std::string(extensionInput->getString()));
+    mod->setSavedValue("render_audio_args", std::string(audioArgsInput->getString()));
+    mod->setSavedValue("render_video_args", std::string(videoArgsInput->getString()));
+    mod->setSavedValue("render_fade_in_time", std::string(fadeInInput->getString()));
+    mod->setSavedValue("render_fade_out_time", std::string(fadeOutInput->getString()));
+    mod->setSavedValue("render_file_extension", std::string(extensionInput->getString()));
 }
 
-void RenderSettingsLayer::onDefaults(CCObject *) {
+void RenderSettingsLayer::onDefaults(CCObject*) {
     geode::createQuickPopup(
-        "Restore", "<cr>Restore</c> default render settings?", "Cancel", "Yes",
+        "Restore",
+        "<cr>Restore</c> default render settings?",
+        "Cancel",
+        "Yes",
         [this](auto, bool btn2) {
             if (!btn2)
                 return;
-            auto &g = Global::get();
+            auto& g = Global::get();
 
-            g.mod->setSavedValue("render_args",
-                                 std::string("-pix_fmt yuv420p"));
+            g.mod->setSavedValue("render_args", std::string("-pix_fmt yuv420p"));
             g.mod->setSavedValue("render_audio_args", std::string(""));
-            g.mod->setSavedValue(
-                "render_video_args",
-                std::string("colorspace=all=bt709:iall=bt470bg:fast=1"));
+            g.mod->setSavedValue("render_video_args",
+                                 std::string("colorspace=all=bt709:iall=bt470bg:fast=1"));
             g.mod->setSavedValue("render_only_song", false);
             g.mod->setSavedValue("render_music_volume", 1.0);
             g.mod->setSavedValue("render_sfx_volume", 1.0);
             g.mod->setSavedValue("render_file_extension", std::string(".mp4"));
             g.mod->setSavedValue("render_fade_in", false);
             g.mod->setSavedValue("render_fade_out", false);
-            g.mod->setSavedValue("render_fade_in_time",
-                                 geode::utils::numToString(2));
-            g.mod->setSavedValue("render_fade_out_time",
-                                 geode::utils::numToString(2));
+            g.mod->setSavedValue("render_fade_in_time", geode::utils::numToString(2));
+            g.mod->setSavedValue("render_fade_out_time", geode::utils::numToString(2));
             g.mod->setSavedValue("render_hide_endscreen", false);
             g.mod->setSavedValue("render_hide_levelcomplete", false);
 
             auto children = CCScene::get()->getChildrenExt();
             for (auto obj : children) {
-                if (auto layer = typeinfo_cast<RecordLayer *>(obj)) {
+                if (auto layer = typeinfo_cast<RecordLayer*>(obj)) {
                     layer->onClose(nullptr);
                     break;
                 }
@@ -75,7 +67,7 @@ void RenderSettingsLayer::onDefaults(CCObject *) {
 
             this->keyBackClicked();
             RecordLayer::openMenu(true);
-            RenderSettingsLayer *layer = create();
+            RenderSettingsLayer* layer = create();
             layer->m_noElasticity = true;
             layer->show();
         });
@@ -89,9 +81,8 @@ bool RenderSettingsLayer::init() {
     bool usingApi = Renderer::shouldUseAPI();
 #endif
 
-    cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() -
-                               m_mainLayer->getContentSize()) /
-                              2;
+    cocos2d::CCPoint offset =
+        (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
@@ -101,14 +92,13 @@ bool RenderSettingsLayer::init() {
     Utils::setBackgroundColor(m_bgSprite);
 
     if (mod->getSavedValue<std::string>("render_seconds_after") == "")
-        mod->setSavedValue("render_seconds_after",
-                           geode::utils::numToString(0));
+        mod->setSavedValue("render_seconds_after", geode::utils::numToString(0));
 
-    CCMenu *menu = CCMenu::create();
+    CCMenu* menu = CCMenu::create();
     m_mainLayer->addChild(menu);
     menu->setPositionX(menu->getPositionX() - 67);
 
-    NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
+    NineSlice* bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
     bg->setScale(0.355f);
     bg->setColor({0, 0, 0});
 #ifndef GEODE_IS_IOS
@@ -121,7 +111,7 @@ bool RenderSettingsLayer::init() {
     bg->setContentSize({392, 55});
     menu->addChild(bg);
 
-    CCLabelBMFont *lbl = CCLabelBMFont::create("Extra Args:", "bigFont.fnt");
+    CCLabelBMFont* lbl = CCLabelBMFont::create("Extra Args:", "bigFont.fnt");
     lbl->setPosition(ccp(-105, 88));
     lbl->setAnchorPoint({0, 0.5});
 #ifndef GEODE_IS_IOS
@@ -143,11 +133,9 @@ bool RenderSettingsLayer::init() {
     argsInput->setContentSize({120, 20});
     argsInput->setMaxLabelWidth(170.f);
     argsInput->setScale(0.75);
-    argsInput->setString(
-        mod->getSavedValue<std::string>("render_args").c_str());
+    argsInput->setString(mod->getSavedValue<std::string>("render_args").c_str());
     argsInput->setDelegate(this);
-    argsInput->setAllowedChars(
-        " 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
+    argsInput->setAllowedChars(" 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
     menu->addChild(argsInput);
 
     bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
@@ -174,8 +162,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    audioArgsInput =
-        CCTextInputNode::create(150, 30, "audio args", "chatFont.fnt");
+    audioArgsInput = CCTextInputNode::create(150, 30, "audio args", "chatFont.fnt");
     audioArgsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
     audioArgsInput->ignoreAnchorPointForPosition(true);
     audioArgsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
@@ -186,8 +173,7 @@ bool RenderSettingsLayer::init() {
     audioArgsInput->setContentSize({180, 20});
     audioArgsInput->setMaxLabelWidth(165.f);
     audioArgsInput->setScale(0.75);
-    audioArgsInput->setString(
-        mod->getSavedValue<std::string>("render_audio_args").c_str());
+    audioArgsInput->setString(mod->getSavedValue<std::string>("render_audio_args").c_str());
     audioArgsInput->setDelegate(this);
     audioArgsInput->setAllowedChars(
         " 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
@@ -226,8 +212,7 @@ bool RenderSettingsLayer::init() {
     lbl->setPosition({-105, 24});
     menu->addChild(lbl);
 
-    videoArgsInput =
-        CCTextInputNode::create(150, 30, "video args", "chatFont.fnt");
+    videoArgsInput = CCTextInputNode::create(150, 30, "video args", "chatFont.fnt");
     videoArgsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
     videoArgsInput->ignoreAnchorPointForPosition(true);
     videoArgsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
@@ -240,12 +225,9 @@ bool RenderSettingsLayer::init() {
     videoArgsInput->setScale(0.75);
 #ifndef GEODE_IS_IOS
     videoArgsInput->setString(
-        usingApi
-            ? ""
-            : mod->getSavedValue<std::string>("render_video_args").c_str());
+        usingApi ? "" : mod->getSavedValue<std::string>("render_video_args").c_str());
 #else
-    videoArgsInput->setString(
-        mod->getSavedValue<std::string>("render_video_args").c_str());
+    videoArgsInput->setString(mod->getSavedValue<std::string>("render_video_args").c_str());
 #endif
     videoArgsInput->setAllowedChars(
         " 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
@@ -270,8 +252,7 @@ bool RenderSettingsLayer::init() {
     secondsInput->setContentSize({120, 20});
     secondsInput->setMaxLabelWidth(90.f);
     secondsInput->setScale(0.75);
-    secondsInput->setString(
-        mod->getSavedValue<std::string>("render_seconds_after").c_str());
+    secondsInput->setString(mod->getSavedValue<std::string>("render_seconds_after").c_str());
     secondsInput->setDelegate(this);
     secondsInput->setMaxLabelLength(2);
     secondsInput->setAllowedChars("0123456789.");
@@ -294,12 +275,9 @@ bool RenderSettingsLayer::init() {
     extensionInput->setScale(0.8f);
     extensionInput->setPosition(ccp(209, -5));
     extensionInput->setString(
-        Mod::get()
-            ->getSavedValue<std::string>("render_file_extension")
-            .c_str());
+        Mod::get()->getSavedValue<std::string>("render_file_extension").c_str());
     extensionInput->getInputNode()->setDelegate(this);
-    extensionInput->getInputNode()->setAllowedChars(
-        "abcdefghijklmnñopqrstuvwxyz0123456789.");
+    extensionInput->getInputNode()->setAllowedChars("abcdefghijklmnñopqrstuvwxyz0123456789.");
     menu->addChild(extensionInput);
 
     lbl = CCLabelBMFont::create("Fade In:", "bigFont.fnt");
@@ -312,16 +290,16 @@ bool RenderSettingsLayer::init() {
     fadeInInput = TextInput::create(50.f, "s", "bigFont.fnt");
     fadeInInput->setScale(0.5f);
     fadeInInput->setPosition(ccp(100, -32));
-    fadeInInput->setString(
-        Mod::get()->getSavedValue<std::string>("render_fade_in_time").c_str());
+    fadeInInput->setString(Mod::get()->getSavedValue<std::string>("render_fade_in_time").c_str());
     fadeInInput->getInputNode()->setDelegate(this);
     fadeInInput->getInputNode()->setAllowedChars("0123456789.");
     menu->addChild(fadeInInput);
 
-    CCMenuItemToggler *toggle = CCMenuItemToggler::create(
-        CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-        CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-        menu_selector(RecordLayer::toggleSetting));
+    CCMenuItemToggler* toggle =
+        CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                  CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                  this,
+                                  menu_selector(RecordLayer::toggleSetting));
     toggle->setPosition(ccp(130, -32));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_fade_in"));
@@ -338,16 +316,15 @@ bool RenderSettingsLayer::init() {
     fadeOutInput = TextInput::create(50.f, "s", "bigFont.fnt");
     fadeOutInput->setScale(0.5f);
     fadeOutInput->setPosition(ccp(100, -58));
-    fadeOutInput->setString(
-        Mod::get()->getSavedValue<std::string>("render_fade_out_time").c_str());
+    fadeOutInput->setString(Mod::get()->getSavedValue<std::string>("render_fade_out_time").c_str());
     fadeOutInput->getInputNode()->setDelegate(this);
     fadeOutInput->getInputNode()->setAllowedChars("0123456789.");
     menu->addChild(fadeOutInput);
 
-    toggle = CCMenuItemToggler::create(
-        CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-        CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-        menu_selector(RecordLayer::toggleSetting));
+    toggle = CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                       CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                       this,
+                                       menu_selector(RecordLayer::toggleSetting));
     toggle->setPosition(ccp(130, -58));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_fade_out"));
@@ -361,10 +338,10 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    toggle = CCMenuItemToggler::create(
-        CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-        CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-        menu_selector(RecordLayer::toggleSetting));
+    toggle = CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                       CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                       this,
+                                       menu_selector(RecordLayer::toggleSetting));
     toggle->setPosition(ccp(0, -32));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_hide_endscreen"));
@@ -378,10 +355,10 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.25);
     menu->addChild(lbl);
 
-    toggle = CCMenuItemToggler::create(
-        CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
-        CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"), this,
-        menu_selector(RecordLayer::toggleSetting));
+    toggle = CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png"),
+                                       CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"),
+                                       this,
+                                       menu_selector(RecordLayer::toggleSetting));
     toggle->setPosition(ccp(0, -58));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_hide_levelcomplete"));
@@ -393,8 +370,7 @@ bool RenderSettingsLayer::init() {
     lbl->setPosition({188, 42});
     menu->addChild(lbl);
 
-    sfxSlider =
-        Slider::create(this, menu_selector(RenderSettingsLayer::onSlider), 1.f);
+    sfxSlider = Slider::create(this, menu_selector(RenderSettingsLayer::onSlider), 1.f);
     sfxSlider->setPosition({188, 24});
     sfxSlider->setAnchorPoint({0.f, 0.f});
     sfxSlider->setScale(0.545f);
@@ -406,26 +382,23 @@ bool RenderSettingsLayer::init() {
     lbl->setPosition({188, 87});
     menu->addChild(lbl);
 
-    musicSlider =
-        Slider::create(this, menu_selector(RenderSettingsLayer::onSlider), 1.f);
+    musicSlider = Slider::create(this, menu_selector(RenderSettingsLayer::onSlider), 1.f);
     musicSlider->setPosition({188, 69});
     musicSlider->setAnchorPoint({0.f, 0.f});
     musicSlider->setScale(0.545f);
-    musicSlider->setValue(
-        Mod::get()->getSavedValue<double>("render_music_volume"));
+    musicSlider->setValue(Mod::get()->getSavedValue<double>("render_music_volume"));
     menu->addChild(musicSlider);
 
-    ButtonSprite *spr = ButtonSprite::create("OK");
+    ButtonSprite* spr = ButtonSprite::create("OK");
     spr->setScale(0.875);
-    CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(RenderSettingsLayer::close));
+    CCMenuItemSpriteExtra* btn =
+        CCMenuItemSpriteExtra::create(spr, this, menu_selector(RenderSettingsLayer::close));
     btn->setPosition(ccp(67, -83));
     menu->addChild(btn);
 
     spr = ButtonSprite::create("Restore Defaults");
     spr->setScale(0.375f);
-    btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(RenderSettingsLayer::onDefaults));
+    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(RenderSettingsLayer::onDefaults));
     btn->setPosition({211, -106});
     menu->addChild(btn);
 
@@ -464,12 +437,12 @@ bool RenderSettingsLayer::init() {
     return true;
 }
 
-void RenderSettingsLayer::onSlider(CCObject *) {
+void RenderSettingsLayer::onSlider(CCObject*) {
     Mod::get()->setSavedValue("render_sfx_volume", sfxSlider->getValue());
     Mod::get()->setSavedValue("render_music_volume", musicSlider->getValue());
 }
 
-void RenderSettingsLayer::showInfoPopup(CCObject *) {
+void RenderSettingsLayer::showInfoPopup(CCObject*) {
     FLAlertLayer::create("Record Audio",
                          "Records the game's audio and adds it to the video, "
                          "capturing all song and SFX triggers.",

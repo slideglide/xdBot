@@ -1,8 +1,8 @@
 # v2.6.0
-* Renderer is now cross-platform, with one pass audio (meaning both video and audio will be recorded on the same attempt!)
+* Renderer is now on all platforms except iOS (not available on iOS because FFmpeg API is not available on iOS), with one pass audio (meaning both video and audio will be recorded on the same attempt!)
 * Rewrite TPS bypass and make it compatible with Eclipse.
-* Rewrite practice fixes, hopefully bot is more accurate now (this update also includes a proper hold restore!).
-* Remove 2 delay frame, report on xdBot Discord server if this change causes side effects.
+* Rewrite practice fixes, hopefully bot is more accurate now (this update also includes a proper hold restore!). Report any issues in accuracy on the xdBot Discord Server
+* Remove 2 delay frame, report on the xdBot Discord server if this change causes side effects.
 * Code cleanup.
 * Fix some crashes.
 * Fix playing macros recorded before 2.2081.

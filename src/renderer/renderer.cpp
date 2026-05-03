@@ -492,8 +492,8 @@ void Renderer::recordThread() {
             recording = false;
             m_frameReady.set(true);
             DSPRecorder::get()->stop();
-            Loader::get()->queueInMainThread([] {
-                FLAlertLayer::create("Error", "FFmpeg API failed to initialize.", "OK")->show();
+            Loader::get()->queueInMainThread([res] {
+                FLAlertLayer::create("Error", fmt::format("FFmpeg API failed to initialize: {} ", res.unwrapErr()), "OK")->show();
             });
             return;
         }

@@ -88,7 +88,7 @@ class $modify(PlayLayer) {
         if (Mod::get()->getSettingValue<bool>("disable_speedhack") &&
             Global::get().speedhackEnabled)
             Global::toggleSpeedhack();
-        Global::get().m_frameCount = 0;
+            Global::get().m_frameCount = 0;
         PlayLayer::onQuit();
     }
 
@@ -154,7 +154,7 @@ class $modify(PlayLayer) {
             g.macro.frameFixes.clear();
             g.checkpoints.clear();
 
-            g.macro.framerate = 240.f;
+            g.macro.framerate = 240.0;
             if (g.layer)
                 static_cast<RecordLayer*>(g.layer)->updateTPS();
         }

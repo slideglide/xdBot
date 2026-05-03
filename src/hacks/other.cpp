@@ -9,7 +9,24 @@
 #include <Geode/modify/EffectGameObject.hpp>
 #include <Geode/modify/GameLevelOptionsLayer.hpp>
 
-const std::unordered_set<int> shaderIDs = {2904,2905,2907,2909,2910,2911,2912,2913,2914,2915,2916,2917,2919,2920,2921,2922,2923,2924};
+const std::unordered_set<int> shaderIDs = {2904,
+                                           2905,
+                                           2907,
+                                           2909,
+                                           2910,
+                                           2911,
+                                           2912,
+                                           2913,
+                                           2914,
+                                           2915,
+                                           2916,
+                                           2917,
+                                           2919,
+                                           2920,
+                                           2921,
+                                           2922,
+                                           2923,
+                                           2924};
 
 class $modify(CCScheduler) {
 
@@ -22,14 +39,14 @@ class $modify(CCScheduler) {
 
             return CCScheduler::update(dt);
         }
-        #ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_IOS
         if (g.renderer.recording) {
             if (g.currentPitch != 1.f)
                 Global::updatePitch(1.f);
 
             return CCScheduler::update(dt);
         }
-        #endif
+#endif
 
         float speedhack = 1.f;
 
@@ -68,7 +85,6 @@ class $modify(CCScheduler) {
 
         CCScheduler::update(dt * speedhack);
     }
-
 };
 
 class $modify(PlayerObject) {
@@ -82,7 +98,6 @@ class $modify(PlayerObject) {
         if (!Global::get().mod->getSavedValue<bool>("macro_no_respawn_flash"))
             PlayerObject::playSpawnEffect();
     }
-
 };
 
 class $modify(PlayLayer) {
@@ -96,8 +111,10 @@ class $modify(PlayLayer) {
 
         auto& g = Global::get();
 
-        if (!g.autosaveEnabled) return;
-        if (!g.autosaveIntervalEnabled) return;
+        if (!g.autosaveEnabled)
+            return;
+        if (!g.autosaveIntervalEnabled)
+            return;
 
         if (g.autosaveCheck < g.autosaveInterval) {
             g.autosaveCheck += dt;
@@ -109,9 +126,10 @@ class $modify(PlayLayer) {
         Macro::autoSave(m_level, currentTime);
     }
 
-    void destroyPlayer(PlayerObject * p0, GameObject * p1) {
-        if (p0 != m_player1 && p0 != m_player2) return PlayLayer::destroyPlayer(p0, p1);
-        
+    void destroyPlayer(PlayerObject* p0, GameObject* p1) {
+        if (p0 != m_player1 && p0 != m_player2)
+            return PlayLayer::destroyPlayer(p0, p1);
+
         if (!m_fields->slopeFix)
             m_fields->slopeFix = p1;
 
@@ -127,11 +145,14 @@ class $modify(PlayLayer) {
             PlayLayer::destroyPlayer(p0, p1);
         else
             Global::get().safeMode = true;
-        
-        if (getActionByTag(16)) {            
+
+        if (getActionByTag(16)) {
             if (g.mod->getSavedValue<bool>("respawn_time_enabled")) {
                 stopActionByTag(16);
-                CCSequence* seq = CCSequence::create(CCDelayTime::create(g.mod->getSavedValue<double>("respawn_time")), CCCallFunc::create(this, callfunc_selector(PlayLayer::delayedResetLevel)), nullptr);
+                CCSequence* seq = CCSequence::create(
+                    CCDelayTime::create(g.mod->getSavedValue<double>("respawn_time")),
+                    CCCallFunc::create(this, callfunc_selector(PlayLayer::delayedResetLevel)),
+                    nullptr);
                 seq->setTag(16);
                 runAction(seq);
             }
@@ -148,7 +169,8 @@ class $modify(PlayLayer) {
 
         g.firstAttempt = true;
 
-        if (g.state == state::recording && g.autosaveEnabled && g.mod->getSavedValue<bool>("autosave_levelend_enabled"))
+        if (g.state == state::recording && g.autosaveEnabled &&
+            g.mod->getSavedValue<bool>("autosave_levelend_enabled"))
             Macro::autoSave(nullptr, g.currentSession);
 
         bool wasTestMode = m_isTestMode;
@@ -160,48 +182,45 @@ class $modify(PlayLayer) {
             g.safeMode = false;
 
         PlayLayer::levelComplete();
-        
+
         Macro::resetState(true);
 
         m_isTestMode = wasTestMode;
     }
-
 };
 
 class $modify(EndLevelLayer) {
-    
+
     void customSetup() {
         EndLevelLayer::customSetup();
         auto& g = Global::get();
 
         if (g.mod->getSettingValue<bool>("endscreen_button")) {
-			cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+            cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 
-			CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
-			sprite->setScale(0.350f);
-            
-        	CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(
-                sprite,
-			    this,
-			    menu_selector(RecordLayer::openMenu2)
-            );
-			btn->setPosition({160, -99});
+            CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
+            sprite->setScale(0.350f);
 
-			CCLayer* layer = this->getChildByType<CCLayer>(0);
+            CCMenuItemSpriteExtra* btn =
+                CCMenuItemSpriteExtra::create(sprite, this, menu_selector(RecordLayer::openMenu2));
+            btn->setPosition({160, -99});
 
-			CCMenu* menu = CCMenu::create();
+            CCLayer* layer = this->getChildByType<CCLayer>(0);
+
+            CCMenu* menu = CCMenu::create();
             menu->setID("button-menu"_spr);
-			layer->addChild(menu);
+            layer->addChild(menu);
 
-        	menu->addChild(btn);
-		}
+            menu->addChild(btn);
+        }
 
         if (g.layer) {
             static_cast<RecordLayer*>(g.layer)->cursorWasHidden = false;
             static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
         }
 
-        if (!g.safeMode) return;
+        if (!g.safeMode)
+            return;
 
         if (CCMenu* menu = m_mainLayer->getChildByType<CCMenu>(0)) {
             if (CCMenuItemSpriteExtra* btn = menu->getChildByType<CCMenuItemSpriteExtra>(0))
@@ -219,14 +238,15 @@ class $modify(EndLevelLayer) {
                 btn->setPositionX(btn->getPositionX() + 1);
         }
 
-        if (!g.mod->getSavedValue<bool>("macro_auto_safe_mode")) return;
+        if (!g.mod->getSavedValue<bool>("macro_auto_safe_mode"))
+            return;
 
         CCLabelBMFont* lbl = CCLabelBMFont::create("Auto-safe-mode", "goldFont.fnt");
-        lbl->setPosition({ 3.5, 10 });
+        lbl->setPosition({3.5, 10});
         lbl->setOpacity(155);
         lbl->setID("safe-mode-label"_spr);
         lbl->setScale(0.55f);
-        lbl->setAnchorPoint({ 0, 0.5 });
+        lbl->setAnchorPoint({0, 0.5});
 
         addChild(lbl);
     }
@@ -237,7 +257,6 @@ class $modify(EndLevelLayer) {
         if (CCNode* lbl = getChildByID("safe-mode-label"_spr))
             lbl->setVisible(!lbl->isVisible());
     }
-
 };
 
 class $modify(GJGameLevel) {
@@ -256,11 +275,9 @@ class $modify(EffectGameObject) {
 
         if (!shaderIDs.contains(m_objectID) || !PlayLayer::get()) {
             EffectGameObject::triggerObject(p0, p1, p2);
-        }
-        else
+        } else
             Global::get().safeMode = true;
-	}
-
+    }
 };
 
 class $modify(GameLevelOptionsLayer) {
@@ -268,17 +285,15 @@ class $modify(GameLevelOptionsLayer) {
     static GameLevelOptionsLayer* create(GJGameLevel* level) {
         GameLevelOptionsLayer* ret = GameLevelOptionsLayer::create(level);
 
-        if (!Mod::get()->getSettingValue<bool>("level_settings_button")) return ret;
+        if (!Mod::get()->getSettingValue<bool>("level_settings_button"))
+            return ret;
 
         CCSprite* sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
-		sprite->setScale(0.350f);
-            
-        CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(
-            sprite,
-		    ret,
-		    menu_selector(RecordLayer::openMenu2)
-        );
-		btn->setPosition({-174, -114});
+        sprite->setScale(0.350f);
+
+        CCMenuItemSpriteExtra* btn =
+            CCMenuItemSpriteExtra::create(sprite, ret, menu_selector(RecordLayer::openMenu2));
+        btn->setPosition({-174, -114});
 
         if (CCLayer* layer = ret->getChildByType<CCLayer>(0))
             if (CCMenu* menu = layer->getChildByType<CCMenu>(1))
@@ -286,5 +301,4 @@ class $modify(GameLevelOptionsLayer) {
 
         return ret;
     }
-    
 };

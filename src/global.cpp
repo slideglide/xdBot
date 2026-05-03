@@ -210,7 +210,7 @@ bool Global::enabledIncompatibleGDSettings() {
 
 float Global::getTPS() {
     auto& g = Global::get();
-    return g.tpsEnabled ? g.tps : 240.f;
+    return g.tpsEnabled ? g.tps : 240.0;
 }
 
 int Global::getCurrentFrame(bool editor) {
@@ -232,6 +232,7 @@ int Global::getCurrentFrame(bool editor) {
 }
 
 class $modify(FrameCounterGJBaseGameLayer, GJBaseGameLayer) {
+    #ifndef GEODE_IS_MACOS
     void processCommands(float dt, bool isHalfTick, bool isLastTick) {
         auto& g = Global::get();
         auto* playLayer = PlayLayer::get();
@@ -247,9 +248,29 @@ class $modify(FrameCounterGJBaseGameLayer, GJBaseGameLayer) {
         GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
 
         if (isPlaying) {
-            g.m_frameCount++;
+            g.m_frameCount = playLayer->m_gameState.m_currentProgress;
         }
     }
+    #else
+    void processQueuedButtons(float dt, bool clearInputQueue) {
+        auto& g = Global::get();
+        auto* playLayer = PlayLayer::get();
+        bool isPlaying = playLayer && !playLayer->m_hasCompletedLevel && !playLayer->m_isPaused &&
+                         playLayer->m_gameState.m_currentProgress > 0 &&
+                         !playLayer->m_player1->m_isDead &&
+                         (!playLayer->m_gameState.m_isDualMode || !playLayer->m_player2->m_isDead);
+
+        if (g.state == state::playing && !g.tpsEnabled) {
+            g.setTpsEnabled(true);
+        }
+
+        GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
+
+        if (isPlaying) {
+            g.m_frameCount = playLayer->m_gameState.m_currentProgress;
+        }
+    }
+    #endif
 };
 
 void Global::updateSeed(bool isRestart) {
