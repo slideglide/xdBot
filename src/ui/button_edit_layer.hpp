@@ -1,46 +1,49 @@
-#pragma once
+pragma once
 
 #include "../includes.hpp"
 
-const std::vector<std::string> indexToID = {
-    "button_off", "button_advance_frame", "button_speedhack"
+inline const std::vector<std::string> indexToID = {
+    "button_off",
+    "button_advance_frame",
+    "button_speedhack",
 };
 
-const std::map<std::string, int> IDtoIndex{
-    {"button_off", 0}, {"button_advance_frame", 1}, {"button_speedhack", 2}
+inline const std::map<std::string, size_t> IDtoIndex = {
+    {"button_off", 0},
+    {"button_advance_frame", 1},
+    {"button_speedhack", 2},
 };
 
-const std::map<std::string, std::string> IDtoName{
-    {"button_off", "Frame Stepper Off"}, {"button_advance_frame", "Advance Frame"}, {"button_speedhack", "Toggle Speedhack"}
+inline const std::map<std::string, std::string> IDtoName = {
+    {"button_off", "Frame Stepper Off"},
+    {"button_advance_frame", "Advance Frame"},
+    {"button_speedhack", "Toggle Speedhack"},
 };
 
 struct MovingButton {
     size_t index = 0;
-    CCSprite* sprite = nullptr;
+    cocos2d::CCSprite* sprite = nullptr;
     cocos2d::CCPoint offset = ccp(0, 0);
 };
 
 class ButtonEditLayer : public geode::Popup {
-
 private:
-    
     bool init() override;
 
 public:
-
     STATIC_CREATE(ButtonEditLayer)
-    
-    Mod* mod = nullptr;
-    CCMenu* menu = nullptr;
 
-    Slider* scaleSlider = nullptr;
-    Slider* opacitySlider = nullptr;
+    geode::Mod* mod = nullptr;
+    cocos2d::CCMenu* menu = nullptr;
 
-    CCLabelBMFont* scaleLbl = nullptr;
-    CCLabelBMFont* opacityLbl = nullptr;
-    CCLabelBMFont* selectedLbl = nullptr;
+    geode::SliderNode* scaleSlider = nullptr;
+    geode::SliderNode* opacitySlider = nullptr;
 
-    std::vector<CCSprite*> spriteButtons;
+    cocos2d::CCLabelBMFont* scaleLbl = nullptr;
+    cocos2d::CCLabelBMFont* opacityLbl = nullptr;
+    cocos2d::CCLabelBMFont* selectedLbl = nullptr;
+
+    std::vector<cocos2d::CCSprite*> spriteButtons;
 
     MovingButton movingButton;
 
@@ -50,22 +53,24 @@ public:
     std::map<std::string, float> scales;
     std::map<std::string, float> opacities;
 
-    void onRestore(CCObject*);
-
-    void onSave(CCObject*);
-
-    void updateScale(CCObject*);
-
-    void updateOpacity(CCObject*);
+    bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchMoved(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
+    void ccTouchEnded(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override;
 
     void updateSelectedLabels();
-
-    void updateSelected(std::string selected);
+    void updateScale(geode::SliderNode* sender, float value);
+    void updateOpacity(geode::SliderNode* sender, float value);
+    void updateSelected(std::string const& selected);
 
     void addSliders();
-
     void addSprites();
+    void restoreDefaults();
+    void loadSavedButtonState();
+    void saveButtonState();
 
-    static bool isPointInButton(cocos2d::CCPoint clickPos, cocos2d::CCPoint btnPos, cocos2d::CCSize btnSize);
-
+    static bool isPointInButton(
+        cocos2d::CCPoint clickPos,
+        cocos2d::CCPoint btnPos,
+        cocos2d::CCSize btnSize
+    );
 };
