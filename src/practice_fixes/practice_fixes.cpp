@@ -17,7 +17,7 @@ struct PracticeCheckpointData {
     SupplementalPlayLayerState pl;
     float tps = 240.f;
     bool tpsEnabled = false;
-    std::unordered_map<int, int> persistentItemMap;
+    gd::unordered_map<int, int> persistentItemMap;
     std::array<float, 2000> varianceValues = {};
     std::vector<GameObject*> calcNonEffectObjects;
     int calcNonEffectObjectsSize = 0;

@@ -188,7 +188,7 @@ struct SupplementalPlayerState {
     bool m_isUpsideDown = false;
     bool m_isSideways = false;
     bool m_isHidden = false;
-    gd::map<int, bool> m_holdingButtons;
+    std::array<bool, 4> m_holdingButtons = {};
     double m_lastFlipTime = 0.0;
     bool m_hasGlow = false;
     int m_dashFireFrame = 0;
@@ -388,7 +388,8 @@ struct SupplementalPlayerState {
         m_isUpsideDown                  = p->m_isUpsideDown;
         m_isSideways                    = p->m_isSideways;
         m_isHidden                      = p->m_isHidden;
-        m_holdingButtons                = p->m_holdingButtons;
+        for (size_t i = 1; i < m_holdingButtons.size(); i++)
+            m_holdingButtons[i] = p->m_holdingButtons[i];
         m_lastFlipTime                  = p->m_lastFlipTime;
         m_hasGlow                       = p->m_hasGlow;
         m_dashFireFrame                 = p->m_dashFireFrame;
@@ -588,7 +589,8 @@ struct SupplementalPlayerState {
         p->m_isUpsideDown                   = m_isUpsideDown;
         p->m_isSideways                     = m_isSideways;
         p->m_isHidden                       = m_isHidden;
-        p->m_holdingButtons                 = m_holdingButtons;
+        for (size_t i = 1; i < m_holdingButtons.size(); i++)
+            p->m_holdingButtons[i] = m_holdingButtons[i];
         p->m_lastFlipTime                   = m_lastFlipTime;
         p->m_hasGlow                       = m_hasGlow;
         p->m_dashFireFrame                  = m_dashFireFrame;
