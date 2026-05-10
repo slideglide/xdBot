@@ -192,7 +192,7 @@ bool Renderer::toggle() {
             "Render",
             "Disable <cr>CBF</c> in Geode to render a level.",
             "Close", "Disable",
-            [](auto, bool btn2) {
+            [cbf](auto, bool btn2) {
                 if (btn2) {
                     cbf->setSettingValue<bool>("soft-toggle", false);
                 }
