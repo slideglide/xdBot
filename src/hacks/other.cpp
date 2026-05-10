@@ -183,7 +183,7 @@ class $modify(EndLevelLayer) {
 
             CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(
                 sprite, [this](CCMenuItemSpriteExtra* sender) {
-                    this->openMenu2(sender);
+                    RecordLayer::openMenu2(sender);
                 });
             btn->setPosition({160, -99});
 
@@ -275,7 +275,7 @@ class $modify(GameLevelOptionsLayer) {
 
         CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(
             sprite, [ret](CCMenuItemSpriteExtra* sender) {
-                ret->openMenu2(sender);
+                RecordLayer::openMenu2(sender);
             });
         btn->setPosition({-174, -114});
 
