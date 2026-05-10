@@ -863,7 +863,7 @@ bool RecordLayer::init() {
         CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     spr->setScale(0.65f);
 
-    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra *sender) { RenderSettingsLayer::open(sender); });
+    btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra *sender) { static_cast<RenderSettingsLayer*>(Global::get().layer)->open(sender); });
     btn->setPosition(ccp(-129.5, -97));
     menu->addChild(btn);
 
@@ -1078,7 +1078,7 @@ void RecordLayer::loadSetting(RecordSetting sett, float yPos) {
         spr->setOpacity(215);
 
         CCMenuItemSpriteExtra *btn =
-            CCMenuItemExt::createSpriteExtra(spr, this, sett.callback);
+            CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) { sett.callback });
         btn->setPosition(ccp(138, yPos));
 
         nodes.push_back(static_cast<CCNode *>(btn));
