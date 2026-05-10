@@ -1,5 +1,6 @@
 #include "../includes.hpp"
 #include "../ui/record_layer.hpp"
+#include "../global.hpp"
 
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
@@ -183,7 +184,7 @@ class $modify(EndLevelLayer) {
 
             CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(
                 sprite, [this](CCMenuItemSpriteExtra* sender) {
-                    RecordLayer::openMenu2(sender);
+                    static_cast<RecordLayer*>(Global::get().layer)->openMenu2(sender);
                 });
             btn->setPosition({160, -99});
 
@@ -275,7 +276,7 @@ class $modify(GameLevelOptionsLayer) {
 
         CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(
             sprite, [ret](CCMenuItemSpriteExtra* sender) {
-                RecordLayer::openMenu2(sender);
+                static_cast<RecordLayer*>(Global::get().layer)->openMenu2(sender);
             });
         btn->setPosition({-174, -114});
 

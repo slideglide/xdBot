@@ -84,7 +84,7 @@ class $modify(PauseLayer) {
         sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
         sprite->setScale(0.35f);
 
-        CCMenuItemSpriteExtra *btn = CCMenuItemExt::createSpriteExtra(sprite, [this](CCMenuItemSpriteExtra *sender) { RecordLayer::openMenu2(sender); });
+        CCMenuItemSpriteExtra *btn = CCMenuItemExt::createSpriteExtra(sprite, [this](CCMenuItemSpriteExtra *sender) { static_cast<RecordLayer*>(Global::get().layer)->openMenu2(sender); });
 
         if (!Loader::get()->isModLoaded("geode.node-ids")) {
             CCMenu *menu = CCMenu::create();
