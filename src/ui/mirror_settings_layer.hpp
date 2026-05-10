@@ -26,7 +26,7 @@ class MirrorSettingsLayer : public geode::Popup {
         lbl->setScale(0.5f);
         menu->addChild(lbl);
 
-        CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.875f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
+        CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.875f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get())->toggleSetting(sender); });
         toggle->setPosition({-47, -0});
         toggle->setScale(0.875f);
         toggle->toggle(

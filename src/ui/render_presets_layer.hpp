@@ -102,7 +102,7 @@ class RenderPresetsLayer : public geode::Popup {
             CCScene *scene = CCScene::get();
             if (RecordLayer *layer = scene->getChildByType<RecordLayer>(0))
                 layer->onClose(nullptr);
-            RecordLayer::openMenu(true);
+            static_cast<RecordLayer*>(Global::get().layer)->openMenu(true);
 
             Loader::get()->queueInMainThread([] {
                 RenderPresetsLayer *layer = RenderPresetsLayer::create();

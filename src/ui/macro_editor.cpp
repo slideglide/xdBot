@@ -922,7 +922,7 @@ void MacroEditLayer::onSave(CCObject *) {
                 }
             }
 
-            RecordLayer::openMenu(true);
+            static_cast<RecordLayer*>(g.layer)->openMenu(true);
             MacroEditLayer::open(true);
 
             Loader::get()->queueInMainThread([] {

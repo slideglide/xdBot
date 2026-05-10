@@ -60,7 +60,7 @@ class MyButtonSettingNodeV3 : public SettingNodeV3 {
                 typeinfo_cast<FLAlertLayer *>(children->lastObject()))
             layer->keyBackClicked();
 
-        RecordLayer::openMenu(
+        static_cast<RecordLayer*(Global::get().layer)->openMenu(
             Mod::get()->getSettingValue<bool>("open_menu_instant"));
     }
 

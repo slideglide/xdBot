@@ -130,7 +130,7 @@ $execute {
                     layer->keyBackClicked();
 
                 static_cast<RecordLayer *>(g.layer)->onClose(nullptr);
-                RecordLayer::openMenu(true);
+                static_cast<RecordLayer*>(g.layer)->openMenu(true);
             }
         });
 };

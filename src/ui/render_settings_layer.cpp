@@ -74,7 +74,7 @@ void RenderSettingsLayer::onDefaults(CCObject *) {
             }
 
             this->keyBackClicked();
-            RecordLayer::openMenu(true);
+            static_cast<RecordLayer*>(Global::get().layer)->openMenu(true);
             RenderSettingsLayer *layer = create();
             layer->m_noElasticity = true;
             layer->show();
@@ -318,7 +318,7 @@ bool RenderSettingsLayer::init() {
     fadeInInput->getInputNode()->setAllowedChars("0123456789.");
     menu->addChild(fadeInInput);
 
-    CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
+    CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get().layer)->toggleSetting(sender); });
     toggle->setPosition(ccp(130, -32));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_fade_in"));
@@ -341,7 +341,7 @@ bool RenderSettingsLayer::init() {
     fadeOutInput->getInputNode()->setAllowedChars("0123456789.");
     menu->addChild(fadeOutInput);
 
-    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
+    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get().layer)->toggleSetting(sender); });
     toggle->setPosition(ccp(130, -58));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_fade_out"));
@@ -355,7 +355,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
+    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get().layer)->toggleSetting(sender); });
     toggle->setPosition(ccp(0, -32));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_hide_endscreen"));
@@ -369,7 +369,7 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.25);
     menu->addChild(lbl);
 
-    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
+    toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get().layer)->toggleSetting(sender); });
     toggle->setPosition(ccp(0, -58));
     toggle->setScale(0.555);
     toggle->toggle(mod->getSavedValue<bool>("render_hide_levelcomplete"));

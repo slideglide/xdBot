@@ -52,7 +52,7 @@ void handleKeybind(std::string_view id, bool down, bool repeat, double time) {
             if (g.layer) {
                 static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
             } else {
-                RecordLayer::openMenu(g.mod->getSettingValue<bool>("open_menu_instant"));
+                static_cast<RecordLayer*>(g.layer)->openMenu(g.mod->getSettingValue<bool>("open_menu_instant"));
             }
         };
 

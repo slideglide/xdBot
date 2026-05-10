@@ -823,7 +823,7 @@ void MacroCell::handleLoad() {
 
     if (RecordLayer *layer = typeinfo_cast<RecordLayer *>(menuLayer)) {
         layer->onClose(nullptr);
-        newLayer = RecordLayer::openMenu(true);
+        newLayer = layer->openMenu(true);
     }
 
     if (!newLayer)
