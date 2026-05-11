@@ -240,20 +240,6 @@ bool ClickbotLayer::init() {
 
     int volume = Mod::get()->getSavedValue<int64_t>("clickbot_volume");
 
-    volumeSlider = SliderNode::create([this](SliderNode *sender, float value) {
-        Mod::get()->setSavedValue("clickbot_volume", (int64_t)value);
-        volumeLabel->setString(fmt::format("Volume ({:.0f}%)", value).c_str());
-    });
-    volumeSlider->setMin(0.f);
-    volumeSlider->setMax(100.f);
-    volumeSlider->setPosition(ccp(128, 49));
-    volumeSlider->setAnchorPoint({0.f, 0.f});
-    volumeSlider->setScale(0.65f);
-    volumeSlider->getThumb()->setScale(0.8f);
-    volumeSlider->setValue(
-        Mod::get()->getSavedValue<int64_t>("clickbot_volume"));
-    menu->addChild(volumeSlider);
-
     volumeLabel = CCLabelBMFont::create(
         ("Master Volume (" + geode::utils::numToString(volume) + "%)").c_str(),
         "goldFont.fnt");
@@ -261,25 +247,47 @@ bool ClickbotLayer::init() {
     volumeLabel->setScale(0.35f);
     menu->addChild(volumeLabel);
 
-    float pitch = Mod::get()->getSavedValue<float>("clickbot_pitch");
-
-    pitchSlider = SliderNode::create([this](SliderNode *sender, float value) {
-        float pitch = value * 3.f;
-        Global::updatePitch(pitch);
-        pitchLabel->setString(
-            fmt::format("Master Pitch ({:.1f})", pitch).c_str());
+    volumeSlider = SliderNode::create([this](SliderNode *sender, float value) {
+        Mod::get()->setSavedValue("clickbot_volume", (int64_t)value);
+        if (volumeLabel) {
+            volumeLabel->setString(
+                fmt::format("Master Volume ({:.0f}%)", value).c_str());
+        }
     });
-    pitchSlider->setPosition(ccp(128, 7));
-    pitchSlider->setAnchorPoint({0.f, 0.f});
-    pitchSlider->setScale(0.65f);
-    pitchSlider->setValue(pitch / 3.f);
-    menu->addChild(pitchSlider);
+    volumeSlider->setMin(0.f);
+    volumeSlider->setMax(100.f);
+    volumeSlider->setPosition(ccp(128, 49));
+    volumeSlider->setAnchorPoint({0.5f, 0.5f});
+    volumeSlider->setScale(0.65f);
+    volumeSlider->getThumb()->setScale(0.8f);
+    volumeSlider->setValue(
+        Mod::get()->getSavedValue<int64_t>("clickbot_volume"));
+    menu->addChild(volumeSlider);
+
+    float pitch = Mod::get()->getSavedValue<float>("clickbot_pitch");
 
     pitchLabel = CCLabelBMFont::create(
         fmt::format("Master Pitch ({:.1f})", pitch).c_str(), "goldFont.fnt");
     pitchLabel->setPosition(ccp(128, -7));
     pitchLabel->setScale(0.35f);
     menu->addChild(pitchLabel);
+
+    pitchSlider = SliderNode::create([this](SliderNode *sender, float value) {
+        Mod::get()->setSavedValue("clickbot_pitch", value);
+        Global::updatePitch(value);
+        if (pitchLabel) {
+            pitchLabel->setString(
+                fmt::format("Master Pitch ({:.1f})", value).c_str());
+        }
+    });
+    pitchSlider->setPosition(ccp(128, 7));
+    pitchSlider->setAnchorPoint({0.5f, 0.5f});
+    pitchSlider->setScale(0.65f);
+    pitchSlider->setMin(0.f);
+    pitchSlider->setMax(3.f);
+    pitchSlider->setSnapStep(0.1f);
+    pitchSlider->setValue(pitch);
+    menu->addChild(pitchSlider);
 
     // CCSprite* spriteOn =
     // CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png"); CCSprite*
@@ -415,22 +423,6 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     btn->setPosition(ccp(77, 52));
     menu->addChild(btn);
 
-    volumeSlider = SliderNode::create([this](SliderNode *, float value) {
-        settings.volume = value;
-
-        volumeLabel->setString(fmt::format("Volume ({:.0f}%)", value).c_str());
-    });
-    volumeSlider->setMin(0.f);
-    volumeSlider->setMax(100.f);
-    volumeSlider->setPosition(ccp(-42, 7));
-    volumeSlider->setAnchorPoint({0.f, 0.f});
-    volumeSlider->setScale(0.8f);
-    volumeSlider->getThumb()->setScale(0.8f);
-    volumeSlider->setReleaseCallback(
-        [this](SliderNode *, float) { saveSettings(); });
-    volumeSlider->setValue(settings.volume);
-    menu->addChild(volumeSlider);
-
     volumeLabel = CCLabelBMFont::create(
         ("Volume (" + geode::utils::numToString(settings.volume) + "%)")
             .c_str(),
@@ -439,10 +431,38 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     volumeLabel->setScale(0.45f);
     menu->addChild(volumeLabel);
 
+    volumeSlider = SliderNode::create([this](SliderNode *, float value) {
+        settings.volume = static_cast<int>(std::round(value));
+
+        if (volumeLabel) {
+            volumeLabel->setString(
+                fmt::format("Volume ({:.0f}%)", value).c_str());
+        }
+    });
+    volumeSlider->setMin(0.f);
+    volumeSlider->setMax(100.f);
+    volumeSlider->setPosition(ccp(-42, 7));
+    volumeSlider->setAnchorPoint({0.5f, 0.5f});
+    volumeSlider->setContentSize({130.f, 10.f});
+    volumeSlider->setScale(0.8f);
+    volumeSlider->getThumb()->setScale(0.8f);
+    volumeSlider->setReleaseCallback(
+        [this](SliderNode *, float) { saveSettings(); });
+    volumeSlider->setValue(settings.volume);
+    menu->addChild(volumeSlider);
+
+    pitchLabel = CCLabelBMFont::create(
+        fmt::format("Pitch ({:.1f})", settings.pitch).c_str(), "goldFont.fnt");
+    pitchLabel->setPosition(ccp(-42, -56));
+    pitchLabel->setScale(0.45f);
+    menu->addChild(pitchLabel);
+
     pitchSlider = SliderNode::create([this](SliderNode *sender, float value) {
         settings.pitch = value;
-        pitchLabel->setString(
-            fmt::format("Pitch ({:.1f})", settings.pitch).c_str());
+        if (pitchLabel) {
+            pitchLabel->setString(
+                fmt::format("Pitch ({:.1f})", settings.pitch).c_str());
+        }
     });
 
     pitchSlider->setMin(0.f);
@@ -451,16 +471,11 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     pitchSlider->setReleaseCallback(
         [this](SliderNode *, float) { saveSettings(); });
     pitchSlider->setPosition(ccp(-42, -40));
-    pitchSlider->setAnchorPoint({0.f, 0.f});
+    pitchSlider->setAnchorPoint({0.5f, 0.5f});
+    pitchSlider->setContentSize({130.f, 10.f});
     pitchSlider->setScale(0.8f);
     pitchSlider->setValue(settings.pitch);
     menu->addChild(pitchSlider);
-
-    pitchLabel = CCLabelBMFont::create(
-        fmt::format("Pitch ({:.1f})", settings.pitch).c_str(), "goldFont.fnt");
-    pitchLabel->setPosition(ccp(-42, -56));
-    pitchLabel->setScale(0.45f);
-    menu->addChild(pitchLabel);
 
     disableToggle = CCMenuItemExt::createTogglerWithStandardSprites(
         0.7f, [this](CCMenuItemToggler *toggle) {
@@ -482,8 +497,8 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
 
     btn = CCMenuItemExt::createSpriteExtra(
         spr, [this, button](CCMenuItemSpriteExtra *sender) {
-            pitchSlider->setValue(0.33333333f);
-            volumeSlider->setValue(0.33333333f);
+            pitchSlider->setValue(1.f);
+            volumeSlider->setValue(100.f);
 
             disableToggle->toggle(false);
 

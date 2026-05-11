@@ -333,7 +333,7 @@ void RecordLayer::textChanged(CCTextInputNode *node) {
 
     mod = Mod::get();
 
-    if (node == seedInput) {
+    if (seedInput && node == seedInput->getInputNode()) {
 
         if (auto num =
                 numFromString<unsigned long long>(seedInput->getString())) {
@@ -346,24 +346,27 @@ void RecordLayer::textChanged(CCTextInputNode *node) {
         }
     }
 
-    if (node == codecInput)
+    if (codecInput && node == codecInput->getInputNode())
         mod->setSavedValue("render_codec",
                            std::string(codecInput->getString()));
 
-    if (std::string_view(widthInput->getString()) != "" && node == widthInput)
+    if (widthInput && std::string_view(widthInput->getString()) != "" &&
+        node == widthInput->getInputNode())
         mod->setSavedValue("render_width2",
                            std::string(widthInput->getString()));
 
-    if (std::string_view(heightInput->getString()) != "" && node == heightInput)
+    if (heightInput && std::string_view(heightInput->getString()) != "" &&
+        node == heightInput->getInputNode())
         mod->setSavedValue("render_height",
                            std::string(heightInput->getString()));
 
-    if (std::string_view(bitrateInput->getString()) != "" &&
-        node == bitrateInput)
+    if (bitrateInput && std::string_view(bitrateInput->getString()) != "" &&
+        node == bitrateInput->getInputNode())
         mod->setSavedValue("render_bitrate",
                            std::string(bitrateInput->getString()));
 
-    if (std::string_view(fpsInput->getString()) != "" && node == fpsInput) {
+    if (fpsInput && std::string_view(fpsInput->getString()) != "" &&
+        node == fpsInput->getInputNode()) {
         if (geode::utils::numFromString<int>(fpsInput->getString())
                 .unwrapOr(0) > 240)
             return fpsInput->setString(
@@ -371,13 +374,13 @@ void RecordLayer::textChanged(CCTextInputNode *node) {
         mod->setSavedValue("render_fps", std::string(fpsInput->getString()));
     }
 
-    if (respawnInput && node == respawnInput) {
+    if (respawnInput && node == respawnInput->getInputNode()) {
         std::string str = respawnInput->getString();
         mod->setSavedValue("respawn_time",
                            numFromString<double>(str).unwrapOr(0.5));
     }
 
-    if (tpsInput && node == tpsInput) {
+    if (tpsInput && node == tpsInput->getInputNode()) {
         float value = geode::utils::numFromString<float>(tpsInput->getString())
                           .unwrapOr(0.f);
         if (std::string_view(tpsInput->getString()) != "" && value < 999999 &&
@@ -387,11 +390,11 @@ void RecordLayer::textChanged(CCTextInputNode *node) {
         }
     }
 
-    if (!speedhackInput || node != speedhackInput)
+    if (!speedhackInput || node != speedhackInput->getInputNode())
         return;
 
     if (std::string_view(speedhackInput->getString()) != "" &&
-        node == speedhackInput) {
+        node == speedhackInput->getInputNode()) {
         std::string value = speedhackInput->getString();
 
         if (value == ".")
@@ -516,15 +519,6 @@ void RecordLayer::toggleSetting(CCObject *obj) {
                                  NotificationIcon::Warning)
                 ->show();
     }
-}
-
-void RecordLayer::showKeybindsWarning() {
-    if (!mod->setSavedValue("opened_keybinds", true))
-        queueInMainThread([this] {
-            FLAlertLayer::create("Warning",
-                                 "Scroll down to find xdBot's keybinds", "OK")
-                ->show();
-        });
 }
 
 void RecordLayer::openKeybinds(CCObject *) {
@@ -795,51 +789,48 @@ bool RecordLayer::init() {
     btn->setPosition(ccp(-56, 34));
     menu->addChild(btn);
 
-    widthInput = CCTextInputNode::create(150, 30, "Width", "chatFont.fnt");
-    widthInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    widthInput->ignoreAnchorPointForPosition(true);
-    widthInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    widthInput = TextInput::create(60.f, "Width", "chatFont.fnt");
     widthInput->setPosition(ccp(-157, -31));
-    widthInput->setMaxLabelScale(0.7f);
-    widthInput->setMouseEnabled(true);
-    widthInput->setContentSize({60, 20});
-    widthInput->setTouchEnabled(true);
-    widthInput->setAllowedChars("0123456789");
-    widthInput->setString(
-        mod->getSavedValue<std::string>("render_width2").c_str());
+    widthInput->setFilter("0123456789");
+    widthInput->setString(mod->getSavedValue<std::string>("render_width2"));
     widthInput->setDelegate(this);
     widthInput->setID("render-input");
+    widthInput->getInputNode()->setMaxLabelScale(0.7f);
+    widthInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    widthInput->getInputNode()->m_textLabel->setOpacity(150);
+    widthInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    widthInput->setWidth(60.75f);
+    widthInput->getBGSprite()->setContentHeight(41.25f);
+    widthInput->getBGSprite()->setOpacity(75);
     menu->addChild(widthInput);
 
-    heightInput = CCTextInputNode::create(150, 30, "Height", "chatFont.fnt");
-    heightInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    heightInput->ignoreAnchorPointForPosition(true);
-    heightInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    heightInput = TextInput::create(60.f, "Height", "chatFont.fnt");
     heightInput->setPosition(ccp(-72.5, -31));
-    heightInput->setMaxLabelScale(0.7f);
-    heightInput->setMouseEnabled(true);
-    heightInput->setContentSize({60, 20});
-    heightInput->setTouchEnabled(true);
-    heightInput->setAllowedChars("0123456789");
-    heightInput->setString(
-        mod->getSavedValue<std::string>("render_height").c_str());
+    heightInput->setFilter("0123456789");
+    heightInput->setString(mod->getSavedValue<std::string>("render_height"));
     heightInput->setDelegate(this);
     heightInput->setID("render-input");
+    heightInput->getInputNode()->setMaxLabelScale(0.7f);
+    heightInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    heightInput->getInputNode()->m_textLabel->setOpacity(150);
+    heightInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    heightInput->setWidth(60.75f);
+    heightInput->getBGSprite()->setContentHeight(41.25f);
+    heightInput->getBGSprite()->setOpacity(75);
     menu->addChild(heightInput);
 
-    bitrateInput = CCTextInputNode::create(150, 30, "br", "chatFont.fnt");
-    bitrateInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    bitrateInput->ignoreAnchorPointForPosition(true);
-    bitrateInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    bitrateInput = TextInput::create(32.f, "br", "chatFont.fnt");
     bitrateInput->setPosition(ccp(-185.5, -59));
-    bitrateInput->setMaxLabelScale(0.7f);
-    bitrateInput->setMouseEnabled(true);
-    bitrateInput->setContentSize({32, 20});
-    bitrateInput->setTouchEnabled(true);
-    bitrateInput->setAllowedChars("0123456789");
-    bitrateInput->setString(
-        mod->getSavedValue<std::string>("render_bitrate").c_str());
+    bitrateInput->setFilter("0123456789");
+    bitrateInput->setString(mod->getSavedValue<std::string>("render_bitrate"));
     bitrateInput->setDelegate(this);
+    bitrateInput->getInputNode()->setMaxLabelScale(0.7f);
+    bitrateInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    bitrateInput->getInputNode()->m_textLabel->setOpacity(150);
+    bitrateInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    bitrateInput->setWidth(30.75f);
+    bitrateInput->getBGSprite()->setContentHeight(41.25f);
+    bitrateInput->getBGSprite()->setOpacity(75);
     menu->addChild(bitrateInput);
 
     CCSprite *emptyBtn =
@@ -865,86 +856,34 @@ bool RecordLayer::init() {
     btn->setPosition(ccp(-129.5, -97));
     menu->addChild(btn);
 
-    codecInput = CCTextInputNode::create(150, 30, "Codec", "chatFont.fnt");
-    codecInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    codecInput->ignoreAnchorPointForPosition(true);
-    codecInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    codecInput->setPosition(ccp(-70.5, -62));
-    codecInput->setMouseEnabled(true);
-    codecInput->setTouchEnabled(true);
-    codecInput->setContentSize({79, 20});
-    codecInput->setScale(0.75);
-    codecInput->setString(
-        mod->getSavedValue<std::string>("render_codec").c_str());
+    codecInput = TextInput::create(79.f, "Codec", "chatFont.fnt");
+    codecInput->setPosition(ccp(-60.5, -59));
+    codecInput->setString(mod->getSavedValue<std::string>("render_codec"));
     codecInput->setDelegate(this);
-    codecInput->setAllowedChars("0123456789abcdefghijklmnopqrstuvwxyz-_.\"\\/");
-    codecInput->setMaxLabelWidth(74.f);
+    codecInput->setFilter("0123456789abcdefghijklmnopqrstuvwxyz-_.\"\\/");
+    codecInput->getInputNode()->setMaxLabelWidth(74.f);
+    codecInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    codecInput->getInputNode()->m_textLabel->setOpacity(150);
+    codecInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    codecInput->setWidth(62.625f);
+    codecInput->getBGSprite()->setContentHeight(41.25f);
+    codecInput->getBGSprite()->setOpacity(75);
     menu->addChild(codecInput);
 
-    fpsInput = CCTextInputNode::create(150, 30, "FPS", "chatFont.fnt");
-    fpsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    fpsInput->ignoreAnchorPointForPosition(true);
-    fpsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    fpsInput->m_textLabel->setScale(0.6);
+    fpsInput = TextInput::create(32.f, "FPS", "chatFont.fnt");
     fpsInput->setPosition(ccp(-133, -59));
-    fpsInput->setMaxLabelScale(0.7f);
-    fpsInput->setMouseEnabled(true);
-    fpsInput->setTouchEnabled(true);
-    fpsInput->setContentSize({32, 20});
-    fpsInput->setAllowedChars("0123456789");
-    fpsInput->setString(mod->getSavedValue<std::string>("render_fps").c_str());
+    fpsInput->setFilter("0123456789");
+    fpsInput->setString(mod->getSavedValue<std::string>("render_fps"));
     fpsInput->setDelegate(this);
+    fpsInput->getInputNode()->m_textLabel->setScale(0.6);
+    fpsInput->getInputNode()->setMaxLabelScale(0.7f);
+    fpsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    fpsInput->getInputNode()->m_textLabel->setOpacity(150);
+    fpsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    fpsInput->setWidth(30.75f);
+    fpsInput->getBGSprite()->setContentHeight(41.25f);
+    fpsInput->getBGSprite()->setOpacity(75);
     menu->addChild(fpsInput);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(-103.5, -21));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({162, 55});
-    bg->setZOrder(29);
-    menu->addChild(bg);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(-188, -21));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({162, 55});
-    bg->setZOrder(29);
-    menu->addChild(bg);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(-201.5, -49));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({82, 55});
-    bg->setZOrder(29);
-    menu->addChild(bg);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(-148.5, -49));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({82, 55});
-    bg->setZOrder(29);
-    menu->addChild(bg);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(-92, -49));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({167, 55});
-    bg->setZOrder(29);
-    menu->addChild(bg);
 
 #ifndef GEODE_IS_IOS
     ButtonSprite *spriteOn2 = ButtonSprite::create("Stop");
@@ -1108,134 +1047,85 @@ void RecordLayer::loadSetting(RecordSetting sett, float yPos) {
     }
 
     if (sett.input == InputType::Speedhack) {
-        NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-        bg->setPosition(ccp(110, yPos + 10));
-        bg->setScale(0.355f);
-        bg->setColor({0, 0, 0});
-        bg->setOpacity(75);
-        bg->setAnchorPoint({0, 1});
-        bg->setContentSize({100, 55});
-        bg->setZOrder(29);
-        nodes.push_back(static_cast<CCNode *>(bg));
-        menu->addChild(bg);
-
-        speedhackInput = CCTextInputNode::create(150, 30, "SH", "chatFont.fnt");
+        speedhackInput = TextInput::create(32.f, "SH", "chatFont.fnt");
         speedhackInput->setPosition(ccp(127.5, yPos));
-        speedhackInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-        speedhackInput->ignoreAnchorPointForPosition(true);
-        speedhackInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-        speedhackInput->m_textLabel->setScale(0.6);
-        speedhackInput->setMaxLabelScale(0.7f);
-        speedhackInput->setMouseEnabled(true);
-        speedhackInput->setTouchEnabled(true);
-        speedhackInput->setContentSize({32, 20});
-        speedhackInput->setAllowedChars("0123456789.");
-        speedhackInput->setString(
-            mod->getSavedValue<std::string>("macro_speedhack").c_str());
-        speedhackInput->setMaxLabelWidth(30.f);
+        speedhackInput->setFilter("0123456789.");
+        speedhackInput->setString(mod->getSavedValue<std::string>("macro_speedhack"));
         speedhackInput->setDelegate(this);
-        speedhackInput->setMaxLabelLength(6);
+        speedhackInput->setMaxCharCount(6);
+        speedhackInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+        speedhackInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+        speedhackInput->getInputNode()->m_textLabel->setScale(0.6);
+        speedhackInput->getInputNode()->m_textLabel->setOpacity(150);
+        speedhackInput->getInputNode()->setMaxLabelScale(0.7f);
+        speedhackInput->setWidth(35.5f);
+        speedhackInput->getBGSprite()->setContentHeight(39.f);
+        speedhackInput->getBGSprite()->setOpacity(75);
 
         nodes.push_back(static_cast<CCNode *>(speedhackInput));
         menu->addChild(speedhackInput);
     }
 
     if (sett.input == InputType::Tps) {
-        tpsBg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-        tpsBg->setPosition(ccp(116, yPos + 10));
-        tpsBg->setScale(0.355f);
-        tpsBg->setColor({0, 0, 0});
-        tpsBg->setOpacity(75);
-        tpsBg->setAnchorPoint({0, 1});
-        tpsBg->setContentSize({100, 55});
-        tpsBg->setZOrder(29);
-        nodes.push_back(static_cast<CCNode *>(tpsBg));
-        menu->addChild(tpsBg);
-
-        tpsInput = CCTextInputNode::create(150, 30, "tps", "chatFont.fnt");
+        tpsInput = TextInput::create(32.f, "tps", "chatFont.fnt");
         tpsInput->setPosition(ccp(133.5, yPos));
-        tpsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-        tpsInput->ignoreAnchorPointForPosition(true);
-        tpsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-        tpsInput->m_textLabel->setScale(0.6);
-        tpsInput->setMaxLabelScale(0.7f);
-        tpsInput->setMouseEnabled(true);
-        tpsInput->setTouchEnabled(true);
-        tpsInput->setContentSize({32, 20});
-        tpsInput->setAllowedChars("0123456789.");
+        tpsInput->setFilter("0123456789.");
         tpsInput->setString(
             fmt::format("{:.3}", Mod::get()->getSavedValue<double>("macro_tps"))
-                .c_str());
-        tpsInput->setMaxLabelWidth(30.f);
+        );
         tpsInput->setDelegate(this);
-        tpsInput->setMaxLabelLength(9);
+        tpsInput->setMaxCharCount(9);
+        tpsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+        tpsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+        tpsInput->getInputNode()->m_textLabel->setScale(0.6);
+        tpsInput->getInputNode()->m_textLabel->setOpacity(150);
+        tpsInput->getInputNode()->setMaxLabelScale(0.7f);
+        tpsInput->setWidth(35.5f);
+        tpsBg = tpsInput->getBGSprite();
+        tpsBg->setContentHeight(39.f);
+        tpsBg->setOpacity(75);
 
         nodes.push_back(static_cast<CCNode *>(tpsInput));
         menu->addChild(tpsInput);
     }
 
     if (sett.input == InputType::Seed) {
-        NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-        bg->setPosition(ccp(64, yPos + 10));
-        bg->setScale(0.355f);
-        bg->setColor({0, 0, 0});
-        bg->setOpacity(75);
-        bg->setAnchorPoint({0, 1});
-        bg->setContentSize({258, 55});
-        bg->setZOrder(29);
-        nodes.push_back(static_cast<CCNode *>(bg));
-        menu->addChild(bg);
-
-        seedInput = CCTextInputNode::create(150, 30, "Seed", "chatFont.fnt");
+        seedInput = TextInput::create(85.f, "Seed", "chatFont.fnt");
         seedInput->setPosition(ccp(109.5, yPos));
-        seedInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-        seedInput->ignoreAnchorPointForPosition(true);
-        seedInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-        seedInput->m_textLabel->setScale(0.6);
-        seedInput->setMaxLabelScale(0.7f);
-        seedInput->setMouseEnabled(true);
-        seedInput->setTouchEnabled(true);
-        seedInput->setContentSize({85, 20});
-        seedInput->setAllowedChars("0123456789");
-        seedInput->setString(
-            mod->getSavedValue<std::string>("macro_seed").c_str());
-        seedInput->setMaxLabelWidth(70.f);
+        seedInput->setFilter("0123456789");
+        seedInput->setString(mod->getSavedValue<std::string>("macro_seed"));
         seedInput->setDelegate(this);
-        seedInput->setMaxLabelLength(20);
+        seedInput->setMaxCharCount(20);
+        seedInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+        seedInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+        seedInput->getInputNode()->m_textLabel->setScale(0.6);
+        seedInput->getInputNode()->m_textLabel->setOpacity(150);
+        seedInput->getInputNode()->setMaxLabelScale(0.7f);
+        seedInput->setWidth(91.625f);
+        seedInput->getBGSprite()->setContentHeight(39.f);
+        seedInput->getBGSprite()->setOpacity(75);
 
         nodes.push_back(static_cast<CCNode *>(seedInput));
         menu->addChild(seedInput);
     }
 
     if (sett.input == InputType::Respawn) {
-        NineSlice *bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-        bg->setPosition(ccp(110, yPos + 10));
-        bg->setScale(0.355f);
-        bg->setColor({0, 0, 0});
-        bg->setOpacity(75);
-        bg->setAnchorPoint({0, 1});
-        bg->setContentSize({100, 55});
-        bg->setZOrder(29);
-        nodes.push_back(static_cast<CCNode *>(bg));
-        menu->addChild(bg);
-
-        respawnInput = CCTextInputNode::create(150, 30, "sec", "chatFont.fnt");
+        respawnInput = TextInput::create(32.f, "sec", "chatFont.fnt");
         respawnInput->setPosition(ccp(127.5, yPos));
-        respawnInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-        respawnInput->ignoreAnchorPointForPosition(true);
-        respawnInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-        respawnInput->m_textLabel->setScale(0.6);
-        respawnInput->setMaxLabelScale(0.7f);
-        respawnInput->setMouseEnabled(true);
-        respawnInput->setTouchEnabled(true);
-        respawnInput->setContentSize({32.f, 20.f});
-        respawnInput->setAllowedChars("0123456789.");
+        respawnInput->setFilter("0123456789.");
         respawnInput->setString(
             fmt::format("{:.2}", mod->getSavedValue<double>("respawn_time"))
-                .c_str());
-        respawnInput->setMaxLabelWidth(30.f);
+        );
         respawnInput->setDelegate(this);
-        respawnInput->setMaxLabelLength(4);
+        respawnInput->setMaxCharCount(4);
+        respawnInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+        respawnInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+        respawnInput->getInputNode()->m_textLabel->setScale(0.6);
+        respawnInput->getInputNode()->m_textLabel->setOpacity(150);
+        respawnInput->getInputNode()->setMaxLabelScale(0.7f);
+        respawnInput->setWidth(35.5f);
+        respawnInput->getBGSprite()->setContentHeight(39.f);
+        respawnInput->getBGSprite()->setOpacity(75);
 
         nodes.push_back(static_cast<CCNode *>(respawnInput));
         menu->addChild(respawnInput);
@@ -1290,8 +1180,7 @@ void RecordLayer::updateTPS() {
 
     tpsToggle->toggle(g.tpsEnabled);
     tpsInput->setString(
-        fmt::format("{:.3}", Mod::get()->getSavedValue<double>("macro_tps"))
-            .c_str());
+        fmt::format("{:.3}", Mod::get()->getSavedValue<double>("macro_tps")));
 
     if (g.state == state::none || g.macro.inputs.empty()) {
         if (CCMenuItemSpriteExtra *btn =
@@ -1303,14 +1192,11 @@ void RecordLayer::updateTPS() {
             if (CCSprite *spr = btn->getChildByType<CCSprite>(0))
                 spr->setOpacity(255);
 
-        tpsInput->setID("");
         tpsBg->setOpacity(75);
         tpsToggle->setEnabled(true);
-        tpsInput->m_textLabel->setOpacity(255);
-
-        tpsInput->detachWithIME();
-        tpsInput->onClickTrackNode(false);
-        tpsInput->m_cursor->setVisible(false);
+        tpsInput->setEnabled(true);
+        tpsInput->getInputNode()->m_textLabel->setOpacity(150);
+        tpsInput->defocus();
     } else {
         if (CCMenuItemSpriteExtra *btn =
                 tpsToggle->getChildByType<CCMenuItemSpriteExtra>(0))
@@ -1321,13 +1207,10 @@ void RecordLayer::updateTPS() {
             if (CCSprite *spr = btn->getChildByType<CCSprite>(0))
                 spr->setOpacity(120);
 
-        tpsInput->setID("disabled-input"_spr);
         tpsBg->setOpacity(30);
         tpsToggle->setEnabled(false);
-        tpsInput->m_textLabel->setOpacity(120);
-
-        tpsInput->detachWithIME();
-        tpsInput->onClickTrackNode(false);
-        tpsInput->m_cursor->setVisible(false);
+        tpsInput->setEnabled(false);
+        tpsInput->getInputNode()->m_textLabel->setOpacity(120);
+        tpsInput->defocus();
     }
 }

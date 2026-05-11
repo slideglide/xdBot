@@ -13,7 +13,7 @@ class $modify(SliderTouchLogic) {
 
 void RenderSettingsLayer::textChanged(CCTextInputNode* node) {
 
-    if (secondsInput->getString() != "" && node == secondsInput) {
+    if (secondsInput->getString() != "" && node == secondsInput->getInputNode()) {
         std::string value = secondsInput->getString();
         if (value == ".")
             secondsInput->setString("0.");
@@ -98,19 +98,6 @@ bool RenderSettingsLayer::init() {
     m_mainLayer->addChild(menu);
     menu->setPositionX(menu->getPositionX() - 67);
 
-    NineSlice* bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.355f);
-    bg->setColor({0, 0, 0});
-#ifndef GEODE_IS_IOS
-    bg->setOpacity(usingApi ? 40 : 75);
-#else
-    bg->setOpacity(75);
-#endif
-    bg->setPosition(ccp(-28, 97));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({392, 55});
-    menu->addChild(bg);
-
     CCLabelBMFont* lbl = CCLabelBMFont::create("Extra Args:", "bigFont.fnt");
     lbl->setPosition(ccp(-105, 88));
     lbl->setAnchorPoint({0, 0.5});
@@ -122,34 +109,23 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    argsInput = CCTextInputNode::create(150, 30, "args", "chatFont.fnt");
-    argsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    argsInput->ignoreAnchorPointForPosition(true);
-    argsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    argsInput->setPosition(ccp(25, 86));
-    argsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
-    argsInput->setMouseEnabled(true);
-    argsInput->setTouchEnabled(true);
-    argsInput->setContentSize({120, 20});
-    argsInput->setMaxLabelWidth(170.f);
-    argsInput->setScale(0.75);
-    argsInput->setString(mod->getSavedValue<std::string>("render_args").c_str());
+    argsInput = TextInput::create(170.f, "args", "chatFont.fnt");
+    argsInput->setPosition(ccp(41.5f, 87.25f));
+    argsInput->setString(mod->getSavedValue<std::string>("render_args"));
     argsInput->setDelegate(this);
-    argsInput->setAllowedChars(" 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
-    menu->addChild(argsInput);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.355f);
-    bg->setColor({0, 0, 0});
+    argsInput->setFilter(" 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
+    argsInput->getInputNode()->setLabelPlaceholderColor(ccc3(163, 135, 121));
+    argsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    argsInput->getInputNode()->m_textLabel->setOpacity(150);
+    argsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    argsInput->setWidth(139.f);
+    argsInput->getBGSprite()->setContentHeight(39.f);
 #ifndef GEODE_IS_IOS
-    bg->setOpacity(usingApi ? 40 : 75);
+    argsInput->getBGSprite()->setOpacity(usingApi ? 40 : 75);
 #else
-    bg->setOpacity(75);
+    argsInput->getBGSprite()->setOpacity(75);
 #endif
-    bg->setPosition(ccp(-31, 65));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({401, 55});
-    menu->addChild(bg);
+    menu->addChild(argsInput);
 
     lbl = CCLabelBMFont::create("Audio Args:", "bigFont.fnt");
     lbl->setPosition(ccp(-105, 55));
@@ -162,44 +138,23 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    audioArgsInput = CCTextInputNode::create(150, 30, "audio args", "chatFont.fnt");
-    audioArgsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    audioArgsInput->ignoreAnchorPointForPosition(true);
-    audioArgsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    audioArgsInput->setPosition(ccp(18, 53));
-    audioArgsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
-    audioArgsInput->setMouseEnabled(true);
-    audioArgsInput->setTouchEnabled(true);
-    audioArgsInput->setContentSize({180, 20});
-    audioArgsInput->setMaxLabelWidth(165.f);
-    audioArgsInput->setScale(0.75);
-    audioArgsInput->setString(mod->getSavedValue<std::string>("render_audio_args").c_str());
+    audioArgsInput = TextInput::create(165.f, "audio args", "chatFont.fnt");
+    audioArgsInput->setPosition(ccp(41.f, 55.25f));
+    audioArgsInput->setString(mod->getSavedValue<std::string>("render_audio_args"));
     audioArgsInput->setDelegate(this);
-    audioArgsInput->setAllowedChars(
-        " 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
-    menu->addChild(audioArgsInput);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.375f);
-    bg->setColor({0, 0, 0});
-    bg->setOpacity(75);
-    bg->setPosition(ccp(49, 4));
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({82, 55});
-    menu->addChild(bg);
-
-    bg = NineSlice::create("square02b_001.png", {0, 0, 80, 80});
-    bg->setScale(0.355f);
-    bg->setColor({0, 0, 0});
+    audioArgsInput->setFilter(" 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
+    audioArgsInput->getInputNode()->setLabelPlaceholderColor(ccc3(163, 135, 121));
+    audioArgsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    audioArgsInput->getInputNode()->m_textLabel->setOpacity(150);
+    audioArgsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    audioArgsInput->setWidth(142.25f);
+    audioArgsInput->getBGSprite()->setContentHeight(39.f);
 #ifndef GEODE_IS_IOS
-    bg->setOpacity(usingApi ? 40 : 75);
+    audioArgsInput->getBGSprite()->setOpacity(usingApi ? 40 : 75);
 #else
-    bg->setOpacity(75);
+    audioArgsInput->getBGSprite()->setOpacity(75);
 #endif
-    bg->setPosition({-29, 34});
-    bg->setAnchorPoint({0, 1});
-    bg->setContentSize({395, 55});
-    menu->addChild(bg);
+    menu->addChild(audioArgsInput);
 
     lbl = CCLabelBMFont::create("Video Args:", "bigFont.fnt");
     lbl->setAnchorPoint({0, 0.5});
@@ -212,26 +167,26 @@ bool RenderSettingsLayer::init() {
     lbl->setPosition({-105, 24});
     menu->addChild(lbl);
 
-    videoArgsInput = CCTextInputNode::create(150, 30, "video args", "chatFont.fnt");
-    videoArgsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    videoArgsInput->ignoreAnchorPointForPosition(true);
-    videoArgsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    videoArgsInput->setPosition({19, 22});
-    videoArgsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
-    videoArgsInput->setMouseEnabled(true);
-    videoArgsInput->setTouchEnabled(true);
-    videoArgsInput->setContentSize({180, 20});
-    videoArgsInput->setMaxLabelWidth(165.f);
-    videoArgsInput->setScale(0.75);
+    videoArgsInput = TextInput::create(165.f, "video args", "chatFont.fnt");
+    videoArgsInput->setPosition({41.f, 24.25f});
 #ifndef GEODE_IS_IOS
-    videoArgsInput->setString(
-        usingApi ? "" : mod->getSavedValue<std::string>("render_video_args").c_str());
+    videoArgsInput->setString(usingApi ? "" : mod->getSavedValue<std::string>("render_video_args"));
 #else
-    videoArgsInput->setString(mod->getSavedValue<std::string>("render_video_args").c_str());
+    videoArgsInput->setString(mod->getSavedValue<std::string>("render_video_args"));
 #endif
-    videoArgsInput->setAllowedChars(
-        " 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
     videoArgsInput->setDelegate(this);
+    videoArgsInput->setFilter(" 0123456789abcdefghijklmnopqrstuvwxyz-_:;.\"\\/[](){}+=<>|!*&'%@");
+    videoArgsInput->getInputNode()->setLabelPlaceholderColor(ccc3(163, 135, 121));
+    videoArgsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    videoArgsInput->getInputNode()->m_textLabel->setOpacity(150);
+    videoArgsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    videoArgsInput->setWidth(140.25f);
+    videoArgsInput->getBGSprite()->setContentHeight(39.f);
+#ifndef GEODE_IS_IOS
+    videoArgsInput->getBGSprite()->setOpacity(usingApi ? 40 : 75);
+#else
+    videoArgsInput->getBGSprite()->setOpacity(75);
+#endif
     menu->addChild(videoArgsInput);
 
     lbl = CCLabelBMFont::create("Render after completion:", "bigFont.fnt");
@@ -241,21 +196,19 @@ bool RenderSettingsLayer::init() {
     lbl->setScale(0.325);
     menu->addChild(lbl);
 
-    secondsInput = CCTextInputNode::create(150, 30, "sec", "chatFont.fnt");
-    secondsInput->m_textField->setAnchorPoint({0.5f, 0.5f});
-    secondsInput->ignoreAnchorPointForPosition(true);
-    secondsInput->m_textLabel->setAnchorPoint({0.5f, 0.5f});
-    secondsInput->setPosition(ccp(50, -8));
-    secondsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
-    secondsInput->setMouseEnabled(true);
-    secondsInput->setTouchEnabled(true);
-    secondsInput->setContentSize({120, 20});
-    secondsInput->setMaxLabelWidth(90.f);
-    secondsInput->setScale(0.75);
-    secondsInput->setString(mod->getSavedValue<std::string>("render_seconds_after").c_str());
+    secondsInput = TextInput::create(47.f, "sec", "chatFont.fnt");
+    secondsInput->setPosition(ccp(64.5f, -6.25f));
+    secondsInput->setString(mod->getSavedValue<std::string>("render_seconds_after"));
     secondsInput->setDelegate(this);
-    secondsInput->setMaxLabelLength(2);
-    secondsInput->setAllowedChars("0123456789.");
+    secondsInput->setFilter("0123456789.");
+    secondsInput->setMaxCharCount(2);
+    secondsInput->getInputNode()->setLabelPlaceholderColor(ccc3(163, 135, 121));
+    secondsInput->getInputNode()->m_textLabel->setAnchorPoint({0.5f, 0.5f});
+    secondsInput->getInputNode()->m_textLabel->setOpacity(150);
+    secondsInput->getInputNode()->m_textField->setAnchorPoint({0.5f, 0.5f});
+    secondsInput->setWidth(30.75f);
+    secondsInput->getBGSprite()->setContentHeight(41.25f);
+    secondsInput->getBGSprite()->setOpacity(75);
     menu->addChild(secondsInput);
 
     lbl = CCLabelBMFont::create("s", "chatFont.fnt");
@@ -403,12 +356,12 @@ bool RenderSettingsLayer::init() {
 
 #ifndef GEODE_IS_IOS
     if (usingApi) {
-        argsInput->m_textLabel->setOpacity(100);
-        audioArgsInput->m_textLabel->setOpacity(100);
-        videoArgsInput->m_textLabel->setOpacity(100);
-        argsInput->setID("disabled-input"_spr);
-        audioArgsInput->setID("disabled-input"_spr);
-        videoArgsInput->setID("disabled-input"_spr);
+        argsInput->setEnabled(false);
+        argsInput->getInputNode()->m_textLabel->setOpacity(100);
+        audioArgsInput->setEnabled(false);
+        audioArgsInput->getInputNode()->m_textLabel->setOpacity(100);
+        videoArgsInput->setEnabled(false);
+        videoArgsInput->getInputNode()->m_textLabel->setOpacity(100);
 
         extensionInput->setEnabled(false);
         extensionInput->getInputNode()->m_textLabel->setOpacity(100);

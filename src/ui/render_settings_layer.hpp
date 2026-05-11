@@ -11,10 +11,10 @@ class RenderSettingsLayer : public geode::Popup, public TextInputDelegate {
     TextInput *fadeOutInput = nullptr;
     TextInput *extensionInput = nullptr;
 
-    CCTextInputNode *argsInput = nullptr;
-    CCTextInputNode *audioArgsInput = nullptr;
-    CCTextInputNode *secondsInput = nullptr;
-    CCTextInputNode *videoArgsInput = nullptr;
+    TextInput *argsInput = nullptr;
+    TextInput *audioArgsInput = nullptr;
+    TextInput *secondsInput = nullptr;
+    TextInput *videoArgsInput = nullptr;
 
     Mod *mod = nullptr;
 
@@ -22,9 +22,24 @@ class RenderSettingsLayer : public geode::Popup, public TextInputDelegate {
     bool init() override;
 
   public:
-    ~RenderSettingsLayer() override{
-        DESELECT_INPUT(argsInput) DESELECT_INPUT(audioArgsInput)
-            DESELECT_INPUT(secondsInput) DESELECT_INPUT(videoArgsInput)}
+    ~RenderSettingsLayer() override {
+        if (argsInput) {
+            argsInput->defocus();
+            argsInput->setDelegate(nullptr);
+        }
+        if (audioArgsInput) {
+            audioArgsInput->defocus();
+            audioArgsInput->setDelegate(nullptr);
+        }
+        if (secondsInput) {
+            secondsInput->defocus();
+            secondsInput->setDelegate(nullptr);
+        }
+        if (videoArgsInput) {
+            videoArgsInput->defocus();
+            videoArgsInput->setDelegate(nullptr);
+        }
+    }
 
     STATIC_CREATE(RenderSettingsLayer)
 

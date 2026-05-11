@@ -42,15 +42,15 @@ class RecordLayer : public geode::Popup, public TextInputDelegate {
     CCMenuItemSpriteExtra *FPSLeft = nullptr;
     CCMenuItemSpriteExtra *FPSRight = nullptr;
 
-    CCTextInputNode *widthInput = nullptr;
-    CCTextInputNode *heightInput = nullptr;
-    CCTextInputNode *bitrateInput = nullptr;
-    CCTextInputNode *fpsInput = nullptr;
-    CCTextInputNode *codecInput = nullptr;
-    CCTextInputNode *seedInput = nullptr;
-    CCTextInputNode *speedhackInput = nullptr;
-    CCTextInputNode *respawnInput = nullptr;
-    CCTextInputNode *tpsInput = nullptr;
+    TextInput *widthInput = nullptr;
+    TextInput *heightInput = nullptr;
+    TextInput *bitrateInput = nullptr;
+    TextInput *fpsInput = nullptr;
+    TextInput *codecInput = nullptr;
+    TextInput *seedInput = nullptr;
+    TextInput *speedhackInput = nullptr;
+    TextInput *respawnInput = nullptr;
+    TextInput *tpsInput = nullptr;
 
     std::vector<CCNode *> nodes;
     std::vector<CCSprite *> dots;
@@ -65,15 +65,42 @@ class RecordLayer : public geode::Popup, public TextInputDelegate {
     bool init() override;
 
     ~RecordLayer() override {
-        DESELECT_INPUT(widthInput)
-        DESELECT_INPUT(heightInput)
-        DESELECT_INPUT(bitrateInput)
-        DESELECT_INPUT(fpsInput)
-        DESELECT_INPUT(codecInput)
-        DESELECT_INPUT(seedInput)
-        DESELECT_INPUT(speedhackInput)
-        DESELECT_INPUT(respawnInput)
-        DESELECT_INPUT(tpsInput)
+        if (widthInput) {
+            widthInput->defocus();
+            widthInput->setDelegate(nullptr);
+        }
+        if (heightInput) {
+            heightInput->defocus();
+            heightInput->setDelegate(nullptr);
+        }
+        if (bitrateInput) {
+            bitrateInput->defocus();
+            bitrateInput->setDelegate(nullptr);
+        }
+        if (fpsInput) {
+            fpsInput->defocus();
+            fpsInput->setDelegate(nullptr);
+        }
+        if (codecInput) {
+            codecInput->defocus();
+            codecInput->setDelegate(nullptr);
+        }
+        if (seedInput) {
+            seedInput->defocus();
+            seedInput->setDelegate(nullptr);
+        }
+        if (speedhackInput) {
+            speedhackInput->defocus();
+            speedhackInput->setDelegate(nullptr);
+        }
+        if (respawnInput) {
+            respawnInput->defocus();
+            respawnInput->setDelegate(nullptr);
+        }
+        if (tpsInput) {
+            tpsInput->defocus();
+            tpsInput->setDelegate(nullptr);
+        }
         cocos2d::CCTouchDispatcher::get()->unregisterForcePrio(this);
         Global::get().layer = nullptr;
     }
@@ -139,6 +166,4 @@ class RecordLayer : public geode::Popup, public TextInputDelegate {
     void onDiscord(CCObject *);
 
     void updateTPS();
-
-    void showKeybindsWarning();
 };

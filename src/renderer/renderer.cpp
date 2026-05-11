@@ -180,6 +180,14 @@ class $modify(RendererPlayLayerHook, PlayLayer) {
 };
 
 bool Renderer::shouldUseAPI() {
+#ifdef GEODE_IS_WINDOWS
+    std::filesystem::path ffmpegSettingPath =
+        Mod::get()->getSettingValue<std::filesystem::path>("ffmpeg_path");
+    bool foundExe = std::filesystem::exists(ffmpegSettingPath) &&
+        geode::utils::string::pathToString(ffmpegSettingPath.filename()) == "ffmpeg.exe";
+    if (foundExe)
+        return false;
+#endif
     return Loader::get()->isModLoaded("eclipse.ffmpeg-api");
 }
 
