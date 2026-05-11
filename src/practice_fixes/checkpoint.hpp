@@ -421,8 +421,7 @@ struct SupplementalPlayerState {
         p->m_lastLandTime                   = m_lastLandTime;
         p->m_isAccelerating                 = m_isAccelerating;
         p->m_affectedByForces               = m_affectedByForces;
-        if (p->m_isBall || p->m_isSpider)
-            p->m_jumpBuffered                   = m_jumpBuffered;
+        p->m_jumpBuffered                   = m_jumpBuffered;
         p->m_rotationSpeed                  = m_rotationSpeed;
         p->m_isBallRotating                 = m_isBallRotating;
         p->m_isBallRotating2                = m_isBallRotating2;

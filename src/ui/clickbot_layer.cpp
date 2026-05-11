@@ -463,12 +463,11 @@ bool ClickSettingsLayer::init(std::string button, geode::Popup *layer) {
     menu->addChild(pitchLabel);
 
     disableToggle = CCMenuItemExt::createTogglerWithStandardSprites(
-        1.f, [this](CCMenuItemToggler *toggle) {
+        0.7f, [this](CCMenuItemToggler *toggle) {
             settings.disabled = !toggle->isToggled();
 
             saveSettings();
         });
-    disableToggle->setScale(0.7f);
     disableToggle->setPosition(ccp(76, -9));
     disableToggle->toggle(settings.disabled);
     menu->addChild(disableToggle);

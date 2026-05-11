@@ -688,16 +688,14 @@ bool RecordLayer::init() {
     bg->setContentSize({313, 339});
     menu->addChild(bg);
 
-    recording = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleRecording(sender); });
+    recording = CCMenuItemExt::createTogglerWithStandardSprites(0.775f, [this](CCMenuItemToggler *sender) { RecordLayer::toggleRecording(sender); });
     recording->toggle(g.state == state::recording);
 
-    playing = CCMenuItemExt::createTogglerWithStandardSprites(0.555f, [this](CCMenuItemToggler *sender) { RecordLayer::togglePlaying(sender); });
+    playing = CCMenuItemExt::createTogglerWithStandardSprites(0.775f, [this](CCMenuItemToggler *sender) { RecordLayer::togglePlaying(sender); });
     playing->toggle(g.state == state::playing);
 
     recording->setPosition(ccp(-161.5, 78));
-    recording->setScale(0.775);
     playing->setPosition(ccp(-74.5, 78));
-    playing->setScale(0.775);
 
     menu->addChild(recording);
     menu->addChild(playing);
@@ -1059,7 +1057,6 @@ void RecordLayer::loadSetting(RecordSetting sett, float yPos) {
 
     CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(toggleScale, [this](CCMenuItemToggler *sender) { RecordLayer::toggleSetting(sender); });
     toggle->setPosition(ccp(175, yPos));
-    toggle->setScale(toggleScale);
     toggle->toggle(mod->getSavedValue<bool>(sett.id));
     toggle->setID(sett.id.c_str());
 
@@ -1078,7 +1075,7 @@ void RecordLayer::loadSetting(RecordSetting sett, float yPos) {
         spr->setOpacity(215);
 
         CCMenuItemSpriteExtra *btn =
-            CCMenuItemExt::createSpriteExtra(spr, [this](CCMenuItemSpriteExtra* sender) { sett.callback });
+            CCMenuItemExt::createSpriteExtra(spr, [this, sett](CCMenuItemSpriteExtra* sender) { sett.callback; });
         btn->setPosition(ccp(138, yPos));
 
         nodes.push_back(static_cast<CCNode *>(btn));

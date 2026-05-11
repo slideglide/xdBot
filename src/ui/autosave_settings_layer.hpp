@@ -70,21 +70,18 @@ class AutoSaveLayer : public geode::Popup, public TextInputDelegate {
 
         intervalToggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6f, [this](CCMenuItemToggler *sender) { AutoSaveLayer::onToggle(sender); });
         intervalToggle->setPosition({35, 130});
-        intervalToggle->setScale(0.6f);
         intervalToggle->toggle(
             Mod::get()->getSavedValue<bool>("autosave_interval_enabled"));
         m_buttonMenu->addChild(intervalToggle);
 
         checkpointToggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6f, [this](CCMenuItemToggler *sender) { AutoSaveLayer::onToggle(sender); });
         checkpointToggle->setPosition({35, 94});
-        checkpointToggle->setScale(0.6f);
         checkpointToggle->toggle(
             Mod::get()->getSavedValue<bool>("autosave_checkpoint_enabled"));
         m_buttonMenu->addChild(checkpointToggle);
 
         levelEndToggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6f, [this](CCMenuItemToggler *sender) { AutoSaveLayer::onToggle(sender); });
         levelEndToggle->setPosition({35, 57});
-        levelEndToggle->setScale(0.6f);
         levelEndToggle->toggle(
             Mod::get()->getSavedValue<bool>("autosave_levelend_enabled"));
         m_buttonMenu->addChild(levelEndToggle);

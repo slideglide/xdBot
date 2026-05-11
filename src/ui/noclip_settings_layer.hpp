@@ -20,11 +20,6 @@ class NoclipSettingsLayer : public geode::Popup {
         CCMenu *menu = CCMenu::create();
         m_mainLayer->addChild(menu);
 
-        CCSprite *spriteOn =
-            CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
-        CCSprite *spriteOff =
-            CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
-
         CCLabelBMFont *lbl = CCLabelBMFont::create("Player 1", "bigFont.fnt");
         lbl->setPosition({17, 21});
         lbl->setScale(0.5f);
@@ -32,7 +27,6 @@ class NoclipSettingsLayer : public geode::Popup {
 
         CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.875f, [this](CCMenuItemToggler *sender) { NoclipSettingsLayer::onToggle(sender); });
         toggle->setPosition({-47, 21});
-        toggle->setScale(0.875f);
         toggle->setID("p1");
         toggle->toggle(Mod::get()->getSavedValue<bool>("macro_noclip_p1"));
         menu->addChild(toggle);
@@ -44,7 +38,6 @@ class NoclipSettingsLayer : public geode::Popup {
 
         toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.875f, [this](CCMenuItemToggler *sender) { NoclipSettingsLayer::onToggle(sender); });
         toggle->setPosition({-47, -35});
-        toggle->setScale(0.875f);
         toggle->setID("p2");
         toggle->toggle(Mod::get()->getSavedValue<bool>("macro_noclip_p2"));
         menu->addChild(toggle);

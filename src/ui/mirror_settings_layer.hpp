@@ -28,7 +28,6 @@ class MirrorSettingsLayer : public geode::Popup {
 
         CCMenuItemToggler *toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.875f, [this](CCMenuItemToggler *sender) { static_cast<RecordLayer*>(Global::get().layer)->toggleSetting(sender); });
         toggle->setPosition({-47, -0});
-        toggle->setScale(0.875f);
         toggle->toggle(
             Mod::get()->getSavedValue<bool>("p2_input_mirror_inverted"));
         toggle->setID("p2_input_mirror_inverted");
