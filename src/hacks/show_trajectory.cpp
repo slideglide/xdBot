@@ -9,6 +9,8 @@
 #include <Geode/modify/HardStreak.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 
+#include "../physics/trajectory_physics.hpp"
+
 ShowTrajectory& t = ShowTrajectory::get();
 
 $execute {
@@ -25,6 +27,93 @@ void ShowTrajectory::trajectoryOff() {
         t.trajectoryNode()->clear();
         t.trajectoryNode()->setVisible(false);
     }
+}
+
+bool ShowTrajectory::isFakePlayer(PlayerObject* player) {
+    return player && (player == t.fakePlayer1 || player == t.fakePlayer2);
+}
+
+bool ShowTrajectory::hasActivated(PlayerObject* player, EnhancedGameObject* object) {
+    if (!player || !object || object->m_isMultiActivate)
+        return false;
+
+    if (player == t.fakePlayer1)
+        return t.activatedObjectsP1[reinterpret_cast<uintptr_t>(object)];
+    if (player == t.fakePlayer2)
+        return t.activatedObjectsP2[reinterpret_cast<uintptr_t>(object)];
+
+    return false;
+}
+
+bool ShowTrajectory::realPlayerHasActivated(PlayerObject* player, EnhancedGameObject* object) {
+    if (!player || !object)
+        return false;
+
+    PlayerObject* realPlayer = player;
+    auto* pl = PlayLayer::get();
+    if (pl && player == t.fakePlayer1)
+        realPlayer = pl->m_player1;
+    else if (pl && player == t.fakePlayer2)
+        realPlayer = pl->m_player2;
+
+    if (!realPlayer)
+        return false;
+
+    if (!realPlayer->m_isSecondPlayer)
+        return object->m_activatedByPlayer1;
+
+    return object->m_activatedByPlayer2;
+}
+
+void ShowTrajectory::rememberActivated(PlayerObject* player, EnhancedGameObject* object) {
+    if (!player || !object)
+        return;
+
+    if (player == t.fakePlayer1)
+        t.activatedObjectsP1[reinterpret_cast<uintptr_t>(object)] = true;
+    else if (player == t.fakePlayer2)
+        t.activatedObjectsP2[reinterpret_cast<uintptr_t>(object)] = true;
+}
+
+void ShowTrajectory::snapshotObject(EffectGameObject* object) {
+    if (!object)
+        return;
+
+    for (auto const& snapshot : t.objSnapshot) {
+        if (snapshot.obj == object)
+            return;
+    }
+
+    auto* ring = typeinfo_cast<RingObject*>(object);
+    t.objSnapshot.push_back({
+        object,
+        ring,
+        object->m_isActivated,
+        object->m_activatedByPlayer1,
+        object->m_activatedByPlayer2,
+        ring ? ring->m_claimTouch : false,
+        object->m_isDisabled,
+        object->m_isDisabled2,
+    });
+}
+
+void ShowTrajectory::restoreSnapshots() {
+    for (auto const& snapshot : t.objSnapshot) {
+        if (!snapshot.obj)
+            continue;
+
+        snapshot.obj->m_isActivated = snapshot.isActivated;
+        snapshot.obj->m_activatedByPlayer1 = snapshot.activatedByP1;
+        snapshot.obj->m_activatedByPlayer2 = snapshot.activatedByP2;
+        snapshot.obj->m_isDisabled = snapshot.isDisabled;
+        snapshot.obj->m_isDisabled2 = snapshot.isDisabled2;
+
+        if (snapshot.ring) {
+            snapshot.ring->m_claimTouch = snapshot.claimTouch;
+        }
+    }
+
+    t.objSnapshot.clear();
 }
 
 void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
@@ -69,8 +158,18 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
     bool player2 = pl->m_player2 == realPlayer;
 
     PlayerPracticeFixes::transfer(realPlayer, fakePlayer, true);
+    fakePlayer->m_maybeReducedEffects = true;
+    fakePlayer->setVisible(false);
 
     t.cancelTrajectory = false;
+    t.activatedObjectsP1.clear();
+    t.activatedObjectsP2.clear();
+    t.objSnapshot.clear();
+
+    auto gameState = pl->m_gameState;
+    EffectManagerState effectState;
+    if (pl->m_effectManager)
+        pl->m_effectManager->saveToState(effectState);
 
     for (int i = 0; i < t.length; i++) {
         CCPoint prevPos = fakePlayer->getPosition();
@@ -87,23 +186,32 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
         fakePlayer->m_collisionLogLeft->removeAllObjects();
         fakePlayer->m_collisionLogRight->removeAllObjects();
 
-        pl->checkCollisions(fakePlayer, t.delta, false);
-
-        if (t.cancelTrajectory) {
-            fakePlayer->updatePlayerScale();
-            drawPlayerHitbox(fakePlayer, t.trajectoryNode());
-            break;
-        }
-
         if (i == 0) {
             hold ? fakePlayer->pushButton(static_cast<PlayerButton>(1)) : fakePlayer->releaseButton(static_cast<PlayerButton>(1));
             if (pl->m_levelSettings->m_platformerMode)
                 (inverted ? !realPlayer->m_isGoingLeft : realPlayer->m_isGoingLeft) ? fakePlayer->pushButton(static_cast<PlayerButton>(2)) : fakePlayer->pushButton(static_cast<PlayerButton>(3));
         }
 
+        float physicsDt = (1.f / std::max(Global::getTPS(), 1.f)) * 60.f;
+        float timeWarp = std::min(pl->m_gameState.m_timeWarp, 1.f);
+        if (timeWarp <= 0.f)
+            timeWarp = 1.f;
+        t.delta = physicsDt * timeWarp;
+
+        pl->m_gameState.m_totalTime += 1.0 / std::max(Global::getTPS(), 1.f);
+        pl->m_gameState.m_currentProgress++;
+        fakePlayer->m_totalTime += 1.0 / std::max(Global::getTPS(), 1.f);
+
+        fakePlayer->m_playEffects = false;
         fakePlayer->update(t.delta);
         fakePlayer->updateRotation(t.delta);
         fakePlayer->updatePlayerScale();
+
+        if (pl->checkCollisions(fakePlayer, t.delta, false) == 1)
+            t.cancelTrajectory = true;
+
+        if (pl->m_effectManager)
+            pl->m_effectManager->postCollisionCheck();
 
         cocos2d::ccColor4F color = hold ? t.color1 : t.color2;
 
@@ -116,7 +224,21 @@ void ShowTrajectory::createTrajectory(PlayLayer* pl, PlayerObject* fakePlayer, P
             color.a = (t.length - i) / 40.f;
 
         t.trajectoryNode()->drawSegment(prevPos, fakePlayer->getPosition(), 0.6f, color);
+
+        if (t.cancelTrajectory) {
+            fakePlayer->updatePlayerScale();
+            drawPlayerHitbox(fakePlayer, t.trajectoryNode());
+            break;
+        }
     }
+
+    restoreSnapshots();
+    t.activatedObjectsP1.clear();
+    t.activatedObjectsP2.clear();
+    pl->m_gameState = gameState;
+    if (pl->m_effectManager)
+        pl->m_effectManager->loadFromState(effectState);
+    fakePlayer->setVisible(false);
 
 }
 
@@ -251,6 +373,11 @@ class $modify(PlayLayer) {
 
     }
 
+    void playGravityEffect(bool flip) {
+        if (!t.creatingTrajectory)
+            PlayLayer::playGravityEffect(flip);
+    }
+
     void setupHasCompleted() {
         PlayLayer::setupHasCompleted();
 
@@ -320,14 +447,26 @@ class $modify(PauseLayer) {
 class $modify(GJBaseGameLayer) {
 
     void collisionCheckObjects(PlayerObject * p0, gd::vector<GameObject*>*objects, int p2, float p3) {
-        if (t.creatingTrajectory) {
+        if (t.creatingTrajectory && ShowTrajectory::isFakePlayer(p0)) {
             std::vector<GameObject*> disabledObjects;
 
             for (const auto& obj : *objects) {
                 if (!obj) continue;
 
+                if (auto* effect = typeinfo_cast<EffectGameObject*>(obj)) {
+                    if (ShowTrajectory::hasActivated(p0, effect) ||
+                        ShowTrajectory::realPlayerHasActivated(p0, effect)) {
+                        if (effect->m_isDisabled || effect->m_isDisabled2) continue;
+
+                        disabledObjects.push_back(effect);
+                        effect->m_isDisabled = true;
+                        effect->m_isDisabled2 = true;
+                        continue;
+                    }
+                }
+
                 if ((!objectTypes.contains(static_cast<int>(obj->m_objectType)) && !portalIDs.contains(obj->m_objectID)) || collectibleIDs.contains(obj->m_objectID)) {
-                    if (obj->m_isDisabled || obj->m_isDisabled2) continue;  
+                    if (obj->m_isDisabled || obj->m_isDisabled2) continue;
 
                     disabledObjects.push_back(obj);
                     obj->m_isDisabled = true;
@@ -353,26 +492,39 @@ class $modify(GJBaseGameLayer) {
     }
 
     bool canBeActivatedByPlayer(PlayerObject * p0, EffectGameObject * p1) {
-        if (t.creatingTrajectory) {
+        if (t.creatingTrajectory && ShowTrajectory::isFakePlayer(p0)) {
+            if (ShowTrajectory::hasActivated(p0, p1) ||
+                ShowTrajectory::realPlayerHasActivated(p0, p1))
+                return false;
 
-            ShowTrajectory::handlePortal(p0, p1->m_objectID);
+            ShowTrajectory::snapshotObject(p1);
 
-            return false;
+            bool ret = GJBaseGameLayer::canBeActivatedByPlayer(p0, p1);
+            if (ret)
+                ShowTrajectory::rememberActivated(p0, p1);
+
+            return ret;
         }
 
         return GJBaseGameLayer::canBeActivatedByPlayer(p0, p1);
     }
 
     void playerTouchedRing(PlayerObject * p0, RingObject * p1) {
-        if (!t.creatingTrajectory)
+        if (t.creatingTrajectory && ShowTrajectory::isFakePlayer(p0)) {
+            ShowTrajectory::snapshotObject(p1);
+            ShowTrajectory::rememberActivated(p0, p1);
+            xdbot::trajectory_physics::ringJump(p0, p1);
+        } else if (!t.creatingTrajectory)
             GJBaseGameLayer::playerTouchedRing(p0, p1);
     }
 
     void playerTouchedTrigger(PlayerObject * p0, EffectGameObject * p1) {
-        if (!t.creatingTrajectory)
+        if (t.creatingTrajectory && ShowTrajectory::isFakePlayer(p0)) {
+            ShowTrajectory::snapshotObject(p1);
+            ShowTrajectory::rememberActivated(p0, p1);
             GJBaseGameLayer::playerTouchedTrigger(p0, p1);
-        else
-            ShowTrajectory::handlePortal(p0, p1->m_objectID);
+        } else if (!t.creatingTrajectory)
+            GJBaseGameLayer::playerTouchedTrigger(p0, p1);
     }
 
     void activateSFXTrigger(SFXTriggerGameObject * p0) {
@@ -395,6 +547,22 @@ class $modify(GJBaseGameLayer) {
             GJBaseGameLayer::gameEventTriggered(p0, p1, p2);
     }
 
+    void teleportPlayer(TeleportPortalObject* object, PlayerObject* player) {
+        if (ShowTrajectory::isFakePlayer(player)) {
+            xdbot::trajectory_physics::teleportPlayer(this, object, player);
+        } else {
+            GJBaseGameLayer::teleportPlayer(object, player);
+        }
+    }
+
+    void flipGravity(PlayerObject* player, bool flip, bool noEffects) {
+        if (ShowTrajectory::isFakePlayer(player)) {
+            xdbot::trajectory_physics::flipGravity(player, flip);
+        } else {
+            GJBaseGameLayer::flipGravity(player, flip, noEffects);
+        }
+    }
+
 };
 
 class $modify(PlayerObject) {
@@ -410,13 +578,65 @@ class $modify(PlayerObject) {
     }
 
     void incrementJumps() {
+        if (ShowTrajectory::isFakePlayer(this))
+            return;
         if (!t.creatingTrajectory)
             PlayerObject::incrementJumps();
     }
 
     void ringJump(RingObject * p0, bool p1) {
-        if (!t.creatingTrajectory)
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::ringJump(this, p0);
+        } else if (!t.creatingTrajectory)
             PlayerObject::ringJump(p0, p1);
+    }
+
+    void bumpPlayer(float force, int objectType, bool noEffects, GameObject* object) {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::bumpPlayer(this, force, objectType, noEffects, object);
+        } else {
+            PlayerObject::bumpPlayer(force, objectType, noEffects, object);
+        }
+    }
+
+    void propellPlayer(float force, bool noEffects, int objectType) {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::propellPlayer(this, force, noEffects, objectType);
+        } else {
+            PlayerObject::propellPlayer(force, noEffects, objectType);
+        }
+    }
+
+    void startDashing(DashRingObject* object) {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::startDashing(this, object);
+        } else {
+            PlayerObject::startDashing(object);
+        }
+    }
+
+    void togglePlayerScale(bool enable, bool noEffects) {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::togglePlayerScale(this, enable);
+        } else {
+            PlayerObject::togglePlayerScale(enable, noEffects);
+        }
+    }
+
+    void flipGravity(bool flip, bool noEffects) {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::flipGravity(this, flip);
+        } else {
+            PlayerObject::flipGravity(flip, noEffects);
+        }
+    }
+
+    void stopDashing() {
+        if (ShowTrajectory::isFakePlayer(this)) {
+            xdbot::trajectory_physics::stopDashing(this);
+        } else {
+            PlayerObject::stopDashing();
+        }
     }
 
 };

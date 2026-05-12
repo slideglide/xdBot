@@ -90,6 +90,18 @@ public:
 
     static void handlePortal(PlayerObject* player, int id);
 
+    static bool isFakePlayer(PlayerObject* player);
+
+    static bool hasActivated(PlayerObject* player, EnhancedGameObject* object);
+
+    static bool realPlayerHasActivated(PlayerObject* player, EnhancedGameObject* object);
+
+    static void rememberActivated(PlayerObject* player, EnhancedGameObject* object);
+
+    static void snapshotObject(EffectGameObject* object);
+
+    static void restoreSnapshots();
+
     static cocos2d::ccColor3B ccc3BFromccc4F(cocos2d::ccColor4F color) {
         return ccc3((int)(color.r * 255), (int)(color.g * 255), (int)(color.b * 255));
     }
@@ -105,13 +117,16 @@ public:
         EffectGameObject* obj;
         RingObject*       ring;
         bool isActivated;
-        bool activated;
         bool activatedByP1;
         bool activatedByP2;
         bool claimTouch;
+        bool isDisabled;
+        bool isDisabled2;
     };
 
     std::vector<ObjSnapshot> objSnapshot;
+    std::unordered_map<uintptr_t, bool> activatedObjectsP1;
+    std::unordered_map<uintptr_t, bool> activatedObjectsP2;
 
     float deathRotation = 0.f;
     float delta = 0.25f;
