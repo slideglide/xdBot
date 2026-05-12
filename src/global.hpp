@@ -145,7 +145,9 @@ class Global {
 
     int m_frameCount = 0;
     double schedulerOverflow = 0.0;
+    int schedulerStepCount = 1;
     bool schedulerUpdating = false;
+    std::vector<input> postUpdateInputs;
 
     size_t currentAction = 0;
     size_t currentFrameFix = 0;

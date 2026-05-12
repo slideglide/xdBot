@@ -92,8 +92,40 @@ class $modify(CCScheduler) {
 
         g.schedulerOverflow -= static_cast<double>(steps) * timestep;
         g.schedulerUpdating = true;
-        for (int i = 0; i < steps; i++) {
-            CCScheduler::update(static_cast<float>(timestep));
+
+        auto runUpdate = [&](int stepCount, double delta) {
+            if (stepCount <= 0)
+                return;
+            g.schedulerStepCount = stepCount;
+            CCScheduler::update(static_cast<float>(delta));
+            g.schedulerStepCount = 1;
+        };
+
+        if (g.lockDelta) {
+            while (steps > 0) {
+                int currentFrame = Global::getCurrentFrame();
+                int nextFrame = -1;
+
+                if (g.state == state::playing && g.currentAction < g.macro.inputs.size())
+                    nextFrame = static_cast<int>(g.macro.inputs[g.currentAction].frame);
+
+                if ((g.frameFixes || g.inputFixes) && g.currentFrameFix < g.macro.frameFixes.size()) {
+                    int nextFixFrame = g.macro.frameFixes[g.currentFrameFix].frame;
+                    nextFrame = nextFrame == -1 ? nextFixFrame : std::min(nextFrame, nextFixFrame);
+                }
+
+                int stepCount = steps;
+                if (nextFrame != -1) {
+                    int untilNext = nextFrame - currentFrame;
+                    stepCount = std::clamp(untilNext, 1, steps);
+                }
+
+                runUpdate(stepCount, timestep * static_cast<double>(stepCount));
+                steps -= stepCount;
+            }
+        } else {
+            for (int i = 0; i < steps; i++)
+                runUpdate(1, timestep);
         }
         g.schedulerUpdating = false;
     }

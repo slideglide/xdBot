@@ -242,9 +242,8 @@ class $modify(FrameCounterGJBaseGameLayer, GJBaseGameLayer) {
 
         GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
 
-        if (isPlaying) {
-            g.m_frameCount++;
-        }
+        if (isPlaying)
+            g.m_frameCount += std::max(g.schedulerStepCount, 1);
     }
 };
 

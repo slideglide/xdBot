@@ -24,7 +24,10 @@ $execute {
     geode::listenForSettingChanges<bool>(
         "lock_delta",
         +[](bool value) {
-            Global::get().lockDelta = value;
+            auto& g = Global::get();
+            g.lockDelta = value;
+            g.schedulerOverflow = 0.0;
+            g.schedulerStepCount = 1;
         },
         Mod::get());
 
@@ -45,6 +48,14 @@ class $modify(PlayLayer) {
     void postUpdate(float dt) {
         PlayLayer::postUpdate(dt);
         auto& g = Global::get();
+        if (!g.postUpdateInputs.empty()) {
+            auto inputs = std::move(g.postUpdateInputs);
+            g.postUpdateInputs.clear();
+            for (auto const& input : inputs) {
+                GJBaseGameLayer::handleButton(input.down, input.button, input.player2);
+            }
+        }
+
         if (m_fields->delayedLevelRestart != -1 &&
             m_fields->delayedLevelRestart <= Global::getCurrentFrame()) {
             m_fields->delayedLevelRestart = -1;
@@ -57,6 +68,7 @@ class $modify(PlayLayer) {
             Global::get().speedhackEnabled)
             Global::toggleSpeedhack();
         Global::get().m_frameCount = 0;
+        Global::get().postUpdateInputs.clear();
         PlayLayer::onQuit();
     }
 
@@ -109,6 +121,7 @@ class $modify(PlayLayer) {
 
         g.currentAction = 0;
         g.currentFrameFix = 0;
+        g.postUpdateInputs.clear();
         g.restart = false;
         g.respawnFrame = frame;
 
@@ -209,12 +222,30 @@ class $modify(BGLHook, GJBaseGameLayer) {
 
         m_fields->macroInput = true;
 
+        bool hasQueuedState[2][4] = {};
+        bool queuedState[2][4] = {};
+
         while (g.currentAction < g.macro.inputs.size() &&
                frame >= g.macro.inputs[g.currentAction].frame) {
             auto input = g.macro.inputs[g.currentAction];
             if (frame != g.respawnFrame) {
                 if (Macro::flipControls())
                     input.player2 = !input.player2;
+
+                int playerIndex = input.player2 ? 1 : 0;
+                if (input.button < 4 && hasQueuedState[playerIndex][input.button] &&
+                    queuedState[playerIndex][input.button] != input.down) {
+                    g.postUpdateInputs.push_back(input);
+                    g.currentAction++;
+                    g.safeMode = true;
+                    continue;
+                }
+
+                if (input.button < 4) {
+                    hasQueuedState[playerIndex][input.button] = true;
+                    queuedState[playerIndex][input.button] = input.down;
+                }
+
                 m_fields->queuedMacroInputs++;
                 queueButton(input.button, input.down, input.player2, 0.0);
             }
