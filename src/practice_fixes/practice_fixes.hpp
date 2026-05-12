@@ -22,6 +22,12 @@ class PracticeFix {
 
         return g.alwaysPracticeFixes || g.state == state::recording || g.state == state::playing;
     }
+
+    static void clearStoredFrames();
+    static void saveFrameStepperFrame();
+    static bool backstepFrame(int frames = 1);
+    static bool isLoadingFrameStepperBackstep();
+    static bool applyFrameStepperBackstep(CheckpointObject* checkpoint);
 };
 
 class PlayerPracticeFixes {

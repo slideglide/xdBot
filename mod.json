@@ -151,6 +151,13 @@
 			"category": "gameplay",
 			"migrate-from": "zilko.xdbot/step_frame"
 		},
+		"backstep_frame_keybind": {
+			"name": "Backstep Frame Keybind",
+			"description": "The keybind to go back a frame when the frame stepper is enabled.",
+			"type": "keybind",
+			"default": "Shift+V",
+			"category": "gameplay"
+		},
 		"show_trajectory_keybind": {
 			"name": "Show Trajectory Keybind",
 			"description": "The keybind to toggle the trajectory while recording a macro.",

@@ -1,6 +1,7 @@
 #include "../includes.hpp"
 #include "../ui/record_layer.hpp"
 #include "../global.hpp"
+#include "../practice_fixes/practice_fixes.hpp"
 
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
@@ -23,7 +24,8 @@ class $modify(CCScheduler) {
         if (g.state == state::playing && !g.tpsEnabled && g.macro.framerate != 240.f)
             g.setTpsEnabled(true);
 
-        if (g.state == state::none && !g.speedhackEnabled && !g.tpsEnabled) {
+        if (g.state == state::none && !g.speedhackEnabled && !g.tpsEnabled && !g.lockDelta &&
+            !g.frameStepper) {
             if (g.currentPitch != 1.f)
                 Global::updatePitch(1.f);
 
@@ -74,7 +76,8 @@ class $modify(CCScheduler) {
             g.safeMode = true;
 
         auto* pl = PlayLayer::get();
-        if (!pl || pl->m_isPaused || g.frameStepper) {
+        if (!pl || pl->m_isPaused) {
+            g.schedulerOverflow = 0.0;
             return CCScheduler::update(dt * speedhack);
         }
 
@@ -83,6 +86,41 @@ class $modify(CCScheduler) {
         timestep *= timeWarp;
         if (timestep <= 0.0)
             timestep = 1.0 / static_cast<double>(Global::getTPS());
+
+        if (g.frameStepper) {
+            if (pl->m_player1 && pl->m_player1->m_isDead) {
+                if (g.mod->getSavedValue<bool>("macro_instant_respawn"))
+                    pl->resetLevel();
+                return;
+            }
+
+            g.safeMode = true;
+            if (!g.stepFrame) {
+                g.schedulerUpdating = true;
+                g.schedulerFrozenUpdate = true;
+                g.schedulerStepCount = 1;
+                CCScheduler::update(0.0f);
+                g.schedulerStepCount = 1;
+                g.schedulerFrozenUpdate = false;
+                g.schedulerUpdating = false;
+                return;
+            }
+
+            g.stepFrame = false;
+            g.schedulerOverflow = 0.0;
+            g.schedulerUpdating = true;
+            g.schedulerStepCount = 1;
+            CCScheduler::update(static_cast<float>(timestep));
+            g.schedulerStepCount = 1;
+            g.schedulerUpdating = false;
+            PracticeFix::saveFrameStepperFrame();
+            return;
+        }
+
+        if (!g.lockDelta) {
+            g.schedulerOverflow = 0.0;
+            return CCScheduler::update(dt * speedhack);
+        }
 
         g.schedulerOverflow += static_cast<double>(dt) * speedhack;
         int steps = static_cast<int>(std::floor(g.schedulerOverflow / timestep));
@@ -101,32 +139,9 @@ class $modify(CCScheduler) {
             g.schedulerStepCount = 1;
         };
 
-        if (g.lockDelta) {
-            while (steps > 0) {
-                int currentFrame = Global::getCurrentFrame();
-                int nextFrame = -1;
+        for (int i = 0; i < steps; i++)
+            runUpdate(1, timestep);
 
-                if (g.state == state::playing && g.currentAction < g.macro.inputs.size())
-                    nextFrame = static_cast<int>(g.macro.inputs[g.currentAction].frame);
-
-                if ((g.frameFixes || g.inputFixes) && g.currentFrameFix < g.macro.frameFixes.size()) {
-                    int nextFixFrame = g.macro.frameFixes[g.currentFrameFix].frame;
-                    nextFrame = nextFrame == -1 ? nextFixFrame : std::min(nextFrame, nextFixFrame);
-                }
-
-                int stepCount = steps;
-                if (nextFrame != -1) {
-                    int untilNext = nextFrame - currentFrame;
-                    stepCount = std::clamp(untilNext, 1, steps);
-                }
-
-                runUpdate(stepCount, timestep * static_cast<double>(stepCount));
-                steps -= stepCount;
-            }
-        } else {
-            for (int i = 0; i < steps; i++)
-                runUpdate(1, timestep);
-        }
         g.schedulerUpdating = false;
     }
 

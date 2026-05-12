@@ -1,4 +1,5 @@
 #include "global.hpp"
+#include "practice_fixes/practice_fixes.hpp"
 #include "ui/game_ui.hpp"
 #include "ui/record_layer.hpp"
 
@@ -242,7 +243,7 @@ class $modify(FrameCounterGJBaseGameLayer, GJBaseGameLayer) {
 
         GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
 
-        if (isPlaying)
+        if (isPlaying && !g.schedulerFrozenUpdate)
             g.m_frameCount += std::max(g.schedulerStepCount, 1);
     }
 };
@@ -305,8 +306,26 @@ void Global::frameStep() {
     if (!PlayLayer::get() || !g.frameStepper)
         return;
 
+    if (g.suppressNextFrameStep) {
+        g.suppressNextFrameStep = false;
+        return;
+    }
+
     g.stepFrame = true;
     g.stepFrameDraw = true;
+    g.stepFrameParticle = 4;
+}
+
+void Global::backstepFrame() {
+    auto& g = Global::get();
+    if (!PlayLayer::get() || !g.frameStepper)
+        return;
+
+    g.stepFrame = false;
+    g.suppressNextFrameStep = true;
+    PracticeFix::backstepFrame();
+    g.stepFrameDraw = true;
+    g.stepFrameDrawMultiple = 2;
     g.stepFrameParticle = 4;
 }
 
@@ -334,13 +353,19 @@ void Global::toggleFrameStepper() {
 
     if (!g.frameStepper) {
         g.stepFrame = false;
+        g.suppressNextFrameStep = false;
         g.stepFrameParticle = false;
+        PracticeFix::clearStoredFrames();
 
         if (PlayLayer::get() && g.frameStepperMusicTime != 0) {
             FMODAudioEngine::sharedEngine()->setMusicTimeMS(g.frameStepperMusicTime, true, 0);
             g.frameStepperMusicTime = 0;
         }
     } else {
+        g.stepFrame = false;
+        g.suppressNextFrameStep = false;
+        PracticeFix::clearStoredFrames();
+        PracticeFix::saveFrameStepperFrame();
         if (PlayLayer::get())
             g.frameStepperMusicTime = FMODAudioEngine::sharedEngine()->getMusicTimeMS(0);
     }

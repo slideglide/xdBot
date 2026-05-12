@@ -31,6 +31,8 @@ class Global {
 
     static void frameStep();
 
+    static void backstepFrame();
+
     static void toggleFrameStepper();
 
     Mod* mod = geode::Mod::get();
@@ -53,6 +55,7 @@ class Global {
     int currentSession = 0;
 
     bool stepFrame = false;
+    bool suppressNextFrameStep = false;
     bool stepFrameDraw = false;
     int stepFrameDrawMultiple = 0;
     int stepFrameParticle = 0;
@@ -147,6 +150,7 @@ class Global {
     double schedulerOverflow = 0.0;
     int schedulerStepCount = 1;
     bool schedulerUpdating = false;
+    bool schedulerFrozenUpdate = false;
     std::vector<input> postUpdateInputs;
 
     size_t currentAction = 0;

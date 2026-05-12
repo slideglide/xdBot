@@ -69,7 +69,13 @@ void handleKeybind(std::string_view id, bool down, bool repeat, double time) {
         };
 
         map["step_frame_keybind"] = []() {
+            if (auto* dispatcher = CCKeyboardDispatcher::get(); dispatcher->getShiftKeyPressed())
+                return;
             Global::frameStep();
+        };
+
+        map["backstep_frame_keybind"] = []() {
+            Global::backstepFrame();
         };
 
         map["toggle_speedhack_keybind"] = []() {
@@ -137,6 +143,7 @@ $execute {
         {"toggle_speedhack_keybind", false},
         {"toggle_frame_stepper_keybind", false},
         {"step_frame_keybind", true},
+        {"backstep_frame_keybind", true},
         {"show_trajectory_keybind", false},
         #ifndef GEODE_IS_IOS
         {"toggle_render_keybind", false},

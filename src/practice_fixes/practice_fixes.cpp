@@ -47,6 +47,7 @@ static HeldButtonState& heldButtonState() {
 
 struct PracticeCheckpointData {
     CheckpointObject* checkpoint = nullptr;
+    geode::Ref<CheckpointObject> retainedCheckpoint;
     SupplementalPlayerState p1, p2;
     SupplementalPlayLayerState pl;
     double tps = 240.0;
@@ -174,6 +175,102 @@ struct PracticeCheckpointData {
     }
 };
 
+static std::deque<PracticeCheckpointData>& storedFrameStepperFrames() {
+    static std::deque<PracticeCheckpointData> frames;
+    return frames;
+}
+
+static bool& loadingFrameStepperBackstep() {
+    static bool loading = false;
+    return loading;
+}
+
+static std::optional<PracticeCheckpointData>& frameStepperBackstepState() {
+    static std::optional<PracticeCheckpointData> state;
+    return state;
+}
+
+void PracticeFix::clearStoredFrames() {
+    if (PracticeFix::isLoadingFrameStepperBackstep())
+        return;
+
+    storedFrameStepperFrames().clear();
+}
+
+void PracticeFix::saveFrameStepperFrame() {
+    if (PracticeFix::isLoadingFrameStepperBackstep())
+        return;
+
+    auto* pl = PlayLayer::get();
+    if (!pl || !pl->m_player1 || pl->m_player1->m_isDead || pl->m_isPaused)
+        return;
+
+    auto& frames = storedFrameStepperFrames();
+    constexpr size_t maxStoredFrames = 600;
+    while (frames.size() >= maxStoredFrames)
+        frames.pop_front();
+
+    auto* checkpoint = pl->createCheckpoint();
+    if (!checkpoint)
+        return;
+
+    frames.emplace_back(
+        checkpoint,
+        pl->m_player1,
+        pl->m_gameState.m_isDualMode ? pl->m_player2 : nullptr,
+        pl,
+        brokenPracticeObjects()
+    );
+    frames.back().retainedCheckpoint.swap(checkpoint);
+}
+
+bool PracticeFix::isLoadingFrameStepperBackstep() {
+    return loadingFrameStepperBackstep();
+}
+
+bool PracticeFix::applyFrameStepperBackstep(CheckpointObject* checkpoint) {
+    auto* pl = PlayLayer::get();
+    auto& state = frameStepperBackstepState();
+    if (!pl || !state || checkpoint != state->checkpoint)
+        return false;
+
+    pl->PlayLayer::loadFromCheckpoint(checkpoint);
+    state->apply(pl->m_player1, pl->m_gameState.m_isDualMode ? pl->m_player2 : nullptr, pl);
+    state->applyMacroState();
+
+    if (pl->m_player1)
+        pl->m_player1->m_isDead = false;
+    if (pl->m_player2)
+        pl->m_player2->m_isDead = false;
+
+    return true;
+}
+
+bool PracticeFix::backstepFrame(int frameCount) {
+    auto* pl = PlayLayer::get();
+    if (!pl || frameCount <= 0)
+        return false;
+
+    auto& frames = storedFrameStepperFrames();
+    if (frames.size() < 2)
+        return false;
+
+    while (frameCount-- > 0 && frames.size() > 1)
+        frames.pop_back();
+
+    frameStepperBackstepState() = frames.back();
+    loadingFrameStepperBackstep() = true;
+    pl->m_checkpointArray->addObject(frames.back().checkpoint);
+    pl->resetLevel();
+    if (pl->m_checkpointArray->count() > 0 &&
+        pl->m_checkpointArray->lastObject() == frames.back().checkpoint)
+        pl->m_checkpointArray->removeLastObject();
+    loadingFrameStepperBackstep() = false;
+    frameStepperBackstepState().reset();
+
+    return true;
+}
+
 class $modify(FixPlayLayer, PlayLayer) {
     struct Fields {
         std::vector<PracticeCheckpointData> m_checkpoints;
@@ -202,6 +299,10 @@ class $modify(FixPlayLayer, PlayLayer) {
     }
 
     void loadFromCheckpoint(CheckpointObject* checkpoint) {
+        if (PracticeFix::isLoadingFrameStepperBackstep() &&
+            PracticeFix::applyFrameStepperBackstep(checkpoint))
+            return;
+
         bool shouldFix = PracticeFix::shouldEnable();
         auto& g = Global::get();
         bool wasRecordingOrPlaying = g.state == state::recording || g.state == state::playing;
@@ -264,10 +365,11 @@ class $modify(FixPlayLayer, PlayLayer) {
             held.capture(this);
         }
 
-        if (!hadCheckpoints) {
+        if (!hadCheckpoints && !PracticeFix::isLoadingFrameStepperBackstep()) {
             m_fields->m_checkpoints.clear();
             Global::get().checkpoints.clear();
             brokenPracticeObjects().clear();
+            PracticeFix::clearStoredFrames();
         }
         PlayLayer::resetLevel();
         if (hadCheckpoints) {
