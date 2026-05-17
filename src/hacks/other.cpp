@@ -3,6 +3,7 @@
 #include "../ui/layers/record_layer.hpp"
 
 #include <array>
+#include <limits>
 
 #include <Geode/modify/CCScheduler.hpp>
 #include <Geode/modify/EffectGameObject.hpp>
@@ -35,6 +36,48 @@ constexpr std::array<float, 19> safeValues = {
     1.0f / 3,
     1.0f / 2,
 };
+
+bool useFastLockDelta(Bot const& bot) {
+#ifdef GEODE_IS_IOS
+    constexpr bool recording = false;
+#else
+    bool recording = bot.renderer.recording;
+#endif
+    return bot.lockDelta && bot.lockDeltaFast && bot.state == state::playing && !recording;
+}
+
+template <class Callback>
+void runFastLockDeltaUpdates(Bot& bot, int steps, double physicsDt, Callback&& runUpdate) {
+    while (steps > 0) {
+        int currentFrame = Bot::getCurrentFrame();
+        int safeSteps = steps;
+
+        if (bot.currentAction < bot.replay.inputs.size()) {
+            auto nextInputFrame = bot.replay.inputs[bot.currentAction].frame;
+
+            if (nextInputFrame > static_cast<uint64_t>(currentFrame)) {
+                auto frameGap = nextInputFrame - static_cast<uint64_t>(currentFrame);
+                safeSteps = std::min<int>(
+                    steps,
+                    frameGap > static_cast<uint64_t>(std::numeric_limits<int>::max())
+                        ? std::numeric_limits<int>::max()
+                        : static_cast<int>(frameGap)
+                );
+            } else {
+                safeSteps = 0;
+            }
+        }
+
+        if (safeSteps > 0) {
+            runUpdate(safeSteps, physicsDt * static_cast<double>(safeSteps));
+            steps -= safeSteps;
+            continue;
+        }
+
+        runUpdate(1, physicsDt);
+        steps--;
+    }
+}
 }
 
 const std::unordered_set<int> shaderIDs = {2904,2905,2907,2909,2910,2911,2912,2913,2914,2915,2916,2917,2919,2920,2921,2922,2923,2924};
@@ -161,13 +204,18 @@ class $modify(CCScheduler) {
         auto runUpdate = [&](int stepCount, double delta) {
             if (stepCount <= 0)
                 return;
+
             bot.schedulerStepCount = stepCount;
             CCScheduler::update(static_cast<float>(delta));
             bot.schedulerStepCount = 1;
         };
 
-        for (int i = 0; i < steps; i++)
-            runUpdate(1, physicsDt);
+        if (useFastLockDelta(bot)) {
+            runFastLockDeltaUpdates(bot, steps, physicsDt, runUpdate);
+        } else {
+            for (int i = 0; i < steps; i++)
+                runUpdate(1, physicsDt);
+        }
 
         bot.schedulerUpdating = false;
     }

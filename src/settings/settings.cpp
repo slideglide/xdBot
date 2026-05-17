@@ -145,6 +145,7 @@ void Settings::loadRuntimeState(Bot& bot) const {
 
     bot.frameOffset = value<int64_t>("frame_offset");
     bot.lockDelta = value<bool>("lock_delta");
+    bot.lockDeltaFast = value<std::string>("lock_delta_mode") == "Fast";
     bot.stopPlaying = value<bool>("auto_stop_playing");
 
     std::string accuracy = value<std::string>("macro_accuracy");

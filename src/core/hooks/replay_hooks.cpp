@@ -19,6 +19,14 @@ $execute {
     settings.listen<bool>("lock_delta", +[](bool value) {
         auto& bot = Bot::get();
         bot.lockDelta = value;
+        bot.schedulerOverflow = 0.0;
+        bot.schedulerStepCount = 1;
+    });
+
+    settings.listen<std::string>("lock_delta_mode", +[](std::string value) {
+        auto& bot = Bot::get();
+        bot.lockDeltaFast = value == "Fast";
+        bot.schedulerOverflow = 0.0;
         bot.schedulerStepCount = 1;
     });
 
