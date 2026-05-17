@@ -1,18 +1,109 @@
 #include "trajectory_physics.hpp"
 
-#include "../hacks/show_trajectory.hpp"
+#include <cstdint>
+#include <unordered_map>
 
 using namespace geode::prelude;
 
 namespace xdbot::trajectory_physics {
 namespace {
+Context const* activeContext = nullptr;
+thread_local std::unordered_map<uintptr_t, CCRect> s_objectRectCache;
+thread_local std::unordered_map<uintptr_t, OBB2D*> s_objectObbCache;
+thread_local std::unordered_map<int, bool> s_spawnChannelHasTrajectoryTriggers;
+thread_local PassStats s_passStats;
+
+PlayerObject* fakePlayer1() {
+    return activeContext && activeContext->fakePlayer1 ? activeContext->fakePlayer1() : nullptr;
+}
+
+PlayerObject* fakePlayer2() {
+    return activeContext && activeContext->fakePlayer2 ? activeContext->fakePlayer2() : nullptr;
+}
+
+bool isFakePlayer(PlayerObject* player) {
+    return activeContext && activeContext->isFakePlayer && activeContext->isFakePlayer(player);
+}
+
+bool hasActivated(PlayerObject* player, EnhancedGameObject* object) {
+    return activeContext && activeContext->hasActivated && activeContext->hasActivated(player, object);
+}
+
+bool realPlayerHasActivated(PlayerObject* player, EnhancedGameObject* object) {
+    return activeContext &&
+        activeContext->realPlayerHasActivated &&
+        activeContext->realPlayerHasActivated(player, object);
+}
+
+void snapshotObject(EffectGameObject* object) {
+    if (activeContext && activeContext->snapshotObject)
+        activeContext->snapshotObject(object);
+}
+
+void rememberActivated(PlayerObject* player, EnhancedGameObject* object) {
+    if (activeContext && activeContext->rememberActivated)
+        activeContext->rememberActivated(player, object);
+}
+
+CCRect getCachedObjectRect(GameObject* object) {
+    auto key = reinterpret_cast<uintptr_t>(object);
+    if (auto it = s_objectRectCache.find(key); it != s_objectRectCache.end())
+        return it->second;
+
+    auto rect = object->m_objectType == GameObjectType::Slope
+        ? object->getObjectRect(2.0, 2.0)
+        : object->getObjectRect();
+    s_objectRectCache.insert_or_assign(key, rect);
+    return rect;
+}
+
+OBB2D* getCachedObjectObb(GameObject* object) {
+    auto key = reinterpret_cast<uintptr_t>(object);
+    if (auto it = s_objectObbCache.find(key); it != s_objectObbCache.end())
+        return it->second;
+
+    auto* box = object->getOrientedBox();
+    s_objectObbCache.insert_or_assign(key, box);
+    return box;
+}
+
 float gravitySign(PlayerObject* player) {
     return player && player->m_isUpsideDown ? -1.f : 1.f;
 }
 
 void activateForTrajectory(EffectGameObject* object, PlayerObject* player) {
-    ShowTrajectory::snapshotObject(object);
-    ShowTrajectory::rememberActivated(player, object);
+    snapshotObject(object);
+    rememberActivated(player, object);
+}
+
+bool isTrajectorySpawnTrigger(SpawnTriggerGameObject* object) {
+    if (!object)
+        return false;
+
+    return object->m_objectID == 2066 ||
+        object->m_objectID == 2900 ||
+        object->m_objectID == 3022 ||
+        object->m_objectID == 901;
+}
+
+bool channelHasTrajectorySpawnTriggers(int channel, cocos2d::CCArray* objects) {
+    if (auto it = s_spawnChannelHasTrajectoryTriggers.find(channel);
+        it != s_spawnChannelHasTrajectoryTriggers.end()) {
+        return it->second;
+    }
+
+    bool found = false;
+    unsigned int count = objects ? objects->count() : 0;
+    for (unsigned int i = 0; i < count; i++) {
+        auto* object = static_cast<SpawnTriggerGameObject*>(objects->objectAtIndex(i));
+        if (isTrajectorySpawnTrigger(object)) {
+            found = true;
+            break;
+        }
+    }
+
+    s_spawnChannelHasTrajectoryTriggers.insert_or_assign(channel, found);
+    return found;
 }
 
 void bumpPlayerFromLayer(GJBaseGameLayer* layer, PlayerObject* player, EffectGameObject* object) {
@@ -124,6 +215,27 @@ float redirectPlayerForce(PlayerObject* player, float force, float, float, float
 }
 }
 
+void setContext(Context const* context) {
+    activeContext = context;
+}
+
+void beginTrajectoryPass() {
+    s_objectRectCache.clear();
+    s_objectObbCache.clear();
+    s_spawnChannelHasTrajectoryTriggers.clear();
+    s_passStats = {};
+}
+
+void endTrajectoryPass() {
+    s_objectRectCache.clear();
+    s_objectObbCache.clear();
+    s_spawnChannelHasTrajectoryTriggers.clear();
+}
+
+PassStats currentPassStats() {
+    return s_passStats;
+}
+
 void flipGravity(PlayerObject* player, bool gravity) {
     if (!player || player->m_isUpsideDown == gravity)
         return;
@@ -150,13 +262,12 @@ void flipGravity(PlayerObject* player, bool gravity) {
     flipSingle(player, gravity);
 
     auto* layer = GJBaseGameLayer::get();
-    auto& trajectory = ShowTrajectory::get();
-    if (!layer || !ShowTrajectory::isFakePlayer(player) || layer->m_gameState.m_unkBool31 ||
+    if (!layer || !isFakePlayer(player) || layer->m_gameState.m_unkBool31 ||
         !layer->m_gameState.m_isDualMode || layer->m_levelSettings->m_twoPlayerMode) {
         return;
     }
 
-    PlayerObject* other = player == trajectory.fakePlayer1 ? trajectory.fakePlayer2 : trajectory.fakePlayer1;
+    PlayerObject* other = player == fakePlayer1() ? fakePlayer2() : fakePlayer1();
     if (!other)
         return;
 
@@ -440,7 +551,7 @@ bool activatePortal(GJBaseGameLayer* layer, PlayerObject* player, EffectGameObje
         return false;
     if (!layer->canBeActivatedByPlayer(player, portal))
         return false;
-    if (ShowTrajectory::hasActivated(player, portal))
+    if (hasActivated(player, portal))
         return false;
 
     layer->playerWillSwitchMode(player, portal);
@@ -495,8 +606,8 @@ bool activatePortal(GJBaseGameLayer* layer, PlayerObject* player, EffectGameObje
 
     player->m_lastPortalPos = portal->getPosition();
     player->m_lastActivatedPortal = portal;
-    ShowTrajectory::snapshotObject(portal);
-    ShowTrajectory::rememberActivated(player, portal);
+    snapshotObject(portal);
+    rememberActivated(player, portal);
 
     return !isSameMode;
 }
@@ -505,8 +616,8 @@ void triggerObject(EffectGameObject* object, GJBaseGameLayer* layer, PlayerObjec
     if (!object || !layer || !player)
         return;
 
-    ShowTrajectory::snapshotObject(object);
-    ShowTrajectory::rememberActivated(player, object);
+    snapshotObject(object);
+    rememberActivated(player, object);
 
     switch (object->m_objectID) {
     case 200:
@@ -528,7 +639,7 @@ void triggerObject(EffectGameObject* object, GJBaseGameLayer* layer, PlayerObjec
         if (object->m_followCPP)
             break;
 
-        bool isP2 = player == ShowTrajectory::get().fakePlayer2;
+        bool isP2 = player == fakePlayer2();
         if ((!object->m_targetPlayer2 && !isP2) || (object->m_targetPlayer2 && isP2))
             player->m_gravityMod = object->m_gravityValue;
         break;
@@ -562,26 +673,26 @@ void checkSpawnObjects(GJBaseGameLayer* layer, PlayerObject* player) {
     if (!layer || !player || !layer->m_spawnObjects)
         return;
 
+    int channel = layer->m_gameState.m_currentChannel;
     auto* objects = typeinfo_cast<cocos2d::CCArray*>(
-        layer->m_spawnObjects->objectForKey(layer->m_gameState.m_currentChannel)
+        layer->m_spawnObjects->objectForKey(channel)
     );
     if (!objects)
         return;
+    if (!channelHasTrajectorySpawnTriggers(channel, objects))
+        return;
 
-    int startingIndex = layer->m_gameState.m_spawnChannelRelated0[layer->m_gameState.m_currentChannel];
-    bool goingBack = layer->m_gameState.m_spawnChannelRelated1[layer->m_gameState.m_currentChannel];
+    int startingIndex = layer->m_gameState.m_spawnChannelRelated0[channel];
+    bool goingBack = layer->m_gameState.m_spawnChannelRelated1[channel];
     CCPoint position = player->getPosition();
 
     unsigned int count = objects->count();
     for (int i = startingIndex; static_cast<unsigned int>(i) < count; i++) {
-        auto* object = typeinfo_cast<SpawnTriggerGameObject*>(objects->objectAtIndex(i));
+        ++s_passStats.spawnVisited;
+
+        auto* object = static_cast<SpawnTriggerGameObject*>(objects->objectAtIndex(i));
         if (!object)
             continue;
-
-        if (object->m_objectID != 2066 && object->m_objectID != 2900 &&
-            object->m_objectID != 3022 && object->m_objectID != 901) {
-            continue;
-        }
 
         CCPoint objectPos = object->m_speedStart;
         if (player->m_isSideways) {
@@ -600,14 +711,20 @@ void checkSpawnObjects(GJBaseGameLayer* layer, PlayerObject* player) {
             }
         }
 
+        if (!isTrajectorySpawnTrigger(object))
+            continue;
+        ++s_passStats.spawnCandidates;
+
         if (object->m_isGroupDisabled ||
-            ShowTrajectory::hasActivated(player, object) ||
-            ShowTrajectory::realPlayerHasActivated(player, object)) {
+            hasActivated(player, object) ||
+            realPlayerHasActivated(player, object)) {
             continue;
         }
 
-        if (!object->m_isTouchTriggered)
+        if (!object->m_isTouchTriggered) {
+            ++s_passStats.spawnTriggered;
             triggerObject(object, layer, player);
+        }
     }
 }
 
@@ -639,6 +756,8 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
         if (!object)
             continue;
 
+        ++s_passStats.objectsVisited;
+
         if (object->m_objectType == GameObjectType::Decoration ||
             object->m_objectType == GameObjectType::CollisionObject ||
             object->m_objectType == GameObjectType::SecretCoin ||
@@ -652,6 +771,7 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
 
         if (object->m_objectType == GameObjectType::Solid ||
             object->m_objectType == GameObjectType::Breakable) {
+            ++s_passStats.solidQueued;
             if (layer->m_solidCollisionObjectsCount < layer->m_solidCollisionObjectsIndex) {
                 layer->m_solidCollisionObjects.at(layer->m_solidCollisionObjectsCount) = object;
             } else {
@@ -667,6 +787,7 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
 
         if (object->m_objectType == GameObjectType::Hazard ||
             object->m_objectType == GameObjectType::AnimatedHazard) {
+            ++s_passStats.hazardQueued;
             if (layer->m_hazardCollisionObjectsCount < layer->m_hazardCollisionObjectsIndex) {
                 layer->m_hazardCollisionObjects.at(layer->m_hazardCollisionObjectsCount) = object;
             } else {
@@ -677,9 +798,7 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
             continue;
         }
 
-        CCRect objectRect = object->m_objectType == GameObjectType::Slope
-            ? object->getObjectRect(2.0, 2.0)
-            : object->getObjectRect();
+        CCRect objectRect = getCachedObjectRect(object);
 
         if (object->m_objectRadius <= 0.f) {
             if (!playerRect.intersectsRect(objectRect))
@@ -691,7 +810,8 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
         bool overlaps = true;
         if (object->m_shouldUseOuterOb &&
             (!layer->m_levelSettings->m_fixRadiusCollision || object->m_objectRadius <= 0.f)) {
-            OBB2D* box = object->getOrientedBox();
+            ++s_passStats.obbChecks;
+            OBB2D* box = getCachedObjectObb(object);
             OBB2D* boxPlayer = getPlayerBox();
             overlaps = box && boxPlayer && box->overlaps1Way(boxPlayer);
         }
@@ -712,9 +832,10 @@ void collisionCheckObjects(GJBaseGameLayer* layer, PlayerObject* player, gd::vec
         auto* effect = typeinfo_cast<EffectGameObject*>(object);
         if (!effect)
             continue;
+        ++s_passStats.effectCandidates;
 
-        if (ShowTrajectory::hasActivated(player, effect) ||
-            ShowTrajectory::realPlayerHasActivated(player, effect)) {
+        if (hasActivated(player, effect) ||
+            realPlayerHasActivated(player, effect)) {
             continue;
         }
 
@@ -880,8 +1001,8 @@ void ringJump(PlayerObject* player, RingObject* ring) {
             return;
     }
 
-    ShowTrajectory::snapshotObject(ring);
-    ShowTrajectory::rememberActivated(player, ring);
+    snapshotObject(ring);
+    rememberActivated(player, ring);
 
     if (ring->m_isReverse)
         player->reversePlayer(ring);

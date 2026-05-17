@@ -10,6 +10,7 @@ public:
         TrajectoryNode* ret = new TrajectoryNode();
         if (ret->init()) {
             ret->autorelease();
+            ret->m_bUseArea = false;
             return ret;
         }
 
@@ -22,6 +23,22 @@ public:
 class ShowTrajectory {
 
 public:
+    struct PredictionConfig {
+        bool applyReplayInputs = true;
+        bool draw = true;
+        int maxLength = 10'000'000;
+    };
+
+    struct PredictionResult {
+        cocos2d::CCPoint position = {};
+        cocos2d::CCRect hitbox = {};
+        cocos2d::CCRect innerHitbox = {};
+        float rotation = 0.f;
+        bool player1 = true;
+        bool holding = false;
+        int score = 0;
+    };
+
     enum Mode : int {
         Hold = 1 << 0,
         Swift = 1 << 1,
@@ -45,21 +62,39 @@ public:
 
     static void trajectoryOff();
 
-    static cocos2d::CCDrawNode* trajectoryNode();
+    static cocos2d::CCDrawNode* trajectoryNode(bool create = true);
+    static void detachTrajectoryNode();
 
     static void updateTrajectory(PlayLayer* pl);
 
+    static void refreshIfNeeded();
+
+    static PredictionResult simulate(
+        PlayLayer* pl,
+        bool player1,
+        int mode,
+        bool simulateBothPlayers,
+        PredictionConfig config
+    );
+
     static CCDrawNode* createNode();
 
-    static void createTrajectory(
+    static PredictionResult createTrajectory(
         PlayLayer* pl,
         bool player1,
         int mode,
         bool simulateBothPlayers,
         GJGameState const& baseGameState,
-        EffectManagerState* baseEffectState
+        EffectManagerState* baseEffectState,
+        PredictionConfig config
     );
-    static bool iterate(PlayLayer* pl, PlayerObject* player, int mode, cocos2d::ccColor4F color);
+    static bool iterate(
+        PlayLayer* pl,
+        PlayerObject* player,
+        int mode,
+        cocos2d::ccColor4F color,
+        PredictionConfig const& config
+    );
     static void applyInitialInput(PlayLayer* pl, PlayerObject* player, PlayerObject* realPlayer, int mode);
     static PlayerObject* ensureFakePlayer(PlayLayer* pl, bool player1);
     static void hideFakePlayer(PlayerObject* player);
@@ -116,6 +151,7 @@ public:
     float delta = 0.25f;
 
     int length = 312;
+    float width = 0.5f;
 
     cocos2d::ccColor4F color1;
     cocos2d::ccColor4F color2;

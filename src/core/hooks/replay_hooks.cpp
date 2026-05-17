@@ -6,7 +6,6 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
-
 $execute {
     auto& settings = Settings::get();
 
@@ -19,15 +18,31 @@ $execute {
     settings.listen<bool>("lock_delta", +[](bool value) {
         auto& bot = Bot::get();
         bot.lockDelta = value;
-        bot.schedulerOverflow = 0.0;
-        bot.schedulerStepCount = 1;
+        bot.updater.resetStepState();
     });
 
     settings.listen<std::string>("lock_delta_mode", +[](std::string value) {
         auto& bot = Bot::get();
         bot.lockDeltaFast = value == "Fast";
-        bot.schedulerOverflow = 0.0;
-        bot.schedulerStepCount = 1;
+        bot.updater.resetStepState();
+    });
+
+    settings.listen<bool>("lock_delta_real_time", +[](bool value) {
+        auto& bot = Bot::get();
+        bot.lockDeltaRealTime = value;
+        bot.updater.resetStepState();
+    });
+
+    settings.listen<int64_t>("lock_delta_max_upr", +[](int64_t value) {
+        auto& bot = Bot::get();
+        bot.lockDeltaMaxUpr = std::max<int64_t>(value, 1);
+        bot.updater.resetStepState();
+    });
+
+    settings.listen<bool>("lock_delta_use_visual_updates", +[](bool value) {
+        auto& bot = Bot::get();
+        bot.lockDeltaUseVisualUpdates = value;
+        bot.updater.resetStepState();
     });
 
     settings.listen<bool>("auto_stop_playing", +[](bool value) {
@@ -55,7 +70,8 @@ class $modify(PlayLayer) {
         if (Settings::get().value<bool>("disable_speedhack") &&
             Bot::get().speedhackEnabled)
             Bot::toggleSpeedhack();
-        Bot::get().m_frameCount = 0;
+        Bot::get().attemptStartFrame = 0;
+        Bot::get().updater.frameCount = 0;
         PlayLayer::onQuit();
     }
 
@@ -75,6 +91,8 @@ class $modify(PlayLayer) {
     bool init(GJGameLevel* level, bool b1, bool b2) {
         auto& bot = Bot::get();
         bot.firstAttempt = true;
+        bot.attemptStartFrame = 0;
+        bot.updater.frameCount = 0;
         if (!PlayLayer::init(level, b1, b2))
             return false;
         bot.currentSession = asp::time::SystemTime::now().timeSinceEpoch().millis();
@@ -93,8 +111,11 @@ class $modify(PlayLayer) {
 
         bot.ignoreRecordAction = previousIgnore;
 
-        if (!hadCheckpoints)
-            bot.m_frameCount = 0;
+        if (!hadCheckpoints) {
+            bot.attemptStartFrame = 0;
+            bot.updater.frameCount = 0;
+            bot.previousFrame = 0;
+        }
 
         int frame = Bot::getCurrentFrame();
         if (bot.restart && m_isPlatformer && bot.state != state::none)

@@ -32,6 +32,13 @@ void Settings::applyDefaults() const {
         mod->setSavedValue("render_codec", std::string("h264_mediacodec"));
 #endif
 
+    if (!mod->setSavedValue("defaults_set_16", true)) {
+        mod->setSavedValue("trajectory_width", 0.5f);
+        setValue("lock_delta_real_time", true);
+        setValue("lock_delta_max_upr", 10);
+        setValue("lock_delta_use_visual_updates", true);
+    }
+
     if (!mod->setSavedValue("defaults_set_10", true)) {
         setValue("restore_page", true);
 
@@ -57,6 +64,11 @@ void Settings::applyDefaults() const {
         mod->setSavedValue("trajectory_color1", ccc3(74, 226, 85));
         mod->setSavedValue("trajectory_color2", ccc3(130, 8, 8));
         mod->setSavedValue("trajectory_length", geode::utils::numToString(240));
+        mod->setSavedValue("trajectory_width", 0.5f);
+
+        setValue("lock_delta_real_time", true);
+        setValue("lock_delta_max_upr", 10);
+        setValue("lock_delta_use_visual_updates", true);
     }
 
     if (!mod->setSavedValue("defaults_set3", true)) {
@@ -146,6 +158,9 @@ void Settings::loadRuntimeState(Bot& bot) const {
     bot.frameOffset = value<int64_t>("frame_offset");
     bot.lockDelta = value<bool>("lock_delta");
     bot.lockDeltaFast = value<std::string>("lock_delta_mode") == "Fast";
+    bot.lockDeltaRealTime = value<bool>("lock_delta_real_time");
+    bot.lockDeltaMaxUpr = static_cast<int>(value<int64_t>("lock_delta_max_upr"));
+    bot.lockDeltaUseVisualUpdates = value<bool>("lock_delta_use_visual_updates");
     bot.stopPlaying = value<bool>("auto_stop_playing");
 
     std::string accuracy = value<std::string>("macro_accuracy");

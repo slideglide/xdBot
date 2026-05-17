@@ -53,26 +53,33 @@ void restoreHeldButtons(PlayLayer* pl, const HeldButtonState& held) {
     if (!pl || !held.valid)
         return;
 
-    auto queueIfChanged = [pl](int button, bool down, bool player2) {
-        auto* player = player2 ? pl->m_player2 : pl->m_player1;
-        if (!player || player->m_holdingButtons[button] == down)
+    auto applyPlayer = [](PlayerObject* player, bool jump, bool left, bool right, bool platformer) {
+        if (!player)
             return;
-        pl->queueButton(button, down, player2, 0.0);
+
+        player->m_holdingButtons[1] = jump;
+        player->m_jumpBuffered = jump;
+
+        if (!platformer)
+            return;
+
+        player->m_holdingButtons[2] = left;
+        player->m_holdingButtons[3] = right;
+        player->m_holdingLeft = left;
+        player->m_holdingRight = right;
+        player->m_platformerMovingLeft = left;
+        player->m_platformerMovingRight = right;
+        if (left != right)
+            player->m_leftPressedFirst = left;
     };
 
-    queueIfChanged(1, held.p1Holding, false);
-    if (pl->m_isPlatformer) {
-        queueIfChanged(2, held.p1Left, false);
-        queueIfChanged(3, held.p1Right, false);
-    }
+    bool twoPlayer = pl->m_levelSettings && pl->m_levelSettings->m_twoPlayerMode;
+    bool p1Holding = held.p1Holding || (held.p2Holding && !twoPlayer);
 
-    if (pl->m_gameState.m_isDualMode && pl->m_levelSettings->m_twoPlayerMode) {
-        queueIfChanged(1, held.p2Holding, true);
-        if (pl->m_isPlatformer) {
-            queueIfChanged(2, held.p2Left, true);
-            queueIfChanged(3, held.p2Right, true);
-        }
-    }
+    applyPlayer(pl->m_player1, p1Holding, held.p1Left, held.p1Right, pl->m_isPlatformer);
+
+    if (pl->m_gameState.m_isDualMode && twoPlayer)
+        applyPlayer(pl->m_player2, held.p2Holding, held.p2Left, held.p2Right, pl->m_isPlatformer);
 }
 
 struct PracticeCheckpointData {
@@ -84,7 +91,7 @@ struct PracticeCheckpointData {
     bool tpsEnabled = false;
     int frame = 0;
     int previousFrame = 0;
-    int respawnFrame = -1;
+    int attemptStartFrame = 0;
     int frameOffset = 0;
     double schedulerOverflow = 0.0;
     size_t currentAction = 0;
@@ -125,9 +132,9 @@ struct PracticeCheckpointData {
         tpsEnabled = bot.tpsEnabled;
         frame = Bot::getCurrentFrame();
         previousFrame = bot.previousFrame;
-        respawnFrame = bot.respawnFrame;
+        attemptStartFrame = bot.attemptStartFrame;
         frameOffset = bot.frameOffset;
-        schedulerOverflow = bot.schedulerOverflow;
+        schedulerOverflow = bot.updater.overflow;
         currentAction = bot.currentAction;
         currentFrameFix = bot.currentFrameFix;
         inputs = bot.replay.inputs;
@@ -165,11 +172,11 @@ struct PracticeCheckpointData {
             bool previousIgnore = bot.ignoreRecordAction;
             bot.ignoreRecordAction = true;
 
-            bot.m_frameCount = frame;
+            bot.attemptStartFrame = attemptStartFrame;
+            bot.updater.frameCount = std::max(frame - attemptStartFrame + frameOffset, 0);
             bot.previousFrame = previousFrame;
-            bot.respawnFrame = respawnFrame;
             bot.frameOffset = frameOffset;
-            bot.schedulerOverflow = schedulerOverflow;
+            bot.updater.overflow = schedulerOverflow;
             bot.currentAction = currentAction;
             bot.currentFrameFix = currentFrameFix;
 
@@ -188,11 +195,11 @@ struct PracticeCheckpointData {
         bool previousIgnore = bot.ignoreRecordAction;
         bot.ignoreRecordAction = true;
 
-        bot.m_frameCount = frame;
+        bot.attemptStartFrame = attemptStartFrame;
+        bot.updater.frameCount = std::max(frame - attemptStartFrame + frameOffset, 0);
         bot.previousFrame = previousFrame;
-        bot.respawnFrame = respawnFrame;
         bot.frameOffset = frameOffset;
-        bot.schedulerOverflow = schedulerOverflow;
+        bot.updater.overflow = schedulerOverflow;
 
         if (bot.state == state::recording) {
             bot.replay.inputs = inputs;
@@ -431,9 +438,9 @@ class $modify(FixPlayLayer, PlayLayer) {
     }
 
     void resetLevel() {
-    bool hadCheckpoints = m_checkpointArray->count() > 0;
-    bool shouldRestoreHeldButtons = PracticeFix::shouldEnable() && hadCheckpoints;
-    auto held = heldButtonState();
+        bool hadCheckpoints = m_checkpointArray->count() > 0;
+        bool shouldRestoreHeldButtons = PracticeFix::shouldEnable() && hadCheckpoints;
+        auto held = heldButtonState();
 
         if (shouldRestoreHeldButtons && !held.valid)
             held.capture(this);

@@ -28,7 +28,7 @@ float Bot::getTPS() {
 int Bot::getCurrentFrame(bool editor) {
     auto& bot = Bot::get();
 
-    int frame = bot.m_frameCount - bot.frameOffset;
+    int frame = bot.attemptStartFrame + bot.updater.frameCount - bot.frameOffset;
 
     return std::max(frame, 0);
 }
@@ -289,6 +289,7 @@ void Bot::resetState(bool cp) {
     auto& bot = Bot::get();
     bot.restart = false;
     bot.state = state::none;
+    bot.attemptStartFrame = 0;
 
     if (!cp)
         bot.checkpoints.clear();

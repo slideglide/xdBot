@@ -1,5 +1,7 @@
 #pragma once
 
+#include "updater.hpp"
+
 #include "../gdr/gdr.hpp"
 #include "../practice_fixes/checkpoint.hpp"
 #include "../renderer/renderer.hpp"
@@ -77,6 +79,7 @@ class Bot {
     Settings& settings = Settings::get();
     geode::Popup* layer = nullptr;
 
+    BotUpdater updater;
     BotReplay replay;
 #ifndef GEODE_IS_IOS
     Renderer renderer;
@@ -123,6 +126,9 @@ class Bot {
     bool p2mirror = false;
     bool lockDelta = false;
     bool lockDeltaFast = false;
+    bool lockDeltaRealTime = true;
+    bool lockDeltaUseVisualUpdates = true;
+    int lockDeltaMaxUpr = 10;
     bool stopPlaying = false;
     bool tpsEnabled = false;
     float tps = 240.f;
@@ -188,14 +194,9 @@ class Bot {
     bool autosaveEnabled = false;
 
     int respawnFrame = -1;
+    int attemptStartFrame = 0;
     int frameOffset = 0;
     int previousFrame = 0;
-
-    int m_frameCount = 0;
-    double schedulerOverflow = 0.0;
-    int schedulerStepCount = 1;
-    bool schedulerUpdating = false;
-    bool schedulerFrozenUpdate = false;
 
     size_t currentAction = 0;
     size_t currentFrameFix = 0;

@@ -21,10 +21,10 @@ class $modify(FrameCounterGJBaseGameLayer, GJBaseGameLayer) {
 
         GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
 
-        if (!isPlaying || bot.schedulerFrozenUpdate)
+        if (!isPlaying || bot.updater.isFrozenUpdate())
             return;
 
         int frame = static_cast<int>(pl->m_gameState.m_levelTime * Bot::getTPS());
-        bot.m_frameCount = std::max(frame + 1, 0);
+        bot.updater.frameCount = std::max(frame + 1, 0);
     }
 };

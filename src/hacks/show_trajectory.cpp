@@ -11,22 +11,188 @@
 
 #include "../physics/trajectory_physics.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+
 ShowTrajectory& t = ShowTrajectory::get();
 
+namespace {
+PlayerObject* physicsFakePlayer1() {
+    return t.fakePlayer1;
+}
+
+PlayerObject* physicsFakePlayer2() {
+    return t.fakePlayer2;
+}
+
+xdbot::trajectory_physics::Context showTrajectoryPhysicsContext {
+    physicsFakePlayer1,
+    physicsFakePlayer2,
+    ShowTrajectory::isFakePlayer,
+    ShowTrajectory::hasActivated,
+    ShowTrajectory::realPlayerHasActivated,
+    ShowTrajectory::snapshotObject,
+    ShowTrajectory::rememberActivated,
+};
+
+uint64_t quantize(float value) {
+    return static_cast<uint64_t>(std::llround(static_cast<double>(value) * 1000.0));
+}
+
+uint64_t trajectoryRefreshSignature(Bot const& bot, PlayLayer* pl) {
+    uint64_t signature = 1469598103934665603ull;
+    auto mix = [&signature](uint64_t value) {
+        signature ^= value + 0x9e3779b97f4a7c15ull + (signature << 6) + (signature >> 2);
+    };
+    auto mixBool = [&mix](bool value) {
+        mix(value ? 1ull : 0ull);
+    };
+    auto mixFloat = [&mix](float value) {
+        mix(quantize(value));
+    };
+    auto mixColor = [&mixFloat](cocos2d::ccColor4F const& color) {
+        mixFloat(color.r);
+        mixFloat(color.g);
+        mixFloat(color.b);
+        mixFloat(color.a);
+    };
+    auto mixPlayer = [&](PlayerObject* player) {
+        mix(reinterpret_cast<uintptr_t>(player));
+        if (!player)
+            return;
+
+        mixFloat(player->getPositionX());
+        mixFloat(player->getPositionY());
+        mixFloat(player->getRotation());
+        mixFloat(static_cast<float>(player->m_yVelocity));
+        mixFloat(static_cast<float>(player->m_platformerXVelocity));
+        mixBool(player->m_jumpBuffered);
+        mixBool(player->m_holdingButtons[1]);
+        mixBool(player->m_holdingButtons[2]);
+        mixBool(player->m_holdingButtons[3]);
+        mixBool(player->m_holdingLeft);
+        mixBool(player->m_holdingRight);
+        mixBool(player->m_isDead);
+        mixBool(player->m_isDashing);
+        mixBool(player->m_isUpsideDown);
+        mixBool(player->m_isGoingLeft);
+    };
+
+    auto& trajectory = ShowTrajectory::get();
+    mix(reinterpret_cast<uintptr_t>(pl));
+    mix(static_cast<uint64_t>(Bot::getCurrentFrame()));
+    mix(static_cast<uint64_t>(pl->m_gameState.m_currentProgress));
+    mixFloat(pl->m_gameState.m_timeWarp);
+    mixBool(pl->m_gameState.m_isDualMode);
+    mixBool(pl->m_isPaused);
+    mixBool(pl->m_isPracticeMode);
+    mixBool(pl->m_isPlatformer);
+    mixBool(pl->m_levelSettings && pl->m_levelSettings->m_twoPlayerMode);
+    mixBool(pl->m_levelSettings && pl->m_levelSettings->m_platformerMode);
+    mixBool(bot.trajectoryBothSides);
+    mix(static_cast<uint64_t>(std::max(trajectory.length, 0)));
+    mixFloat(Bot::getTPS());
+    mixColor(trajectory.color1);
+    mixColor(trajectory.color2);
+    mixColor(trajectory.color3);
+    mixPlayer(pl->m_player1);
+    mixPlayer(pl->m_player2);
+    return signature;
+}
+
+void applyReplayButton(PlayerObject* player, ReplayInput const& input) {
+    if (!player)
+        return;
+
+    auto button = static_cast<PlayerButton>(input.button);
+    if (input.down) {
+        player->pushButton(button);
+    } else {
+        player->releaseButton(button);
+    }
+}
+
+void applyReplayInputsForPrediction(
+    PlayLayer* pl,
+    size_t& inputIndex,
+    uint64_t frame,
+    bool simulateBothPlayers,
+    bool enabled
+) {
+    auto& bot = Bot::get();
+    if (!enabled || bot.state != state::playing || !pl)
+        return;
+
+    auto const& inputs = bot.replay.inputs;
+    while (inputIndex < inputs.size() && inputs[inputIndex].frame <= frame) {
+        auto const& input = inputs[inputIndex];
+        bool player2 = !input.player2;
+        PlayerObject* player = player2 ? t.fakePlayer2 : t.fakePlayer1;
+        PlayerObject* other = player2 ? t.fakePlayer1 : t.fakePlayer2;
+
+        if (static_cast<int>(input.frame) != bot.respawnFrame) {
+            applyReplayButton(player, input);
+            if (simulateBothPlayers && pl->m_gameState.m_isDualMode)
+                applyReplayButton(other, input);
+        }
+
+        inputIndex++;
+    }
+}
+
+bool shouldLogSlowTrajectory(int64_t totalMs) {
+    return totalMs >= 50;
+}
+}
+
 $execute {
+    xdbot::trajectory_physics::setContext(&showTrajectoryPhysicsContext);
 
     t.color1 = ccc4FFromccc3B(Mod::get()->getSavedValue<cocos2d::ccColor3B>("trajectory_color1"));
     t.color2 = ccc4FFromccc3B(Mod::get()->getSavedValue<cocos2d::ccColor3B>("trajectory_color2"));
     t.length = geode::utils::numFromString<int>(Mod::get()->getSavedValue<std::string>("trajectory_length")).unwrapOr(0);
+    t.width = Mod::get()->getSavedValue<float>("trajectory_width");
+    if (t.width <= 0.f)
+        t.width = 0.5f;
     t.updateMergedColor();
 
 };
 
 void ShowTrajectory::trajectoryOff() {
-    if (t.trajectoryNode()) {
-        t.trajectoryNode()->clear();
-        t.trajectoryNode()->setVisible(false);
+    if (auto* node = t.trajectoryNode(false)) {
+        node->clear();
+        node->setVisible(false);
     }
+}
+
+void ShowTrajectory::refreshIfNeeded() {
+    static bool cachedSignatureValid = false;
+    static uint64_t cachedSignature = 0;
+
+    auto& bot = Bot::get();
+    if (!bot.showTrajectory) {
+        cachedSignatureValid = false;
+        return;
+    }
+
+    if (bot.creatingTrajectory)
+        return;
+
+    auto* pl = PlayLayer::get();
+    if (!pl || pl->m_isPaused || !pl->m_player1) {
+        cachedSignatureValid = false;
+        return;
+    }
+
+    auto* node = trajectoryNode();
+    uint64_t signature = trajectoryRefreshSignature(bot, pl);
+    if (cachedSignatureValid && cachedSignature == signature && node && node->isVisible())
+        return;
+
+    cachedSignature = signature;
+    cachedSignatureValid = true;
+    updateTrajectory(pl);
 }
 
 bool ShowTrajectory::isFakePlayer(PlayerObject* player) {
@@ -142,7 +308,6 @@ void ShowTrajectory::releaseFakePlayers() {
             return;
 
         hideFakePlayer(player);
-        player->release();
         player = nullptr;
     };
 
@@ -173,6 +338,8 @@ void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
     if (!pl || !pl->m_player1)
         return;
 
+    geode::utils::Timer totalTimer;
+    geode::utils::Timer setupTimer;
     auto& bot = Bot::get();
     bool platformerBothSides = bot.trajectoryBothSides;
 
@@ -183,6 +350,7 @@ void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
 
     t.trajectoryNode()->setVisible(true);
     t.trajectoryNode()->clear();
+    xdbot::trajectory_physics::beginTrajectoryPass();
 
     auto baseGameState = pl->m_gameState;
     EffectManagerState baseEffectState;
@@ -192,40 +360,136 @@ void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
         baseEffectStatePtr = &baseEffectState;
     }
 
+    int64_t setupMs = setupTimer.elapsed<>();
+    int p1BranchCount = 0;
+    int p2BranchCount = 0;
+    geode::utils::Timer p1Timer;
+
     if (ensureFakePlayer(pl, true)) {
         bool simulateBoth = pl->m_gameState.m_isDualMode && !pl->m_levelSettings->m_twoPlayerMode;
         if (simulateBoth && pl->m_player2)
             ensureFakePlayer(pl, false);
 
-        createTrajectory(pl, true, Hold, simulateBoth, baseGameState, baseEffectStatePtr);
-        createTrajectory(pl, true, Swift, simulateBoth, baseGameState, baseEffectStatePtr);
-        createTrajectory(pl, true, Release, simulateBoth, baseGameState, baseEffectStatePtr);
+        createTrajectory(pl, true, Hold, simulateBoth, baseGameState, baseEffectStatePtr, {});
+        p1BranchCount++;
+        createTrajectory(pl, true, Release, simulateBoth, baseGameState, baseEffectStatePtr, {});
+        p1BranchCount++;
 
         if (pl->m_levelSettings->m_platformerMode && platformerBothSides) {
-            createTrajectory(pl, true, Hold | Left, simulateBoth, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, true, Swift | Left, simulateBoth, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, true, Release | Left, simulateBoth, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, true, Hold | Right, simulateBoth, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, true, Swift | Right, simulateBoth, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, true, Release | Right, simulateBoth, baseGameState, baseEffectStatePtr);
+            createTrajectory(pl, true, Hold | Left, simulateBoth, baseGameState, baseEffectStatePtr, {});
+            p1BranchCount++;
+            createTrajectory(pl, true, Release | Left, simulateBoth, baseGameState, baseEffectStatePtr, {});
+            p1BranchCount++;
+            createTrajectory(pl, true, Hold | Right, simulateBoth, baseGameState, baseEffectStatePtr, {});
+            p1BranchCount++;
+            createTrajectory(pl, true, Release | Right, simulateBoth, baseGameState, baseEffectStatePtr, {});
+            p1BranchCount++;
         }
     }
 
+    int64_t p1Ms = p1Timer.elapsed<>();
+    geode::utils::Timer p2Timer;
+
     if (pl->m_player2 && pl->m_gameState.m_isDualMode && pl->m_levelSettings->m_twoPlayerMode) {
         if (ensureFakePlayer(pl, false)) {
-            createTrajectory(pl, false, Hold, false, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, false, Swift, false, baseGameState, baseEffectStatePtr);
-            createTrajectory(pl, false, Release, false, baseGameState, baseEffectStatePtr);
+            createTrajectory(pl, false, Hold, false, baseGameState, baseEffectStatePtr, {});
+            p2BranchCount++;
+            createTrajectory(pl, false, Release, false, baseGameState, baseEffectStatePtr, {});
+            p2BranchCount++;
 
             if (pl->m_levelSettings->m_platformerMode && platformerBothSides) {
-                createTrajectory(pl, false, Hold | Left, false, baseGameState, baseEffectStatePtr);
-                createTrajectory(pl, false, Swift | Left, false, baseGameState, baseEffectStatePtr);
-                createTrajectory(pl, false, Release | Left, false, baseGameState, baseEffectStatePtr);
-                createTrajectory(pl, false, Hold | Right, false, baseGameState, baseEffectStatePtr);
-                createTrajectory(pl, false, Swift | Right, false, baseGameState, baseEffectStatePtr);
-                createTrajectory(pl, false, Release | Right, false, baseGameState, baseEffectStatePtr);
+                createTrajectory(pl, false, Hold | Left, false, baseGameState, baseEffectStatePtr, {});
+                p2BranchCount++;
+                createTrajectory(pl, false, Release | Left, false, baseGameState, baseEffectStatePtr, {});
+                p2BranchCount++;
+                createTrajectory(pl, false, Hold | Right, false, baseGameState, baseEffectStatePtr, {});
+                p2BranchCount++;
+                createTrajectory(pl, false, Release | Right, false, baseGameState, baseEffectStatePtr, {});
+                p2BranchCount++;
             }
         }
+    }
+    int64_t p2Ms = p2Timer.elapsed<>();
+
+    pl->m_gameState = baseGameState;
+    if (pl->m_effectManager && baseEffectStatePtr)
+        pl->m_effectManager->loadFromState(*baseEffectStatePtr);
+
+    hideFakePlayer(t.fakePlayer1);
+    hideFakePlayer(t.fakePlayer2);
+    auto totalMs = totalTimer.elapsed<>();
+    if (shouldLogSlowTrajectory(totalMs)) {
+        auto passStats = xdbot::trajectory_physics::currentPassStats();
+        log::info(
+            "Trajectory slow: total={}ms setup={}ms p1={}ms p2={}ms p1Branches={} p2Branches={} length={} objs={} solid={} hazard={} effects={} obb={} spawnVisited={} spawnCandidates={} spawnTriggered={} dual={} tp={} bothSides={}",
+            totalMs,
+            setupMs,
+            p1Ms,
+            p2Ms,
+            p1BranchCount,
+            p2BranchCount,
+            t.length,
+            passStats.objectsVisited,
+            passStats.solidQueued,
+            passStats.hazardQueued,
+            passStats.effectCandidates,
+            passStats.obbChecks,
+            passStats.spawnVisited,
+            passStats.spawnCandidates,
+            passStats.spawnTriggered,
+            pl->m_gameState.m_isDualMode,
+            pl->m_levelSettings ? pl->m_levelSettings->m_twoPlayerMode : false,
+            platformerBothSides
+        );
+    }
+    xdbot::trajectory_physics::endTrajectoryPass();
+    t.creatingTrajectory = false;
+    bot.creatingTrajectory = false;
+}
+
+ShowTrajectory::PredictionResult ShowTrajectory::simulate(
+    PlayLayer* pl,
+    bool player1,
+    int mode,
+    bool simulateBothPlayers,
+    PredictionConfig config
+) {
+    PredictionResult result;
+    result.player1 = player1;
+    result.holding = (mode & Hold) != 0;
+    if (!pl || !pl->m_player1)
+        return result;
+
+    auto& bot = Bot::get();
+    bool wasCreatingTrajectory = t.creatingTrajectory;
+    bool wasBotCreatingTrajectory = bot.creatingTrajectory;
+    t.creatingTrajectory = true;
+    bot.creatingTrajectory = true;
+    xdbot::trajectory_physics::beginTrajectoryPass();
+
+    auto baseGameState = pl->m_gameState;
+    EffectManagerState baseEffectState;
+    EffectManagerState* baseEffectStatePtr = nullptr;
+    if (pl->m_effectManager) {
+        pl->m_effectManager->saveToState(baseEffectState);
+        baseEffectStatePtr = &baseEffectState;
+    }
+
+    if (ensureFakePlayer(pl, player1)) {
+        bool canSimulateBoth = simulateBothPlayers && pl->m_gameState.m_isDualMode &&
+            !pl->m_levelSettings->m_twoPlayerMode;
+        if (canSimulateBoth && pl->m_player2)
+            ensureFakePlayer(pl, false);
+
+        result = createTrajectory(
+            pl,
+            player1,
+            mode,
+            canSimulateBoth,
+            baseGameState,
+            baseEffectStatePtr,
+            config
+        );
     }
 
     pl->m_gameState = baseGameState;
@@ -234,9 +498,12 @@ void ShowTrajectory::updateTrajectory(PlayLayer* pl) {
 
     hideFakePlayer(t.fakePlayer1);
     hideFakePlayer(t.fakePlayer2);
-    t.creatingTrajectory = false;
-    bot.creatingTrajectory = false;
+    xdbot::trajectory_physics::endTrajectoryPass();
+    t.creatingTrajectory = wasCreatingTrajectory;
+    bot.creatingTrajectory = wasBotCreatingTrajectory;
+    return result;
 }
+
 float rot = 0.f;
 void ShowTrajectory::applyInitialInput(PlayLayer* pl, PlayerObject* player, PlayerObject* realPlayer, int mode) {
     if (!pl || !player || !realPlayer)
@@ -279,7 +546,13 @@ void ShowTrajectory::applyInitialInput(PlayLayer* pl, PlayerObject* player, Play
     }
 }
 
-bool ShowTrajectory::iterate(PlayLayer* pl, PlayerObject* player, int mode, cocos2d::ccColor4F color) {
+bool ShowTrajectory::iterate(
+    PlayLayer* pl,
+    PlayerObject* player,
+    int mode,
+    cocos2d::ccColor4F color,
+    PredictionConfig const& config
+) {
     if (!pl || !player)
         return true;
 
@@ -314,7 +587,8 @@ bool ShowTrajectory::iterate(PlayLayer* pl, PlayerObject* player, int mode, coco
 
     bool dead = (player == t.fakePlayer1 && t.deadP1) || (player == t.fakePlayer2 && t.deadP2);
     if (dead) {
-        drawPlayerHitbox(player, t.trajectoryNode());
+        if (config.draw)
+            drawPlayerHitbox(player, t.trajectoryNode());
         return true;
     }
 
@@ -322,7 +596,6 @@ bool ShowTrajectory::iterate(PlayLayer* pl, PlayerObject* player, int mode, coco
     player->m_playEffects = false;
     player->update(t.delta);
     player->updateRotation(t.delta);
-    player->updatePlayerScale();
 
     if (pl->checkCollisions(player, t.delta, false) == 1) {
         if (player == t.fakePlayer1)
@@ -336,38 +609,45 @@ bool ShowTrajectory::iterate(PlayLayer* pl, PlayerObject* player, int mode, coco
     if (pl->m_effectManager)
         pl->m_effectManager->postCollisionCheck();
 
-    t.trajectoryNode()->drawSegment(prevPos, player->getPosition(), 0.6f, color);
+    if (config.draw) {
+        float width = t.width;
+        if (pl->m_gameState.m_cameraZoom > 0.f)
+            width /= pl->m_gameState.m_cameraZoom;
+        t.trajectoryNode()->drawSegment(prevPos, player->getPosition(), width, color);
+    }
 
     dead = (player == t.fakePlayer1 && t.deadP1) || (player == t.fakePlayer2 && t.deadP2);
     if (dead) {
-        drawPlayerHitbox(player, t.trajectoryNode());
+        if (config.draw)
+            drawPlayerHitbox(player, t.trajectoryNode());
         return true;
     }
 
     return false;
 }
 
-void ShowTrajectory::createTrajectory(
+ShowTrajectory::PredictionResult ShowTrajectory::createTrajectory(
     PlayLayer* pl,
     bool player1,
     int mode,
     bool simulateBothPlayers,
     GJGameState const& baseGameState,
-    EffectManagerState* baseEffectState
+    EffectManagerState* baseEffectState,
+    PredictionConfig config
 ) {
-    if (!pl)
-        return;
+    PredictionResult result;
+    result.player1 = player1;
+    result.holding = (mode & Hold) != 0;
 
-    pl->m_gameState = baseGameState;
-    if (pl->m_effectManager && baseEffectState)
-        pl->m_effectManager->loadFromState(*baseEffectState);
+    if (!pl)
+        return result;
 
     PlayerObject* fakePlayer = player1 ? t.fakePlayer1 : t.fakePlayer2;
     PlayerObject* realPlayer = player1 ? pl->m_player1 : pl->m_player2;
     PlayerObject* otherFake = player1 ? t.fakePlayer2 : t.fakePlayer1;
     PlayerObject* otherReal = player1 ? pl->m_player2 : pl->m_player1;
     if (!fakePlayer || !realPlayer)
-        return;
+        return result;
 
     PlayerPracticeFixes::transfer(realPlayer, fakePlayer, true);
     hideFakePlayer(fakePlayer);
@@ -392,17 +672,35 @@ void ShowTrajectory::createTrajectory(
     cocos2d::ccColor4F color = (mode & Hold) ? t.color1 : (mode & Swift) ? t.color3 : t.color2;
     cocos2d::ccColor4F otherColor = ccc4f(1.f - color.r, 1.f - color.g, 1.f - color.b, color.a);
 
-    int predictionLength = std::max(t.length, 0);
+    bool stopMain = false;
+    bool stopOther = !simulateBothPlayers || !otherFake;
+    int predictionLength = std::min(std::max(t.length, 0), std::max(config.maxLength, 0));
+    size_t replayInputIndex = Bot::get().currentAction;
     for (int i = 0; i < predictionLength; i++) {
         if (i >= predictionLength - 40)
             color.a = (predictionLength - i) / 40.f;
+        otherColor.a = color.a;
 
-        bool stopMain = iterate(pl, fakePlayer, mode, color);
-        bool stopOther = false;
-        if (simulateBothPlayers && otherFake)
-            stopOther = iterate(pl, otherFake, mode, otherColor);
+        uint64_t frame = static_cast<uint64_t>(Bot::getCurrentFrame()) + static_cast<uint64_t>(i);
+        applyReplayInputsForPrediction(
+            pl,
+            replayInputIndex,
+            frame,
+            simulateBothPlayers,
+            config.applyReplayInputs
+        );
 
-        if (stopMain && (!simulateBothPlayers || stopOther))
+        if (simulateBothPlayers && !pl->m_gameState.m_isDualMode)
+            stopOther = true;
+
+        if (!stopMain) {
+            stopMain = iterate(pl, fakePlayer, mode, color, config);
+            result.score++;
+        }
+        if (!stopOther)
+            stopOther = iterate(pl, otherFake, mode, otherColor, config);
+
+        if (stopMain && stopOther)
             break;
     }
 
@@ -417,6 +715,11 @@ void ShowTrajectory::createTrajectory(
     if (simulateBothPlayers)
         hideFakePlayer(otherFake);
 
+    result.position = fakePlayer->getPosition();
+    result.hitbox = fakePlayer->getObjectRect();
+    result.innerHitbox = fakePlayer->getObjectRect(0.3, 0.3);
+    result.rotation = fakePlayer->getRotation();
+    return result;
 }
 
 void ShowTrajectory::drawPlayerHitbox(PlayerObject* player, CCDrawNode* drawNode) {
@@ -517,9 +820,12 @@ void ShowTrajectory::handlePortal(PlayerObject* player, int id) {
     }
 }
 
-cocos2d::CCDrawNode* ShowTrajectory::trajectoryNode() {
+cocos2d::CCDrawNode* ShowTrajectory::trajectoryNode(bool create) {
 
     static TrajectoryNode* instance = nullptr;
+
+    if (!create)
+        return instance;
 
     if (!instance) {
         instance = TrajectoryNode::create();
@@ -535,19 +841,18 @@ cocos2d::CCDrawNode* ShowTrajectory::trajectoryNode() {
     return instance;
 }
 
+void ShowTrajectory::detachTrajectoryNode() {
+    auto* node = trajectoryNode(false);
+    if (!node)
+        return;
+
+    node->clear();
+    node->setVisible(false);
+    if (node->getParent())
+        node->removeFromParentAndCleanup(false);
+}
+
 class $modify(PlayLayer) {
-
-    void postUpdate(float dt) {
-        PlayLayer::postUpdate(dt);
-
-        if (!t.trajectoryNode() || t.creatingTrajectory) return;
-
-        if (Bot::get().showTrajectory) {
-            ShowTrajectory::updateTrajectory(this);
-        }
-
-    }
-
     void playGravityEffect(bool flip) {
         if (!t.creatingTrajectory)
             PlayLayer::playGravityEffect(flip);
@@ -562,8 +867,11 @@ class $modify(PlayLayer) {
         t.deadP1 = false;
         t.deadP2 = false;
 
-        m_objectLayer->addChild(t.trajectoryNode(), 500);
-        t.trajectoryNode()->setVisible(false);
+        auto* node = t.trajectoryNode();
+        if (node->getParent())
+            node->removeFromParentAndCleanup(false);
+        m_objectLayer->addChild(node, 500);
+        node->setVisible(false);
     }
 
     void destroyPlayer(PlayerObject * player, GameObject * gameObject) {
@@ -581,8 +889,7 @@ class $modify(PlayLayer) {
     }
 
     void onQuit() {
-        if (t.trajectoryNode())
-            t.trajectoryNode()->clear();
+        ShowTrajectory::detachTrajectoryNode();
 
         ShowTrajectory::releaseFakePlayers();
         t.cancelTrajectory = false;
@@ -601,9 +908,20 @@ class $modify(PlayLayer) {
 };
 
 class $modify(PauseLayer) {
+    void onQuit(CCObject* sender) {
+        ShowTrajectory::detachTrajectoryNode();
+
+        ShowTrajectory::releaseFakePlayers();
+        t.cancelTrajectory = false;
+        t.creatingTrajectory = false;
+        t.deadP1 = false;
+        t.deadP2 = false;
+
+        PauseLayer::onQuit(sender);
+    }
+
     void goEdit() {
-        if (t.trajectoryNode())
-            t.trajectoryNode()->clear();
+        ShowTrajectory::detachTrajectoryNode();
 
         ShowTrajectory::releaseFakePlayers();
         t.cancelTrajectory = false;
